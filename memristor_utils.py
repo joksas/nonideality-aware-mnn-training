@@ -23,7 +23,7 @@ from tensorflow.python.framework import ops
 import badmemristor
 import badmemristor.nonideality
 
-
+# A decorator for customising gradients
 def tf_custom_gradient_method(f):
     @functools.wraps(f)
     def wrapped(self, *args, **kwargs):
@@ -75,6 +75,7 @@ class memristor_dense(Layer):
 		self.n_out=n_out
 		super(memristor_dense,self).__init__(**kwargs)
 
+	# Adding this funcion removes an issue with custom layer checkpoint
 	def get_config(self):
 
 		config = super().get_config().copy()
@@ -84,6 +85,7 @@ class memristor_dense(Layer):
 		})
 		return config
 
+	# Create trainable weights and biases
 	def build(self, input_shape):
 		stdv=1/np.sqrt(self.n_in)
 
@@ -103,7 +105,7 @@ class memristor_dense(Layer):
 
 
 	def call(self, x,mask=None):
-		self.out = K.dot(x, self.apply_disturbance(self.w)) + self.b
+		self.out = K.dot(x, self.apply_disturbance(self.w)) + self.b # Non-ideality-aware trainng
 		#self.out = K.dot(x, self.w) + self.b # Vanilla CNN
 		return self.out
 
@@ -112,11 +114,11 @@ class memristor_dense(Layer):
 		# Forward propataion
 
 		disturbed_w = tf.py_function(func=disturbance, inp=[undisturbed_w], Tout=tf.float32)
-		disturbed_w.set_shape((self.n_in, self.n_out))
+		disturbed_w.set_shape((self.n_in, self.n_out)) # Outputs to py_function do not have shape defined
 
 		def custom_grad(disturbed_w_grad):
 			# Backward propagation
-			undisturbed_w_grad = disturbed_w_grad
+			undisturbed_w_grad = disturbed_w_grad # Does nothing
 			return undisturbed_w_grad
 		return disturbed_w, custom_grad
 
