@@ -35,39 +35,49 @@ def tf_custom_gradient_method(f):
     return wrapped
 
 
-def disturbance (weights):
+def disturbance_lognormal(weights, eff=True):
+    # I picked this myself, but you may want to create a function that decides
+    # how large `max_weight` should be, given an array of weights.
+    # TODO: It would make more sense to pick it separately for each weight
+    # array. E.g. set it to the highest-absolute-value weight.
+    max_weight = 2.5
+    # These are arbitrary, but you may be given some values to work with or may
+    # need to research what these values could be.
+    G_min = 1e-4
+    G_max = 1e-3
+    # Some arbitrary values for lognormal disturbance (again, you might be
+    # given some or might need to find them yourself).
+    lognormal_G = [1e-4, 5e-4, 9e-4]
+    lognormal_mean = [-5, -4, -3]
+    lognormal_sigma = [0.5, 0.3, 0.1]
+    lognormal_rate = [0.5, 0.6, 0.5]
 
-	# I picked this myself, but you may want to create a function that decides
-	# how large `max_weight` should be given an array of weights.
-	max_weight = 2.5
-	# These are random, but you may be given some values to work with or may need
-	# to research what these values could be.
-	G_min = 1e-4
-	G_max = 1e-3
-	
-	# Mapping onto conductances.
-	G = badmemristor.map.w_to_G(weights, max_weight, G_min, G_max)
-	
-	# Some random values for lognormal disturbance (again, you might be given
-	# some or might need to find them yourself).
-	lognormal_G = [1e-4, 5e-4, 9e-4]
-	lognormal_mean = [-5, -4, -3]
-	lognormal_sigma = [0.5, 0.3, 0.1]
-	lognormal_rate = [0.5, 0.6, 0.5]
-	
-	# Applying lognormal disturbance.
-	G_disturbed = badmemristor.nonideality.model.lognormal(
-		G, lognormal_G, lognormal_mean, lognormal_sigma, lognormal_rate)
-	
-	# Converting back to weights.
-	disturbed_weights = badmemristor.map.G_to_w(G_disturbed, max_weight, G_max)
+    if eff:
+        G_eff = badmemristor.map.w_to_G_eff(weights, max_weight, G_min, G_max)
+        G_eff_disturbed = badmemristor.nonideality.model.lognormal(G_eff,
+                lognormal_G, lognormal_mean, lognormal_sigma, lognormal_rate,
+                eff=True)
+        disturbed_weights = badmemristor.map.G_eff_to_w(G_eff_disturbed,
+                max_weight, G_max)
+    else:
+        G = badmemristor.map.w_to_G(weights, max_weight, G_min, G_max)
+        G_disturbed = badmemristor.nonideality.model.lognormal(G, lognormal_G,
+                lognormal_mean, lognormal_sigma, lognormal_rate)
+        disturbed_weights = badmemristor.map.G_to_w(G_disturbed, max_weight, G_max)
+
+    return disturbed_weights
 
 
-	## Printing results.
-	#print("Weights before mapping:\n{}\n".format(weights))
-	#print("Effective weights after mapping:\n{}\n".format(disturbed_weights))
+def disturbance(weights, type_='lognormal', eff=True):
+    if type_ == 'lognormal':
+        disturbed_weights = disturbance_lognormal(weights, eff=eff)
+    else:
+        raise ValueError(
+                'Disturbance type "{}" is not supported!'.format(type_)
+                )
 
-	return disturbed_weights
+    return disturbed_weights
+
 
 class memristor_dense(Layer):
 	def __init__(self,n_in,n_out,**kwargs):
