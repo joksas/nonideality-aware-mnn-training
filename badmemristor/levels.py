@@ -10,14 +10,14 @@ def extract(
     type_ : {'equal_G', 'equal_R', 'custom'}, optional
         Distribution of conductances levels.
     ratio : float, optional
-        Ratio between the highest and lowest resistance (or conductance) states.
+        Ratio between the highest and lowest resistance (or conductance)
+        states.
     num_states : int or np.inf, optional
         Number of discrete conductance states.
     percentile : float, optional
         Percentile of sorted absolute weights (normalized to 1).
     list_ : list of float
-        If type_ = 'custom', then this parameter is used to create the
-        levels.
+        If type_ = 'custom', then this parameter is used to create the levels.
 
     Returns
     -------
@@ -43,7 +43,8 @@ def equal_G(ratio, num_states):
     Parameters
     ----------
     ratio : float
-        Ratio between the highest and lowest resistance (or conductance) states.
+        Ratio between the highest and lowest resistance (or conductance)
+        states.
     num_states : int
         Number of discrete conductance states.
 
@@ -66,7 +67,8 @@ def equal_R(ratio, num_states):
     Parameters
     ----------
     ratio : float
-        Ratio between the highest and lowest resistance (or conductance) states.
+        Ratio between the highest and lowest resistance (or conductance)
+        states.
     num_states : int
         Number of discrete conductance states.
 
