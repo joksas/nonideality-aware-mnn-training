@@ -22,8 +22,8 @@ To train with baseline setup, go to `memristor_dense` under `memristor_utils.py`
 
 ## TODO
 
-Add support for faulty devices.
+- [x] Add support for faulty devices.
 
-Experiment with lr-decay schedules.
+- [ ] Experiment with lr-decay schedules.
 
-Optimise forward propagation. Baseline takes 3s per epoch but ours takes 19s per epoch.
+- [x] Optimise forward propagation. Baseline takes 3s per epoch but ours takes 19s per epoch.
