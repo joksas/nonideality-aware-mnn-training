@@ -68,9 +68,35 @@ def disturbance_lognormal(weights, eff=True):
     return disturbed_weights
 
 
-def disturbance(weights, type_='lognormal', eff=True):
+def disturbance_faulty(weights, type_='unelectroformed', eff=True):
+    max_weight = 2.5
+    G_min = 1e-4
+    G_max = 1e-3
+    # An arbitrary proportion
+    proportion = 0.05
+
+    if eff:
+        G_eff = badmemristor.map.w_to_G_eff(weights, max_weight, G_min, G_max)
+        G_eff_disturbed = badmemristor.nonideality.D2D.faulty(G_eff,
+                proportion, G_min=G_min, G_max=G_max, type_=type_, eff=eff)
+        disturbed_weights = badmemristor.map.G_eff_to_w(G_eff_disturbed,
+                max_weight, G_max)
+    else:
+        G = badmemristor.map.w_to_G(weights, max_weight, G_min, G_max)
+        G_disturbed = badmemristor.nonideality.D2D.faulty(G, proportion,
+                G_min=G_min, G_max=G_max, type_=type_, eff=eff)
+        disturbed_weights = badmemristor.map.G_to_w(G_disturbed, max_weight, G_max)
+
+    return disturbed_weights
+
+
+def disturbance(weights, type_='lognormal', faulty_type='unelectroformed',
+        eff=True):
     if type_ == 'lognormal':
         disturbed_weights = disturbance_lognormal(weights, eff=eff)
+    elif type == 'faulty':
+        disturbed_weights = disturbance_faulty(weights, type_=faulty_type,
+                eff=eff)
     else:
         raise ValueError(
                 'Disturbance type "{}" is not supported!'.format(type_)
