@@ -141,7 +141,13 @@ class memristor_dense(Layer):
 
 
 	def call(self, x,mask=None):
-		self.out = K.dot(x, self.apply_disturbance(self.w)) + self.b # Non-ideality-aware trainng
+        # Non-ideality-aware training
+		self.out = K.dot(x, self.apply_disturbance(self.w)) + self.b
+        # TODO: I think, we should also disturb the biases, i.e. treat them as
+        # any other weight. We could append a column of ones to x and then
+        # K.dot it with an array which is self.w with self.b appended as its
+        # last row.
+
 		#self.out = K.dot(x, self.w) + self.b # Vanilla CNN
 		return self.out
 
