@@ -122,7 +122,7 @@ def G_eff_to_w(G_eff, max_weight, G_max):
 
 
 def I_to_y(I, k_V, max_weight, G_max):
-    """Maps output currents of a dot-product engine onto synaptic layer inputs.
+    """Converts output currents of a dot-product engine onto synaptic layer inputs.
 
     Parameters
     ----------
@@ -142,6 +142,31 @@ def I_to_y(I, k_V, max_weight, G_max):
         memristive crossbars.
     """
     I_total = I[:, 0::2] - I[:, 1::2]
+    y = I_total_to_y(I_total, k_V, max_weight, G_max)
+    return y
+
+
+def I_total_to_y(I_total, k_V, max_weight, G_max):
+    """Converts total output currents of a dot-product engine onto synaptic layer
+    inputs.
+
+    Parameters
+    ----------
+    I_total : ndarray
+        Total output currents of shape (p x n)
+    k_V : float
+        Voltage scaling factor.
+    max_weight : float
+        Assumed maximum weight.
+    G_max : float
+        Maximum conductance of electroformed memristors.
+
+    Returns
+    ----------
+    y : ndarray
+        Outputs of shape (p x n) of a synaptic layer implemented using
+        memristive crossbars.
+    """
     k_G = compute_k_G(max_weight, G_max)
     k_I = compute_k_I(k_V, k_G)
     y = I_total/k_I
