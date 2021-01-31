@@ -90,6 +90,58 @@ def disturbance_faulty(weights, type_='unelectroformed', eff=True):
     return disturbed_weights
 
 
+def disturbed_outputs_i_v_non_linear(x, weights, eff=True):
+    # TODO: test if works correctly.
+
+    # Reference values for conductances (in siemens) of devices in certain states.
+    # These refer to conductances in the linear operating region (usually, at low
+    # voltages). If there will be unelectroformed devices, a value for 0 siemens
+    # should also be included.
+    G_ref = np.array([0, 1e-4, 3e-4, 5e-4])
+    # Voltage values (in volts) at which the currents were measured.
+    V_ref = np.array([0, 0.3, 0.6, 0.9, 1.2])
+    # Currents (in amps). Row corresponds to reference conductance states and
+    # columns to reference voltages. For example, a device with reference
+    # conductance of 3e-4 S would produce 50e-5 A of current if a voltage of 1.2 V
+    # was applied across it.
+    I_ref = np.array([
+        [0, 0, 0, 0, 0],
+        [0, 3e-5, 7e-5, 11e-5, 15e-5],
+        [0, 9e-5, 22e-5, 35e-5, 50e-5],
+        [0, 15e-5, 37e-5, 60e-5, 90e-5]
+        ])
+
+    # I picked this myself, but you may want to create a function that decides
+    # how large `max_weight` should be, given an array of weights.
+    max_weight = 3
+    # These are arbitrary, but you may be given some values to work with or may need
+    # to research what these values could be.
+    G_min = 1e-4
+    G_max = 5e-4
+    k_V = 1.05
+
+    # Mapping weights onto conductances.
+    if eff:
+        G = badmemristor.map.w_to_G_eff(weights, max_weight, G_min, G_max)
+    else:
+        G = badmemristor.map.w_to_G(weights, max_weight, G_min, G_max)
+
+    # Mapping inputs onto voltages.
+    V = badmemristor.map.x_to_V(x, k_V)
+
+    # Computing currents
+    I = badmemristor.nonideality.i_v_non_linear.compute_I(
+            V, G, V_ref, G_ref, I_ref, eff=eff)
+
+    # Converting to outputs.
+    if eff:
+        y_disturbed = badmemristor.map.I_total_to_y(I, k_V, max_weight, G_max)
+    else:
+        y_disturbed = badmemristor.map.I_to_y(I, k_V, max_weight, G_max)
+
+    return y_disturbed
+
+
 def disturbance(weights, type_='lognormal', faulty_type='unelectroformed',
         eff=True):
     if type_ == 'lognormal':
