@@ -158,78 +158,78 @@ def disturbance(weights, type_='lognormal', faulty_type='unelectroformed',
 
 
 class memristor_dense(Layer):
-	def __init__(self,n_in,n_out,**kwargs):
-		self.n_in=n_in
-		self.n_out=n_out
-		super(memristor_dense,self).__init__(**kwargs)
+    def __init__(self,n_in,n_out,**kwargs):
+        self.n_in=n_in
+        self.n_out=n_out
+        super(memristor_dense,self).__init__(**kwargs)
 
-	# Adding this funcion removes an issue with custom layer checkpoint
-	def get_config(self):
+    # Adding this funcion removes an issue with custom layer checkpoint
+    def get_config(self):
 
-		config = super().get_config().copy()
-		config.update({
-			'n_in': self.n_in,
-			'n_out': self.n_out,
-		})
-		return config
+        config = super().get_config().copy()
+        config.update({
+            'n_in': self.n_in,
+            'n_out': self.n_out,
+        })
+        return config
 
-	# Create trainable weights and biases
-	def build(self, input_shape):
-		stdv=1/np.sqrt(self.n_in)
+    # Create trainable weights and biases
+    def build(self, input_shape):
+        stdv=1/np.sqrt(self.n_in)
 
-		self.w = self.add_weight(
-			shape=(self.n_in,self.n_out),
-			initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=stdv),
-			name="weights",
-			trainable=True,
-		)
+        self.w = self.add_weight(
+            shape=(self.n_in,self.n_out),
+            initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=stdv),
+            name="weights",
+            trainable=True,
+        )
 
-		self.b = self.add_weight(
-			shape=(self.n_out,),
-			initializer=tf.keras.initializers.Constant(value=0.0),
-			name="biasess",
-			trainable=True,
-		)
+        self.b = self.add_weight(
+            shape=(self.n_out,),
+            initializer=tf.keras.initializers.Constant(value=0.0),
+            name="biasess",
+            trainable=True,
+        )
 
 
-	def call(self, x,mask=None):
+    def call(self, x,mask=None):
         # Non-ideality-aware training
-		self.out = K.dot(x, self.apply_disturbance(self.w)) + self.b
-        # TODO: I think, we should also disturb the biases, i.e. treat them as
-        # any other weight. We could append a column of ones to x and then
-        # K.dot it with an array which is self.w with self.b appended as its
-        # last row.
+        bias = tf.expand_dims(self.b, axis=0)
+        combined_weights = tf.concat([self.w, bias], 0)
+        ones = tf.ones([tf.shape(x)[0], 1])
+        inputs = tf.concat([x, ones], 1)
+        self.out = K.dot(inputs, self.apply_disturbance(combined_weights))
 
-		#self.out = K.dot(x, self.w) + self.b # Vanilla CNN
-		return self.out
+        #self.out = K.dot(x, self.w) + self.b # Vanilla CNN
+        return self.out
 
-	@tf_custom_gradient_method
-	def apply_disturbance(self, undisturbed_w):
-		# Forward propataion
+    @tf_custom_gradient_method
+    def apply_disturbance(self, undisturbed_w):
+        # Forward propagation
 
-		disturbed_w = tf.py_function(func=disturbance, inp=[undisturbed_w], Tout=tf.float32)
-		disturbed_w.set_shape((self.n_in, self.n_out)) # Outputs to py_function do not have shape defined
+        disturbed_w = tf.py_function(func=disturbance, inp=[undisturbed_w], Tout=tf.float32)
+        disturbed_w.set_shape((self.n_in+1, self.n_out)) # Outputs to py_function do not have shape defined
 
-		def custom_grad(disturbed_w_grad):
-			# Backward propagation
-			undisturbed_w_grad = disturbed_w_grad # Does nothing
-			return undisturbed_w_grad
-		return disturbed_w, custom_grad
+        def custom_grad(disturbed_w_grad):
+            # Backward propagation
+            undisturbed_w_grad = disturbed_w_grad # Does nothing
+            return undisturbed_w_grad
+        return disturbed_w, custom_grad
 
-	def  get_output_shape_for(self,input_shape):
-		return (input_shape[0], self.n_out)
-	def compute_output_shape(self,input_shape):
-		return (input_shape[0], self.n_out)
+    def get_output_shape_for(self,input_shape):
+        return (input_shape[0], self.n_out)
+    def compute_output_shape(self,input_shape):
+        return (input_shape[0], self.n_out)
 
 class my_flat(Layer):
-	def __init__(self,**kwargs):
-		super(my_flat,self).__init__(**kwargs)
-	def build(self, input_shape):
-		return
+    def __init__(self,**kwargs):
+        super(my_flat,self).__init__(**kwargs)
+    def build(self, input_shape):
+        return
 
-	def call(self, x, mask=None):
-		self.out=tf.reshape(x,[-1,np.prod(x.get_shape().as_list()[1:])])
-		return self.out
-	def  compute_output_shape(self,input_shape):
-		shpe=(input_shape[0],int(np.prod(input_shape[1:])))
-		return shpe
+    def call(self, x, mask=None):
+        self.out=tf.reshape(x,[-1,np.prod(x.get_shape().as_list()[1:])])
+        return self.out
+    def  compute_output_shape(self,input_shape):
+        shpe=(input_shape[0],int(np.prod(input_shape[1:])))
+        return shpe
