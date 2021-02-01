@@ -113,7 +113,7 @@ def disturbed_outputs_i_v_non_linear(x, weights, eff=True):
 
     # I picked this myself, but you may want to create a function that decides
     # how large `max_weight` should be, given an array of weights.
-    max_weight = 3
+    max_weight = np.max(np.abs(weights))
     # These are arbitrary, but you may be given some values to work with or may need
     # to research what these values could be.
     G_min = 1e-4
