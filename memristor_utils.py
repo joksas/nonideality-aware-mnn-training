@@ -198,13 +198,14 @@ class memristor_dense(Layer):
         combined_weights = tf.concat([self.w, bias], 0)
         ones = tf.ones([tf.shape(x)[0], 1])
         inputs = tf.concat([x, ones], 1)
-        self.out = K.dot(inputs, self.apply_disturbance(combined_weights))
+        # self.out = K.dot(inputs, self.apply_weight_disturbance(combined_weights))
+        self.out = self.apply_output_disturbance(inputs, combined_weights)
 
         #self.out = K.dot(x, self.w) + self.b # Vanilla CNN
         return self.out
 
     @tf_custom_gradient_method
-    def apply_disturbance(self, undisturbed_w):
+    def apply_weight_disturbance(self, undisturbed_w):
         # Forward propagation
 
         disturbed_w = tf.py_function(func=disturbance, inp=[undisturbed_w], Tout=tf.float32)
@@ -215,6 +216,20 @@ class memristor_dense(Layer):
             undisturbed_w_grad = disturbed_w_grad # Does nothing
             return undisturbed_w_grad
         return disturbed_w, custom_grad
+
+    @tf_custom_gradient_method
+    def apply_output_disturbance(self, inputs, weights):
+        # Forward propagation
+        disturbed_outputs = tf.py_function(func=disturbed_outputs_i_v_non_linear, inp=[inputs, weights], Tout=tf.float32)
+        disturbed_outputs.set_shape((inputs.shape.as_list()[0], weights.shape.as_list()[1])) # Outputs to py_function do not have shape defined
+
+        def custom_grad(disturbed_w_grad):
+            # Backward propagation
+            # TODO (Erwei)
+            undisturbed_w_grad = disturbed_w_grad # Does nothing
+            return undisturbed_w_grad
+
+        return disturbed_outputs, custom_grad
 
     def get_output_shape_for(self,input_shape):
         return (input_shape[0], self.n_out)
