@@ -223,11 +223,13 @@ class memristor_dense(Layer):
         disturbed_outputs = tf.py_function(func=disturbed_outputs_i_v_non_linear, inp=[inputs, weights], Tout=tf.float32)
         disturbed_outputs.set_shape((inputs.shape.as_list()[0], weights.shape.as_list()[1])) # Outputs to py_function do not have shape defined
 
-        def custom_grad(disturbed_w_grad):
+        def custom_grad(disturbed_outputs_grad):
             # Backward propagation
             # TODO (Erwei)
-            undisturbed_w_grad = disturbed_w_grad # Does nothing
-            return undisturbed_w_grad
+            inputs_grad = tf.matmul(disturbed_outputs_grad, tf.transpose(weights))
+            weights_grad = tf.matmul(tf.transpose(inputs), disturbed_outputs_grad)
+
+            return (inputs_grad, weights_grad)
 
         return disturbed_outputs, custom_grad
 
