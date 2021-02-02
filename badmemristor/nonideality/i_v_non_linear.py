@@ -15,9 +15,9 @@ def compute_I(V, G, V_ref, G_ref, I_ref, eff=False):
     G : ndarray
         Conductances (or effective conductances) of shape (m x n).
     V_ref :
-        Reference voltage values of length r.
+        Reference voltage values of length r (in increasing order).
     G_ref : ndarray
-        Reference conductance values of length q.
+        Reference conductance values of length q (in increasing order).
     I_ref :
         Reference current values of shape (q x r) corresponding go G_ref and
         V_ref.
@@ -41,9 +41,9 @@ def interpolate_I(G_ref, V_ref, I_ref, G, V, eff):
     Parameters
     ----------
     G_ref : ndarray
-        Reference conductance values of length q.
+        Reference conductance values of length q (in increasing order).
     V_ref :
-        Reference voltage values of length r.
+        Reference voltage values of length r (in increasing order).
     I_ref :
         Reference voltage values of shape (q x r) corresponding go G_ref and
         V_ref.
@@ -61,8 +61,14 @@ def interpolate_I(G_ref, V_ref, I_ref, G, V, eff):
         conductances in the crossbar array.
     """
     if eff:
-        G_ref = utils.symmetric_array(G_ref, negative=True)
-        I_ref = np.concatenate((-I_ref[::-1, :], I_ref), axis=0)
+        if G_ref[0] == 0:
+            # If the lowest conductance state in G_ref is 0 S, then we must
+            # make sure that it isn't duplicated.
+            G_ref = np.concatenate((-G_ref[::-1], G_ref[1:]), axis=0)
+            I_ref = np.concatenate((-I_ref[::-1, :], I_ref[1:]), axis=0)
+        else:
+            G_ref = np.concatenate((-G_ref[::-1], G_ref), axis=0)
+            I_ref = np.concatenate((-I_ref[::-1, :], I_ref), axis=0)
 
     f = interpolate.interp2d(V_ref, G_ref, I_ref, kind='linear')
 
