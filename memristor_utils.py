@@ -99,16 +99,16 @@ def disturbed_outputs_i_v_non_linear(x, weights, eff=True):
     # should also be included.
     G_ref = np.array([0, 1e-4, 3e-4, 5e-4])
     # Voltage values (in volts) at which the currents were measured.
-    V_ref = np.array([0, 0.3, 0.6, 0.9, 1.2])
+    V_ref = np.array([-1.2, -0.9, -0.6, -0.3, 0, 0.3, 0.6, 0.9, 1.2])
     # Currents (in amps). Row corresponds to reference conductance states and
     # columns to reference voltages. For example, a device with reference
     # conductance of 3e-4 S would produce 50e-5 A of current if a voltage of 1.2 V
     # was applied across it.
     I_ref = np.array([
-        [0, 0, 0, 0, 0],
-        [0, 3e-5, 7e-5, 11e-5, 15e-5],
-        [0, 9e-5, 22e-5, 35e-5, 50e-5],
-        [0, 15e-5, 37e-5, 60e-5, 90e-5]
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [-15e-5, -11e-5, -7e-5, -3e-5, 0, 3e-5, 7e-5, 11e-5, 15e-5],
+        [-50e-5, -35e-5, -22e-5, -9e-5, 0, 9e-5, 22e-5, 35e-5, 50e-5],
+        [-90e-5, -60e-5, -37e-5, -15e-5, 0, 15e-5, 37e-5, 60e-5, 90e-5]
         ])
 
     # I picked this myself, but you may want to create a function that decides
