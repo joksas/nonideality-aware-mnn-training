@@ -98,8 +98,8 @@ def disturbed_outputs_i_v_non_linear(x, weights):
 
     if is_low_resistance:
         # Low resistance SiO_x.
-        G_min = tf.constant(1/2610)
-        G_max = tf.constant(1/281)
+        G_min = tf.constant(0.1)
+        G_max = tf.constant(1.0)
         n_avg = tf.constant(2.18)
         n_std = tf.constant(0.115)
     else:
@@ -109,9 +109,18 @@ def disturbed_outputs_i_v_non_linear(x, weights):
         n_avg = tf.constant(2.88)
         n_std = tf.constant(0.363)
 
-    k_V = 2*V_ref
+    eff = True
+    # Mapping weights onto conductances.
+    if eff:
+        tf.print("W =", weights)
+        G = badmemristor_tf.map.w_to_G_eff(weights, max_weight, G_min, G_max, scheme="differential")
+        # Apply G_min
+        G = tf.math.abs(G) + G_min
+        tf.print("G =", G)
+        A = badmemristor_tf.map.w_to_G(weights, max_weight, G_min, G_max, scheme="differential")
+        tf.print("A =", A)
 
-    G = badmemristor_tf.map.w_to_G(weights, max_weight, G_min, G_max, scheme="differential")
+    k_V = 2*V_ref
 
     # Mapping inputs onto voltages.
     V = badmemristor_tf.map.x_to_V(x, k_V)
@@ -215,17 +224,33 @@ class memristor_dense(Layer):
     def build(self, input_shape):
         stdv=1/np.sqrt(self.n_in)
 
-        self.w = self.add_weight(
+        self.w_pos = self.add_weight(
             shape=(self.n_in,self.n_out),
-            initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=stdv),
-            name="weights",
+            initializer=tf.keras.initializers.RandomNormal(mean=0.5, stddev=stdv),
+            #initializer=tf.random_uniform_initializer(minval=0.0, maxval=1.0, seed=None),
+            name="weights_pos",
             trainable=True,
         )
 
-        self.b = self.add_weight(
+        self.w_neg = self.add_weight(
+            shape=(self.n_in,self.n_out),
+            initializer=tf.keras.initializers.RandomNormal(mean=0.5, stddev=stdv),
+            #initializer=tf.random_uniform_initializer(minval=0.0, maxval=1.0, seed=None),
+            name="weights_neg",
+            trainable=True,
+        )
+
+        self.b_pos = self.add_weight(
             shape=(self.n_out,),
-            initializer=tf.keras.initializers.Constant(value=0.0),
-            name="biasess",
+            initializer=tf.keras.initializers.Constant(value=0.5),
+            name="biasess_pos",
+            trainable=True,
+        )
+
+        self.b_neg = self.add_weight(
+            shape=(self.n_out,),
+            initializer=tf.keras.initializers.Constant(value=0.5),
+            name="biasess_neg",
             trainable=True,
         )
 
@@ -236,13 +261,20 @@ class memristor_dense(Layer):
         x = tf.clip_by_value(x, 0.0, 1.0)
 
         # Non-ideality-aware training
-        bias = tf.expand_dims(self.b, axis=0)
-        combined_weights = tf.concat([self.w, bias], 0)
+        bias_pos = tf.expand_dims(self.b_pos, axis=0)
+        bias_neg = tf.expand_dims(self.b_neg, axis=0)
+        combined_weights_pos = tf.concat([self.w_pos, bias_pos], 0)
+        combined_weights_neg = tf.concat([self.w_neg, bias_neg], 0)
         ones = tf.ones([tf.shape(x)[0], 1])
         inputs = tf.concat([x, ones], 1)
 
         is_aware = True
         if is_aware:
+            # Interleave positive and negative weights
+            combined_weights = tf.reshape(
+            tf.concat([combined_weights_pos[...,tf.newaxis], combined_weights_neg[...,tf.newaxis]], axis=-1),
+            [tf.shape(combined_weights_pos)[0],-1])
+
             self.out = self.apply_output_disturbance(inputs, combined_weights)
         else:
             self.out = K.dot(x, self.w) + self.b
