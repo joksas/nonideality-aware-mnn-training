@@ -1,28 +1,34 @@
 from scipy import interpolate
 import numpy as np
 import copy
-from badmemristor.nonideality import utils
+from badmemristor_tf.nonideality import utils
+import tensorflow as tf
 
 
-def compute_I(V, G, V_ref, G_ref, I_ref, eff=False):
+def compute_I(V, G, V_ref, G_min, G_max, n_min, n_max, eff=False, model="lookup_table"):
     """Computes output currents of a crossbar consisting of devices suffering
     from I/V non-linearities.
 
     Parameters
     ----------
     V : ndarray
-        Voltages of shape (m x p).
+        Voltages of shape (p x m).
     G : ndarray
         Conductances (or effective conductances) of shape (m x n).
     V_ref :
-        Reference voltage values of length r (in increasing order).
+        Reference voltage values of length r (in increasing order) or voltage
+        at which the devices behave Ohmically.
     G_ref : ndarray
         Reference conductance values of length q (in increasing order).
     I_ref :
         Reference current values of shape (q x r) corresponding go G_ref and
         V_ref.
+    n_ref : ndarray
+        Non-linearity values corresponding to G_ref.
     eff : bool, optional
         If True, it means that effective conductances have been passed.
+    model : {"lookup_table", "nonlinear_param"}, optional
+        The model used for computing non-linear behaviour of current.
 
     Returns
     ----------
@@ -30,8 +36,13 @@ def compute_I(V, G, V_ref, G_ref, I_ref, eff=False):
         Output currents of shape (p x n). If eff is True, then *total* output
         currents are returned.
     """
-    I_ind = interpolate_I(G_ref, V_ref, I_ref, G, V, eff)
+    if model == "lookup_table":
+        I_ind = interpolate_I(G_ref, V_ref, I_ref, G, V, eff)
+    elif model == "nonlinear_param":
+        I_ind = interpolate_I_nonlinear_param(G_min, G_max, n_min, n_max, V_ref, G, V)
+
     I = add_I_BL(I_ind)
+
     return I
 
 
@@ -42,15 +53,15 @@ def interpolate_I(G_ref, V_ref, I_ref, G, V, eff):
     ----------
     G_ref : ndarray
         Reference conductance values of length q (in increasing order).
-    V_ref :
+    V_ref : ndarray
         Reference voltage values of length r (in increasing order).
-    I_ref :
+    I_ref : ndarray
         Reference voltage values of shape (q x r) corresponding go G_ref and
         V_ref.
     G : ndarray
         Conductances (or effective conductances) of shape (m x n).
     V : ndarray
-        Voltages of shape (m x p).
+        Voltages of shape (p x m).
     eff : bool
         If True, it means that effective conductances have been passed.
 
@@ -102,6 +113,39 @@ def interpolate_I(G_ref, V_ref, I_ref, G, V, eff):
     return I
 
 
+def interpolate_I_nonlinear_param(G_min, G_max, n_min, n_max, V_ref, G, V):
+    """Interpolates current values.
+
+    Parameters
+    ----------
+    G_ref : ndarray
+        Reference conductance values of length q (in increasing order).
+    n_ref : ndarray
+        Non-linearity values corresponding to G_ref.
+    V_ref : float
+        Voltage at which the devices behave Ohmically.
+    G : ndarray
+        Conductances (or effective conductances) of shape (m x n).
+    V : ndarray
+        Voltages of shape (p x m).
+
+    Returns
+    ----------
+    I : ndarray
+        Interpolated currents of shape (p x m x n) produced by each of the
+        conductances in the crossbar array.
+    """
+    n = n_min + (G - G_min) * (n_max - n_min) / (G_max - G_min)
+
+    epsilon = 1e-4
+
+    exponent = tf.math.log((tf.math.abs(V)+epsilon)/V_ref)/tf.math.log(2.0)
+
+    I = tf.sign(tf.expand_dims(V, axis=-1)) * V_ref * tf.expand_dims(G, axis=0) * tf.expand_dims(n, axis=0) ** (tf.expand_dims(exponent, axis=-1))
+
+    return I
+
+
 def add_I_BL(I_ind):
     """Adds currents along the bit lines.
 
@@ -116,6 +160,6 @@ def add_I_BL(I_ind):
     I : ndarray
         Output currents of shape (p x n).
     """
-    I = np.sum(I_ind, axis=1)
+    I = tf.math.reduce_sum(I_ind, axis=1)
     return I
 

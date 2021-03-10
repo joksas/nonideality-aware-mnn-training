@@ -1,6 +1,6 @@
 import copy
 import numpy as np
-from badmemristor.nonideality import utils
+from badmemristor_tf.nonideality import utils
 
 
 def lognormal(G, lognormal_G, lognormal_mean, lognormal_sigma, lognormal_rate,

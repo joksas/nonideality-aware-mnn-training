@@ -1,9 +1,11 @@
 import numpy as np
+import copy
+import tensorflow as tf
 
-from badmemristor import levels
+from badmemristor_tf import levels
 
 
-def w_to_G(weights, max_weight, G_min, G_max, distr="equal_G", num_states=np.inf, list_=None):
+def w_to_G(weights, max_weight, G_min, G_max, distr="equal_G", num_states=np.inf, list_=None, scheme="proportional"):
     """Maps weights onto conductances.
 
     Parameters
@@ -25,6 +27,8 @@ def w_to_G(weights, max_weight, G_min, G_max, distr="equal_G", num_states=np.inf
         Number of states (including G_min and G_max).
     list_ : list of float, optional
         Relative magnitudes of conductance levels if `distr == 'custom'`.
+    scheme : {"proportional", "differential"}, optional
+        Mapping scheme.
 
     Returns
     ----------
@@ -32,13 +36,13 @@ def w_to_G(weights, max_weight, G_min, G_max, distr="equal_G", num_states=np.inf
         Conductances in shape `m x 2n`.
     """
     G_eff = w_to_G_eff(weights, max_weight, G_min, G_max, distr=distr,
-            num_states=num_states, list_=list_)
-    G = G_eff_to_G(G_eff)
+            num_states=num_states, list_=list_, scheme=scheme)
+    G = G_eff_to_G(G_eff, G_min=G_min, scheme=scheme)
 
     return G
 
 
-def w_to_G_eff(weights, max_weight, G_min, G_max, distr="equal_G", num_states=np.inf, list_=None):
+def w_to_G_eff(weights, max_weight, G_min, G_max, distr="equal_G", num_states=np.inf, list_=None, scheme="proportional"):
     """Maps weights onto effective conductances.
 
     Parameters
@@ -60,6 +64,8 @@ def w_to_G_eff(weights, max_weight, G_min, G_max, distr="equal_G", num_states=np
         Number of states (including G_min and G_max).
     list_ : list of float, optional
         Relative magnitudes of conductance levels if `distr == 'custom'`.
+    scheme : {"proportional", "differential"}, optional
+        Mapping scheme.
 
     Returns
     ----------
@@ -67,15 +73,20 @@ def w_to_G_eff(weights, max_weight, G_min, G_max, distr="equal_G", num_states=np
         Effective conductances of shape `m x n`.
     """
     HRS_LRS = G_max/G_min
-    weights = discretize_weights(
-            weights, max_weight, distr, HRS_LRS, num_states, list_)
-    k_G = compute_k_G(max_weight, G_max)
+    if scheme == "proportional":
+        weights = discretize_weights(
+                weights, max_weight, distr, HRS_LRS, num_states, list_)
+    elif scheme == "differential":
+        # TODO: Implement discretization for general differential pair scheme. Maybe consider all possible pairs of conductances and make a tradeoff between closeness to desired state and low conductance?
+        weights = clip_max_weights(weights, max_weight)
+
+    k_G = compute_k_G(max_weight, G_max, G_min=G_min, scheme=scheme)
     G_eff = k_G*weights
 
     return G_eff
 
 
-def G_to_w(G, max_weight, G_max):
+def G_to_w(G, max_weight, G_max, G_min=None, scheme="proportional"):
     """Maps conductances onto weights.
 
     Parameters
@@ -86,6 +97,11 @@ def G_to_w(G, max_weight, G_max):
         Assumed maximum weight.
     G_max : float
         Maximum conductance.
+    G_min : float, optional
+        Minimum conductance of electroformed memristors. Necessary to provide
+        if `scheme == "proportional"`.
+    scheme : {"proportional", "differential"}, optional
+        Mapping scheme.
 
     Returns
     ----------
@@ -93,12 +109,12 @@ def G_to_w(G, max_weight, G_max):
         Synaptic weights of a single synaptic layer of size `m x n`.
     """
     G_eff = G_to_G_eff(G)
-    weights = G_eff_to_w(G_eff, max_weight, G_max)
+    weights = G_eff_to_w(G_eff, max_weight, G_max, scheme=scheme)
 
     return weights
 
 
-def G_eff_to_w(G_eff, max_weight, G_max):
+def G_eff_to_w(G_eff, max_weight, G_max, G_min=None, scheme="proportional"):
     """Maps effective conductances onto weights.
 
     Parameters
@@ -109,19 +125,23 @@ def G_eff_to_w(G_eff, max_weight, G_max):
         Assumed maximum weight.
     G_max : float
         Maximum conductance.
+    G_min : float, optional
+        Minimum conductance of electroformed memristors. Necessary to provide
+        if `scheme == "proportional"`.
+    scheme : {"proportional", "differential"}, optional
+        Mapping scheme.
 
     Returns
     ----------
     ndarray
         Synaptic weights of a single synaptic layer of size `m x n`.
     """
-    k_G = compute_k_G(max_weight, G_max)
+    k_G = compute_k_G(max_weight, G_max, G_min=G_min, scheme=scheme)
     weights = G_eff/k_G
 
     return weights
 
-
-def I_to_y(I, k_V, max_weight, G_max):
+def I_to_y(I, k_V, max_weight, G_max, G_min, scheme="proportional"):
     """Converts output currents of a dot-product engine onto synaptic layer inputs.
 
     Parameters
@@ -134,6 +154,11 @@ def I_to_y(I, k_V, max_weight, G_max):
         Assumed maximum weight.
     G_max : float
         Maximum conductance of electroformed memristors.
+    G_min : float, optional
+        Minimum conductance of electroformed memristors. Necessary to provide
+        if `scheme == "proportional"`.
+    scheme : {"proportional", "differential"}, optional
+        Mapping scheme.
 
     Returns
     ----------
@@ -142,11 +167,11 @@ def I_to_y(I, k_V, max_weight, G_max):
         memristive crossbars.
     """
     I_total = I[:, 0::2] - I[:, 1::2]
-    y = I_total_to_y(I_total, k_V, max_weight, G_max)
+    y = I_total_to_y(I_total, k_V, max_weight, G_max, G_min, scheme=scheme)
     return y
 
 
-def I_total_to_y(I_total, k_V, max_weight, G_max):
+def I_total_to_y(I_total, k_V, max_weight, G_max, G_min, scheme="proportional"):
     """Converts total output currents of a dot-product engine onto synaptic layer
     inputs.
 
@@ -160,6 +185,11 @@ def I_total_to_y(I_total, k_V, max_weight, G_max):
         Assumed maximum weight.
     G_max : float
         Maximum conductance of electroformed memristors.
+    G_min : float, optional
+        Minimum conductance of electroformed memristors. Necessary to provide
+        if `scheme == "proportional"`.
+    scheme : {"proportional", "differential"}, optional
+        Mapping scheme.
 
     Returns
     ----------
@@ -167,19 +197,24 @@ def I_total_to_y(I_total, k_V, max_weight, G_max):
         Outputs of shape (p x n) of a synaptic layer implemented using
         memristive crossbars.
     """
-    k_G = compute_k_G(max_weight, G_max)
+    k_G = compute_k_G(max_weight, G_max, G_min, scheme=scheme)
     k_I = compute_k_I(k_V, k_G)
     y = I_total/k_I
     return y
 
 
-def G_eff_to_G(G_eff):
+def G_eff_to_G(G_eff, G_min=None, scheme="proportional"):
     """Maps effective weights onto conductances.
 
     Parameters
     ----------
     G_eff : ndarray
         Effective conductances of shape `m x n`.
+    G_min : float, optional
+        Minimum conductance of electroformed memristors. Necessary to provide
+        if `scheme == "proportional"`.
+    scheme : {"proportional", "differential"}, optional
+        Mapping scheme.
 
     Returns
     ----------
@@ -187,15 +222,23 @@ def G_eff_to_G(G_eff):
         Conductances in shape `m x 2n`.
     """
     # Positive and negative weights are implemented by two different sets of
-    # conductances. Zero weights are implemented by leaving memristors
-    # unelectroformed.
-    G = np.zeros((G_eff.shape[0], 2*G_eff.shape[1]))
-    G_pos = np.where(G_eff > 0, G_eff, 0)
-    G_neg = np.where(G_eff < 0, -G_eff, 0)
+    # conductances.
+
+    if scheme == "proportional":
+        # Zero weights are implemented by leaving memristors unelectroformed.
+        G_pos = tf.where(G_eff > 0, G_eff, 0.0)
+        G_neg = tf.where(G_eff < 0, -G_eff, 0.0)
+    elif scheme == "differential":
+        G_eff_abs = tf.math.abs(G_eff)
+        # We implement the pairs by choosing the lowest possible conductances.
+        G_pos = tf.math.maximum(G_eff, 0.0) + G_min
+        G_neg = -tf.math.minimum(G_eff, 0.0) + G_min
+
     # Odd columns dedicated to positive weights.
-    G[:, 0::2] = G_pos
     # Even columns dedicated to negative weights.
-    G[:, 1::2] = G_neg
+    G = tf.reshape(
+        tf.concat([G_pos[...,tf.newaxis], G_neg[...,tf.newaxis]], axis=-1), 
+        [tf.shape(G_pos)[0],-1])
 
     return G
 
@@ -259,16 +302,10 @@ def discretize_weights(weights, max_weight, distr, HRS_LRS, num_states, list_):
         # the nearest available level. If weight > max_weight, it is rounded to
         # max_weight, if it min_weight/2 < weight < min_weight, it is rounded
         # to min_weight, and if 0 < weight <= min_weight/2, it is rounded to 0.
-        # Similarly for negative weights. The long expression below is needed
-        # so that numpy would handle all the cases internally at once and thus
-        # be more efficient.
-        new_weights = weights
+        # Similarly for negative weights.
+        new_weights = clip_max_weights(weights, max_weight)
         min_weight = max_weight/HRS_LRS
         mid_min_weight = min_weight/2
-        new_weights = np.where(
-                new_weights > max_weight, max_weight, new_weights)
-        new_weights = np.where(
-                new_weights < -max_weight, -max_weight, new_weights)
         new_weights = np.where(np.logical_and(
             new_weights < mid_min_weight,
             new_weights > -mid_min_weight),
@@ -285,7 +322,27 @@ def discretize_weights(weights, max_weight, distr, HRS_LRS, num_states, list_):
     return new_weights
 
 
-def compute_k_G(max_weight, G_max):
+def clip_max_weights(weights, max_weight):
+    """Clips weights below -max_weight and above max_weight.
+
+    Parameters
+    ----------
+    weights : ndarray
+        Synaptic weights.
+    max_weight : float
+        Assumed maximum weight.
+
+    Returns
+    ----------
+    new_weights : ndarray
+        Clipped weights.
+    """
+    weights = tf.clip_by_value(weights, -max_weight, max_weight)
+
+    return weights
+
+
+def compute_k_G(max_weight, G_max, G_min, scheme="proportional"):
     """Computes conductance scaling factor.
 
     Parameters
@@ -294,13 +351,23 @@ def compute_k_G(max_weight, G_max):
         Assumed maximum weight.
     G_max : float
         Maximum conductance of electroformed memristors.
+    G_min : float, optional
+        Minimum conductance of electroformed memristors. Necessary to provide
+        if `scheme == "proportional"`.
+    scheme : {"proportional", "differential"}, optional
+        Mapping scheme.
 
     Returns
     ----------
     float
         Conductance scaling factor.
     """
-    return G_max/max_weight
+    if scheme == "proportional":
+        k_G = G_max/max_weight
+    elif scheme == "differential":
+        k_G = (G_max-G_min)/max_weight
+
+    return k_G
 
 
 def compute_k_I(k_V, k_G):

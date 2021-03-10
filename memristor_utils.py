@@ -20,8 +20,8 @@ from tensorflow.keras.layers import BatchNormalization
 from tensorflow.python.framework import ops
 
 # Import memristor non-idealities
-import badmemristor
-import badmemristor.nonideality
+import badmemristor_tf
+import badmemristor_tf.nonideality
 
 # A decorator for customising gradients
 def tf_custom_gradient_method(f):
@@ -53,17 +53,17 @@ def disturbance_lognormal(weights, eff=True):
     lognormal_rate = [0.5, 0.6, 0.5]
 
     if eff:
-        G_eff = badmemristor.map.w_to_G_eff(weights, max_weight, G_min, G_max)
-        G_eff_disturbed = badmemristor.nonideality.model.lognormal(G_eff,
+        G_eff = badmemristor_tf.map.w_to_G_eff(weights, max_weight, G_min, G_max)
+        G_eff_disturbed = badmemristor_tf.nonideality.model.lognormal(G_eff,
                 lognormal_G, lognormal_mean, lognormal_sigma, lognormal_rate,
                 eff=True)
-        disturbed_weights = badmemristor.map.G_eff_to_w(G_eff_disturbed,
+        disturbed_weights = badmemristor_tf.map.G_eff_to_w(G_eff_disturbed,
                 max_weight, G_max)
     else:
-        G = badmemristor.map.w_to_G(weights, max_weight, G_min, G_max)
-        G_disturbed = badmemristor.nonideality.model.lognormal(G, lognormal_G,
+        G = badmemristor_tf.map.w_to_G(weights, max_weight, G_min, G_max)
+        G_disturbed = badmemristor_tf.nonideality.model.lognormal(G, lognormal_G,
                 lognormal_mean, lognormal_sigma, lognormal_rate)
-        disturbed_weights = badmemristor.map.G_to_w(G_disturbed, max_weight, G_max)
+        disturbed_weights = badmemristor_tf.map.G_to_w(G_disturbed, max_weight, G_max)
 
     return disturbed_weights
 
@@ -76,16 +76,16 @@ def disturbance_faulty(weights, type_='unelectroformed', eff=True):
     proportion = 0.05
 
     if eff:
-        G_eff = badmemristor.map.w_to_G_eff(weights, max_weight, G_min, G_max)
-        G_eff_disturbed = badmemristor.nonideality.D2D.faulty(G_eff,
+        G_eff = badmemristor_tf.map.w_to_G_eff(weights, max_weight, G_min, G_max)
+        G_eff_disturbed = badmemristor_tf.nonideality.D2D.faulty(G_eff,
                 proportion, G_min=G_min, G_max=G_max, type_=type_, eff=eff)
-        disturbed_weights = badmemristor.map.G_eff_to_w(G_eff_disturbed,
+        disturbed_weights = badmemristor_tf.map.G_eff_to_w(G_eff_disturbed,
                 max_weight, G_max)
     else:
-        G = badmemristor.map.w_to_G(weights, max_weight, G_min, G_max)
-        G_disturbed = badmemristor.nonideality.D2D.faulty(G, proportion,
+        G = badmemristor_tf.map.w_to_G(weights, max_weight, G_min, G_max)
+        G_disturbed = badmemristor_tf.nonideality.D2D.faulty(G, proportion,
                 G_min=G_min, G_max=G_max, type_=type_, eff=eff)
-        disturbed_weights = badmemristor.map.G_to_w(G_disturbed, max_weight, G_max)
+        disturbed_weights = badmemristor_tf.map.G_to_w(G_disturbed, max_weight, G_max)
 
     return disturbed_weights
 
@@ -97,14 +97,16 @@ def disturbed_outputs_i_v_non_linear(x, weights, eff=True):
     # These refer to conductances in the linear operating region (usually, at low
     # voltages). If there will be unelectroformed devices, a value for 0 siemens
     # should also be included.
-    G_ref = np.array([0, 1e-4, 3e-4, 5e-4])
+    G_ref = tf.constant([1/191000, 1/139000])
+    n_ref = tf.constant([6.5, 7.4])
     # Voltage values (in volts) at which the currents were measured.
-    V_ref = np.array([-1.2, -0.9, -0.6, -0.3, 0, 0.3, 0.6, 0.9, 1.2])
+    V_ref = tf.constant(0.0265)
+    
     # Currents (in amps). Row corresponds to reference conductance states and
     # columns to reference voltages. For example, a device with reference
     # conductance of 3e-4 S would produce 50e-5 A of current if a voltage of 1.2 V
     # was applied across it.
-    I_ref = np.array([
+    I_ref = tf.constant([
         [0, 0, 0, 0, 0, 0, 0, 0, 0],
         [-15e-5, -11e-5, -7e-5, -3e-5, 0, 3e-5, 7e-5, 11e-5, 15e-5],
         [-50e-5, -35e-5, -22e-5, -9e-5, 0, 9e-5, 22e-5, 35e-5, 50e-5],
@@ -113,31 +115,41 @@ def disturbed_outputs_i_v_non_linear(x, weights, eff=True):
 
     # I picked this myself, but you may want to create a function that decides
     # how large `max_weight` should be, given an array of weights.
-    max_weight = np.max(np.abs(weights))
+    max_weight = tf.math.reduce_max(tf.math.abs(weights))
     # These are arbitrary, but you may be given some values to work with or may need
     # to research what these values could be.
-    G_min = 1e-4
-    G_max = 5e-4
-    k_V = 1.05
+    G_min = tf.constant(1/191000)
+    G_max = tf.constant(1/139000)
+    n_min = tf.constant(6.5)
+    n_max = tf.constant(7.4)
+    k_V = 2*V_ref
+
+    eff = False
 
     # Mapping weights onto conductances.
     if eff:
-        G = badmemristor.map.w_to_G_eff(weights, max_weight, G_min, G_max)
+        G = badmemristor_tf.map.w_to_G_eff(weights, max_weight, G_min, G_max, scheme="differential")
     else:
-        G = badmemristor.map.w_to_G(weights, max_weight, G_min, G_max)
+        G = badmemristor_tf.map.w_to_G(weights, max_weight, G_min, G_max, scheme="differential")
+        #G_pos = G[0], G_neg = G[1]
 
     # Mapping inputs onto voltages.
-    V = badmemristor.map.x_to_V(x, k_V)
+    V = badmemristor_tf.map.x_to_V(x, k_V)
 
     # Computing currents
-    I = badmemristor.nonideality.i_v_non_linear.compute_I(
-            V, G, V_ref, G_ref, I_ref, eff=eff)
+    I = badmemristor_tf.nonideality.i_v_non_linear.compute_I(
+            V, G, V_ref, G_min, G_max, n_min, n_max, eff=eff, model="nonlinear_param")
 
     # Converting to outputs.
-    if eff:
-        y_disturbed = badmemristor.map.I_total_to_y(I, k_V, max_weight, G_max)
-    else:
-        y_disturbed = badmemristor.map.I_to_y(I, k_V, max_weight, G_max)
+    #if eff:
+    #    y_disturbed = badmemristor_tf.map.I_total_to_y(I, k_V, max_weight, G_max, scheme="differential")
+    #else:
+    #    y_disturbed = badmemristor_tf.map.I_to_y(I, k_V, max_weight, G_max, scheme="differential")
+    y_disturbed = badmemristor_tf.map.I_to_y(I, k_V, max_weight, G_max, G_min, scheme="differential")
+
+    tf.debugging.assert_all_finite(
+        x, "nan in outputs", name=None
+    )
 
     return y_disturbed
 
@@ -193,45 +205,39 @@ class memristor_dense(Layer):
 
 
     def call(self, x,mask=None):
+
+        # Clip inputs within 0 and 1
+        x = tf.clip_by_value(x, 0.0, 1.0)
+
         # Non-ideality-aware training
         bias = tf.expand_dims(self.b, axis=0)
         combined_weights = tf.concat([self.w, bias], 0)
         ones = tf.ones([tf.shape(x)[0], 1])
         inputs = tf.concat([x, ones], 1)
-        # self.out = K.dot(inputs, self.apply_weight_disturbance(combined_weights))
-        self.out = self.apply_output_disturbance(inputs, combined_weights)
 
+        self.out = self.apply_output_disturbance(inputs, combined_weights)
         #self.out = K.dot(x, self.w) + self.b # Vanilla CNN
         return self.out
 
-    @tf_custom_gradient_method
-    def apply_weight_disturbance(self, undisturbed_w):
-        # Forward propagation
-
-        disturbed_w = tf.py_function(func=disturbance, inp=[undisturbed_w], Tout=tf.float32)
-        disturbed_w.set_shape((self.n_in+1, self.n_out)) # Outputs to py_function do not have shape defined
-
-        def custom_grad(disturbed_w_grad):
-            # Backward propagation
-            undisturbed_w_grad = disturbed_w_grad # Does nothing
-            return undisturbed_w_grad
-        return disturbed_w, custom_grad
-
-    @tf_custom_gradient_method
     def apply_output_disturbance(self, inputs, weights):
-        # Forward propagation
-        disturbed_outputs = tf.py_function(func=disturbed_outputs_i_v_non_linear, inp=[inputs, weights], Tout=tf.float32)
-        disturbed_outputs.set_shape((inputs.shape.as_list()[0], weights.shape.as_list()[1])) # Outputs to py_function do not have shape defined
+        disturbed_outputs = disturbed_outputs_i_v_non_linear(inputs, weights)
+        return disturbed_outputs
 
-        def custom_grad(disturbed_outputs_grad):
-            # Backward propagation
-            # TODO (Erwei)
-            inputs_grad = tf.matmul(disturbed_outputs_grad, tf.transpose(weights))
-            weights_grad = tf.matmul(tf.transpose(inputs), disturbed_outputs_grad)
+    #@tf_custom_gradient_method
+    #def apply_output_disturbance(self, inputs, weights):
+    #    # Forward propagation
+    #    disturbed_outputs = disturbed_outputs_i_v_non_linear(inputs, weights)
+    #    disturbed_outputs.set_shape((inputs.shape.as_list()[0], weights.shape.as_list()[1])) # Outputs to py_function do not have shape defined
 
-            return (inputs_grad, weights_grad)
+    #    def custom_grad(disturbed_outputs_grad):
+    #        # Backward propagation
+    #        # TODO (Erwei)
+    #        inputs_grad = tf.matmul(disturbed_outputs_grad, tf.transpose(weights))
+    #        weights_grad = tf.matmul(tf.transpose(inputs), disturbed_outputs_grad)
 
-        return disturbed_outputs, custom_grad
+    #        return (inputs_grad, weights_grad)
+
+    #    return disturbed_outputs, custom_grad
 
     def get_output_shape_for(self,input_shape):
         return (input_shape[0], self.n_out)

@@ -16,7 +16,8 @@ def get_model(dataset,batch_size):
 		model.add(memristor_dense(n_in=784,n_out=25,input_shape=[784]))
 		#model.add(BatchNormalization(axis=-1, momentum=batch_norm_momentum, epsilon=batch_norm_eps))
         # We will try to introduce non-linearities using dense layers.
-		# model.add(Activation('sigmoid'))
+		model.add(Activation('sigmoid'))
+		#model.add(tf.keras.layers.Dense(10))
 		model.add(memristor_dense(n_in=int(model.output.get_shape()[1]),n_out=10))
 		#model.add(BatchNormalization(axis=-1, momentum=batch_norm_momentum, epsilon=batch_norm_eps))
 		model.add(Activation('softmax'))
