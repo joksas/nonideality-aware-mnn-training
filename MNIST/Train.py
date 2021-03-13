@@ -66,8 +66,8 @@ Y_train = to_categorical(y_train, 10)
 Y_test = to_categorical(y_test, 10)
 X_train /= 255
 X_test /= 255
-X_train=2*X_train-1
-X_test=2*X_test-1
+#X_train=2*X_train-1
+#X_test=2*X_test-1
 
 
 print('X_train shape:', X_train.shape)

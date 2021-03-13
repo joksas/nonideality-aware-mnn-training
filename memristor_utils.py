@@ -223,6 +223,7 @@ class memristor_dense(Layer):
     # Create trainable weights and biases
     def build(self, input_shape):
         stdv=1/np.sqrt(self.n_in)
+        reg_gamma = 1e-2
 
         self.w_pos = self.add_weight(
             shape=(self.n_in,self.n_out),
@@ -230,6 +231,7 @@ class memristor_dense(Layer):
             #initializer=tf.random_uniform_initializer(minval=0.0, maxval=1.0, seed=None),
             name="weights_pos",
             trainable=True,
+            regularizer=tf.keras.regularizers.l2(reg_gamma),
         )
 
         self.w_neg = self.add_weight(
@@ -238,6 +240,7 @@ class memristor_dense(Layer):
             #initializer=tf.random_uniform_initializer(minval=0.0, maxval=1.0, seed=None),
             name="weights_neg",
             trainable=True,
+            regularizer=tf.keras.regularizers.l2(reg_gamma),
         )
 
         self.b_pos = self.add_weight(
@@ -245,6 +248,7 @@ class memristor_dense(Layer):
             initializer=tf.keras.initializers.Constant(value=0.5),
             name="biasess_pos",
             trainable=True,
+            regularizer=tf.keras.regularizers.l2(reg_gamma),
         )
 
         self.b_neg = self.add_weight(
@@ -252,6 +256,7 @@ class memristor_dense(Layer):
             initializer=tf.keras.initializers.Constant(value=0.5),
             name="biasess_neg",
             trainable=True,
+            regularizer=tf.keras.regularizers.l2(reg_gamma),
         )
 
 

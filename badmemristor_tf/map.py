@@ -337,7 +337,8 @@ def clip_max_weights(weights, max_weight):
     new_weights : ndarray
         Clipped weights.
     """
-    weights = tf.clip_by_value(weights, -max_weight, max_weight)
+    #weights = tf.clip_by_value(weights, -max_weight, max_weight)
+    weights = tf.clip_by_value(weights, 0.0, max_weight)
 
     return weights
 
