@@ -34,6 +34,28 @@ def tf_custom_gradient_method(f):
         return self._tf_custom_gradient_wrappers[f](*args, **kwargs)
     return wrapped
 
+def discretise_with_percentage(x, x_min, x_max, percentage):
+    '''Element-wise rounding to target percentage intervals with full gradient propagation.
+    A trick from [Sergey Ioffe](http://stackoverflow.com/a/36480182)
+    '''
+    clipped = tf.clip_by_value(x,x_min,x_max)
+    k = 1.0 / ( (x_max - x_min) * percentage )
+    rounded = tf.round((x - x_min) * k) / k + x_min
+    return clipped + tf.stop_gradient(rounded - clipped)
+
+#def column_l2_regulariser(x, gamma):
+#    return gamma * tf.reduce_sum(tf.sqrt(tf.reduce_sum(tf.square(x), axis=1)))
+
+class column_l2_regulariser(tf.keras.regularizers.Regularizer):
+
+    def __init__(self, strength):
+        self.strength = strength
+
+    def __call__(self, x):
+        return self.strength * tf.reduce_sum(tf.sqrt(tf.reduce_sum(tf.square(x), axis=-1)))
+
+    def get_config(self):
+        return {'strength': self.strength}
 
 def disturbance_lognormal(weights, eff=True):
     # I picked this myself, but you may want to create a function that decides
@@ -93,6 +115,10 @@ def disturbance_faulty(weights, type_='unelectroformed', eff=True):
 def disturbed_outputs_i_v_non_linear(x, weights):
     max_weight = tf.math.reduce_max(tf.math.abs(weights))
     V_ref = tf.constant(0.25)
+    # Quantise weights
+    #weights_q = discretise_with_percentage(weights, 0.0, max_weight, 0.01)
+    # No weight quantisation
+    weights_q = weights
 
     is_low_resistance = True
 
@@ -112,13 +138,12 @@ def disturbed_outputs_i_v_non_linear(x, weights):
     eff = True
     # Mapping weights onto conductances.
     if eff:
-        tf.print("W =", weights)
-        G = badmemristor_tf.map.w_to_G_eff(weights, max_weight, G_min, G_max, scheme="differential")
+        G = badmemristor_tf.map.w_to_G_eff(weights_q, max_weight, G_min, G_max, scheme="differential")
         # Apply G_min
         G = tf.math.abs(G) + G_min
-        tf.print("G =", G)
-        A = badmemristor_tf.map.w_to_G(weights, max_weight, G_min, G_max, scheme="differential")
-        tf.print("A =", A)
+    else:
+        G = badmemristor_tf.map.w_to_G(weights_q, max_weight, G_min, G_max, scheme="differential")
+        #G_pos = G[0], G_neg = G[1]
 
     k_V = 2*V_ref
 
@@ -133,7 +158,7 @@ def disturbed_outputs_i_v_non_linear(x, weights):
     y_disturbed = badmemristor_tf.map.I_to_y(I, k_V, max_weight, G_max, G_min, scheme="differential")
 
     tf.debugging.assert_all_finite(
-        x, "nan in outputs", name=None
+        y_disturbed, "nan in outputs", name=None
     )
 
     return y_disturbed
@@ -223,7 +248,7 @@ class memristor_dense(Layer):
     # Create trainable weights and biases
     def build(self, input_shape):
         stdv=1/np.sqrt(self.n_in)
-        reg_gamma = 1e-2
+        reg_gamma = 1e-1
 
         self.w_pos = self.add_weight(
             shape=(self.n_in,self.n_out),
@@ -231,7 +256,8 @@ class memristor_dense(Layer):
             #initializer=tf.random_uniform_initializer(minval=0.0, maxval=1.0, seed=None),
             name="weights_pos",
             trainable=True,
-            regularizer=tf.keras.regularizers.l2(reg_gamma),
+            #regularizer=tf.keras.regularizers.l2(reg_gamma),
+            regularizer=column_l2_regulariser(reg_gamma),
         )
 
         self.w_neg = self.add_weight(
@@ -240,7 +266,8 @@ class memristor_dense(Layer):
             #initializer=tf.random_uniform_initializer(minval=0.0, maxval=1.0, seed=None),
             name="weights_neg",
             trainable=True,
-            regularizer=tf.keras.regularizers.l2(reg_gamma),
+            #regularizer=tf.keras.regularizers.l2(reg_gamma),
+            regularizer=column_l2_regulariser(reg_gamma),
         )
 
         self.b_pos = self.add_weight(
@@ -263,7 +290,7 @@ class memristor_dense(Layer):
     def call(self, x,mask=None):
 
         # Clip inputs within 0 and 1
-        x = tf.clip_by_value(x, 0.0, 1.0)
+        #x = tf.clip_by_value(x, 0.0, 1.0)
 
         # Non-ideality-aware training
         bias_pos = tf.expand_dims(self.b_pos, axis=0)
@@ -287,6 +314,7 @@ class memristor_dense(Layer):
         return self.out
 
     def apply_output_disturbance(self, inputs, weights):
+
         disturbed_outputs = disturbed_outputs_i_v_non_linear(inputs, weights)
         return disturbed_outputs
 
