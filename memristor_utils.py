@@ -116,7 +116,7 @@ def disturbed_outputs_i_v_non_linear(x, weights):
     max_weight = tf.math.reduce_max(tf.math.abs(weights))
     V_ref = tf.constant(0.25)
     # Quantise weights
-    #weights_q = discretise_with_percentage(weights, 0.0, max_weight, 0.01)
+    # weights_q = discretise_with_percentage(weights, 0.0, max_weight, 0.01)
     # No weight quantisation
     weights_q = weights
 
@@ -248,7 +248,7 @@ class memristor_dense(Layer):
     # Create trainable weights and biases
     def build(self, input_shape):
         stdv=1/np.sqrt(self.n_in)
-        reg_gamma = 1e-1
+        reg_gamma = 1e-2
 
         self.w_pos = self.add_weight(
             shape=(self.n_in,self.n_out),
@@ -256,8 +256,8 @@ class memristor_dense(Layer):
             #initializer=tf.random_uniform_initializer(minval=0.0, maxval=1.0, seed=None),
             name="weights_pos",
             trainable=True,
-            #regularizer=tf.keras.regularizers.l2(reg_gamma),
-            regularizer=column_l2_regulariser(reg_gamma),
+            regularizer=tf.keras.regularizers.l2(reg_gamma),
+            #regularizer=column_l2_regulariser(reg_gamma),
         )
 
         self.w_neg = self.add_weight(
@@ -266,8 +266,8 @@ class memristor_dense(Layer):
             #initializer=tf.random_uniform_initializer(minval=0.0, maxval=1.0, seed=None),
             name="weights_neg",
             trainable=True,
-            #regularizer=tf.keras.regularizers.l2(reg_gamma),
-            regularizer=column_l2_regulariser(reg_gamma),
+            regularizer=tf.keras.regularizers.l2(reg_gamma),
+            #regularizer=column_l2_regulariser(reg_gamma),
         )
 
         self.b_pos = self.add_weight(
