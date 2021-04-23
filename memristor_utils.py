@@ -95,8 +95,7 @@ def disturbed_outputs_i_v_non_linear(x, weights):
     V_ref = 0.0265
     G_min = tf.constant(1/191000)
     G_max = tf.constant(1/139000)
-    n_min = tf.constant(6.5)
-    n_max = tf.constant(7.4)
+    n_param = tf.constant(7.4)
     k_V = 2*V_ref
 
     G = badmemristor_tf.map.w_to_G(weights, max_weight, G_min, G_max, scheme="differential")
@@ -106,7 +105,7 @@ def disturbed_outputs_i_v_non_linear(x, weights):
 
     # Computing currents
     I = badmemristor_tf.nonideality.i_v_non_linear.compute_I(
-            V, G, V_ref, G_min, G_max, n_min, n_max, False, model="nonlinear_param")
+            V, G, V_ref, G_min, G_max, n_param=n_param, eff=False, model="nonlinear_param")
 
     # Converting to outputs.
     y_disturbed = badmemristor_tf.map.I_to_y(I, k_V, max_weight, G_max, G_min, scheme="differential")
