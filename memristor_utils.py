@@ -93,9 +93,17 @@ def disturbance_faulty(weights, type_='unelectroformed', eff=True):
 def disturbed_outputs_i_v_non_linear(x, weights):
     max_weight = tf.math.reduce_max(tf.math.abs(weights))
     V_ref = tf.constant(0.0265)
-    G_min = tf.constant(1/191000)
-    G_max = tf.constant(1/139000)
-    n_param = tf.constant(7.4)
+
+    # Low resistance SiO_x.
+    G_min = tf.constant(1/2610)
+    G_max = tf.constant(1/281)
+    n_param = tf.constant(2.18)
+
+    # # High resistance SiO_x.
+    # G_min = tf.constant(1/1430000)
+    # G_max = tf.constant(1/368000)
+    # n_param = tf.constant(2.88)
+
     k_V = 2*V_ref
 
     G = badmemristor_tf.map.w_to_G(weights, max_weight, G_min, G_max, scheme="differential")
