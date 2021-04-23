@@ -92,7 +92,7 @@ def disturbance_faulty(weights, type_='unelectroformed', eff=True):
 
 def disturbed_outputs_i_v_non_linear(x, weights):
     max_weight = tf.math.reduce_max(tf.math.abs(weights))
-    V_ref = 0.0265
+    V_ref = tf.constant(0.0265)
     G_min = tf.constant(1/191000)
     G_max = tf.constant(1/139000)
     n_param = tf.constant(7.4)
