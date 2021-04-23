@@ -90,61 +90,25 @@ def disturbance_faulty(weights, type_='unelectroformed', eff=True):
     return disturbed_weights
 
 
-def disturbed_outputs_i_v_non_linear(x, weights, eff=True):
-    # TODO: test if works correctly.
-
-    # Reference values for conductances (in siemens) of devices in certain states.
-    # These refer to conductances in the linear operating region (usually, at low
-    # voltages). If there will be unelectroformed devices, a value for 0 siemens
-    # should also be included.
-    G_ref = tf.constant([1/191000, 1/139000])
-    n_ref = tf.constant([6.5, 7.4])
-    # Voltage values (in volts) at which the currents were measured.
-    V_ref = tf.constant(0.0265)
-    
-    # Currents (in amps). Row corresponds to reference conductance states and
-    # columns to reference voltages. For example, a device with reference
-    # conductance of 3e-4 S would produce 50e-5 A of current if a voltage of 1.2 V
-    # was applied across it.
-    I_ref = tf.constant([
-        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [-15e-5, -11e-5, -7e-5, -3e-5, 0, 3e-5, 7e-5, 11e-5, 15e-5],
-        [-50e-5, -35e-5, -22e-5, -9e-5, 0, 9e-5, 22e-5, 35e-5, 50e-5],
-        [-90e-5, -60e-5, -37e-5, -15e-5, 0, 15e-5, 37e-5, 60e-5, 90e-5]
-        ])
-
-    # I picked this myself, but you may want to create a function that decides
-    # how large `max_weight` should be, given an array of weights.
+def disturbed_outputs_i_v_non_linear(x, weights):
     max_weight = tf.math.reduce_max(tf.math.abs(weights))
-    # These are arbitrary, but you may be given some values to work with or may need
-    # to research what these values could be.
+    V_ref = 0.0265
     G_min = tf.constant(1/191000)
     G_max = tf.constant(1/139000)
     n_min = tf.constant(6.5)
     n_max = tf.constant(7.4)
     k_V = 2*V_ref
 
-    eff = False
-
-    # Mapping weights onto conductances.
-    if eff:
-        G = badmemristor_tf.map.w_to_G_eff(weights, max_weight, G_min, G_max, scheme="differential")
-    else:
-        G = badmemristor_tf.map.w_to_G(weights, max_weight, G_min, G_max, scheme="differential")
-        #G_pos = G[0], G_neg = G[1]
+    G = badmemristor_tf.map.w_to_G(weights, max_weight, G_min, G_max, scheme="differential")
 
     # Mapping inputs onto voltages.
     V = badmemristor_tf.map.x_to_V(x, k_V)
 
     # Computing currents
     I = badmemristor_tf.nonideality.i_v_non_linear.compute_I(
-            V, G, V_ref, G_min, G_max, n_min, n_max, eff=eff, model="nonlinear_param")
+            V, G, V_ref, G_min, G_max, n_min, n_max, False, model="nonlinear_param")
 
     # Converting to outputs.
-    #if eff:
-    #    y_disturbed = badmemristor_tf.map.I_total_to_y(I, k_V, max_weight, G_max, scheme="differential")
-    #else:
-    #    y_disturbed = badmemristor_tf.map.I_to_y(I, k_V, max_weight, G_max, scheme="differential")
     y_disturbed = badmemristor_tf.map.I_to_y(I, k_V, max_weight, G_max, G_min, scheme="differential")
 
     tf.debugging.assert_all_finite(
@@ -216,28 +180,12 @@ class memristor_dense(Layer):
         inputs = tf.concat([x, ones], 1)
 
         self.out = self.apply_output_disturbance(inputs, combined_weights)
-        #self.out = K.dot(x, self.w) + self.b # Vanilla CNN
+
         return self.out
 
     def apply_output_disturbance(self, inputs, weights):
         disturbed_outputs = disturbed_outputs_i_v_non_linear(inputs, weights)
         return disturbed_outputs
-
-    #@tf_custom_gradient_method
-    #def apply_output_disturbance(self, inputs, weights):
-    #    # Forward propagation
-    #    disturbed_outputs = disturbed_outputs_i_v_non_linear(inputs, weights)
-    #    disturbed_outputs.set_shape((inputs.shape.as_list()[0], weights.shape.as_list()[1])) # Outputs to py_function do not have shape defined
-
-    #    def custom_grad(disturbed_outputs_grad):
-    #        # Backward propagation
-    #        # TODO (Erwei)
-    #        inputs_grad = tf.matmul(disturbed_outputs_grad, tf.transpose(weights))
-    #        weights_grad = tf.matmul(tf.transpose(inputs), disturbed_outputs_grad)
-
-    #        return (inputs_grad, weights_grad)
-
-    #    return disturbed_outputs, custom_grad
 
     def get_output_shape_for(self,input_shape):
         return (input_shape[0], self.n_out)
@@ -256,3 +204,4 @@ class my_flat(Layer):
     def  compute_output_shape(self,input_shape):
         shpe=(input_shape[0],int(np.prod(input_shape[1:])))
         return shpe
+
