@@ -125,6 +125,57 @@ def disturbed_outputs_i_v_non_linear(x, weights):
     return y_disturbed
 
 
+def compute_device_power(V, G):
+    """Computes power dissipated by individual devices in a crossbar.
+
+    Parameters
+    ----------
+    V : tf.Tensor
+        Voltages in shape (m x n) with m examples applied across n word
+        lines.
+    G : tf.Tensor
+        Conductances in shape (n x p) for a crossbar with n word lines
+        and p bit lines.
+
+    Returns
+    ----------
+    P : tf.Tensor
+        Power in shape (m x n x p).
+    """
+    V_squared = tf.multiply(V, V)
+    # $P = V^2 G$ for individual devices. All devices in the same word
+    # line of the crossbar (row of G) are applied with the same voltage.
+    P = tf.einsum('ij,jk->ijk', V_squared, G)
+
+    return P
+
+
+def compute_avg_crossbar_power(V, G):
+    """Computes average power dissipated by a crossbar.
+
+    Parameters
+    ----------
+    V : tf.Tensor
+        Voltages in shape (m x n) with m examples applied across n word
+        lines.
+    G : tf.Tensor
+        Conductances in shape (n x p) for a crossbar with n word lines
+        and p bit lines.
+
+    Returns
+    ----------
+    P_avg : tf.Tensor
+        Average power dissipated by a crossbar.
+    """
+    P = compute_device_power(V, G)
+    P_sum = tf.math.reduce_sum(P)
+    # To get average power consumption **per crossbar** we divide by
+    # number of examples.
+    P_avg = P_sum/tf.cast(tf.shape(V)[0], tf.float32)
+
+    return P_avg
+
+
 def disturbance(weights, type_='lognormal', faulty_type='unelectroformed',
         eff=True):
     if type_ == 'lognormal':
