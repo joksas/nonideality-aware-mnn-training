@@ -92,7 +92,7 @@ def disturbance_faulty(weights, type_='unelectroformed', eff=True):
 
 def disturbed_outputs_i_v_non_linear(x, weights):
     max_weight = tf.math.reduce_max(tf.math.abs(weights))
-    V_ref = tf.constant(0.0265)
+    V_ref = tf.constant(0.25)
 
     # Low resistance SiO_x.
     G_min = tf.constant(1/2610)
