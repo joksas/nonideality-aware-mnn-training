@@ -100,12 +100,14 @@ def disturbed_outputs_i_v_non_linear(x, weights):
         # Low resistance SiO_x.
         G_min = tf.constant(1/2610)
         G_max = tf.constant(1/281)
-        n_param = tf.constant(2.18)
+        n_avg = tf.constant(2.18)
+        n_std = tf.constant(0.115)
     else:
         # High resistance SiO_x.
         G_min = tf.constant(1/1430000)
         G_max = tf.constant(1/368000)
-        n_param = tf.constant(2.88)
+        n_avg = tf.constant(2.88)
+        n_std = tf.constant(0.363)
 
     k_V = 2*V_ref
 
@@ -116,7 +118,7 @@ def disturbed_outputs_i_v_non_linear(x, weights):
 
     # Computing currents
     I = badmemristor_tf.nonideality.i_v_non_linear.compute_I(
-            V, G, V_ref, G_min, G_max, n_param=n_param, eff=False, model="nonlinear_param")
+            V, G, V_ref, G_min, G_max, n_avg=n_avg, n_std=n_std, eff=False, model="nonlinear_param")
 
     # Converting to outputs.
     y_disturbed = badmemristor_tf.map.I_to_y(I, k_V, max_weight, G_max, G_min, scheme="differential")
