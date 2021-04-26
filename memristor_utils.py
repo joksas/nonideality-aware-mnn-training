@@ -94,15 +94,18 @@ def disturbed_outputs_i_v_non_linear(x, weights):
     max_weight = tf.math.reduce_max(tf.math.abs(weights))
     V_ref = tf.constant(0.25)
 
-    # Low resistance SiO_x.
-    G_min = tf.constant(1/2610)
-    G_max = tf.constant(1/281)
-    n_param = tf.constant(2.18)
+    is_low_resistance = True
 
-    # # High resistance SiO_x.
-    # G_min = tf.constant(1/1430000)
-    # G_max = tf.constant(1/368000)
-    # n_param = tf.constant(2.88)
+    if is_low_resistance:
+        # Low resistance SiO_x.
+        G_min = tf.constant(1/2610)
+        G_max = tf.constant(1/281)
+        n_param = tf.constant(2.18)
+    else:
+        # High resistance SiO_x.
+        G_min = tf.constant(1/1430000)
+        G_max = tf.constant(1/368000)
+        n_param = tf.constant(2.88)
 
     k_V = 2*V_ref
 
@@ -237,7 +240,11 @@ class memristor_dense(Layer):
         ones = tf.ones([tf.shape(x)[0], 1])
         inputs = tf.concat([x, ones], 1)
 
-        self.out = self.apply_output_disturbance(inputs, combined_weights)
+        is_aware = True
+        if is_aware:
+            self.out = self.apply_output_disturbance(inputs, combined_weights)
+        else:
+            self.out = K.dot(x, self.w) + self.b
 
         return self.out
 
