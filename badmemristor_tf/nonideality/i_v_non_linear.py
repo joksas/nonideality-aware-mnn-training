@@ -39,6 +39,9 @@ def compute_I(V, G, V_ref, G_min, G_max, n_avg=None, n_std=tf.constant(0.0), eff
     I : ndarray
         Output currents of shape (p x n). If eff is True, then *total* output
         currents are returned.
+    I_ind : ndarray
+        Interpolated currents of shape (p x m x n) produced by each of the
+        conductances in the crossbar array.
     """
     if model == "lookup_table":
         I_ind = interpolate_I(G_ref, V_ref, I_ref, G, V, eff)
@@ -47,7 +50,7 @@ def compute_I(V, G, V_ref, G_min, G_max, n_avg=None, n_std=tf.constant(0.0), eff
 
     I = add_I_BL(I_ind)
 
-    return I
+    return I, I_ind
 
 
 def interpolate_I(G_ref, V_ref, I_ref, G, V, eff):
