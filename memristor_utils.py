@@ -135,15 +135,8 @@ def disturbed_outputs_i_v_non_linear(x, weights):
         n_avg = tf.constant(2.88)
         n_std = tf.constant(0.363)
 
-    eff = True
     # Mapping weights onto conductances.
-    if eff:
-        G = badmemristor_tf.map.w_to_G_eff(weights_q, max_weight, G_min, G_max, scheme="differential")
-        # Apply G_min
-        G = tf.math.abs(G) + G_min
-    else:
-        G = badmemristor_tf.map.w_to_G(weights_q, max_weight, G_min, G_max, scheme="differential")
-        #G_pos = G[0], G_neg = G[1]
+    G = badmemristor_tf.map.w_params_to_G(weights, max_weight, G_min, G_max, scheme="differential")
 
     k_V = 2*V_ref
 
