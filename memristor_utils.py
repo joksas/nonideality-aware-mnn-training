@@ -249,7 +249,7 @@ class memristor_dense(Layer):
             #initializer=tf.random_uniform_initializer(minval=0.0, maxval=1.0, seed=None),
             name="weights_pos",
             trainable=True,
-            regularizer=tf.keras.regularizers.l2(reg_gamma),
+            regularizer=tf.keras.regularizers.l1(reg_gamma),
             #regularizer=column_l2_regulariser(reg_gamma),
         )
 
@@ -259,7 +259,7 @@ class memristor_dense(Layer):
             #initializer=tf.random_uniform_initializer(minval=0.0, maxval=1.0, seed=None),
             name="weights_neg",
             trainable=True,
-            regularizer=tf.keras.regularizers.l2(reg_gamma),
+            regularizer=tf.keras.regularizers.l1(reg_gamma),
             #regularizer=column_l2_regulariser(reg_gamma),
         )
 
@@ -268,7 +268,7 @@ class memristor_dense(Layer):
             initializer=tf.keras.initializers.Constant(value=0.5),
             name="biasess_pos",
             trainable=True,
-            regularizer=tf.keras.regularizers.l2(reg_gamma),
+            regularizer=tf.keras.regularizers.l1(reg_gamma),
         )
 
         self.b_neg = self.add_weight(
@@ -276,7 +276,7 @@ class memristor_dense(Layer):
             initializer=tf.keras.initializers.Constant(value=0.5),
             name="biasess_neg",
             trainable=True,
-            regularizer=tf.keras.regularizers.l2(reg_gamma),
+            regularizer=tf.keras.regularizers.l1(reg_gamma),
         )
 
 
