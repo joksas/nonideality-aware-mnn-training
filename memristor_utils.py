@@ -124,8 +124,8 @@ def disturbed_outputs_i_v_non_linear(x, weights):
 
     if is_low_resistance:
         # Low resistance SiO_x.
-        G_min = tf.constant(0.1)
-        G_max = tf.constant(1.0)
+        G_min = tf.constant(1/281)
+        G_max = tf.constant(1/2610)
         n_avg = tf.constant(2.18)
         n_std = tf.constant(0.115)
     else:
