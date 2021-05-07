@@ -241,7 +241,7 @@ class memristor_dense(Layer):
     # Create trainable weights and biases
     def build(self, input_shape):
         stdv=1/np.sqrt(self.n_in)
-        reg_gamma = 1e-2
+        reg_gamma = 1e-3
 
         self.w_pos = self.add_weight(
             shape=(self.n_in,self.n_out),
