@@ -120,20 +120,17 @@ def disturbed_outputs_i_v_non_linear(x, weights):
     # No weight quantisation
     weights_q = weights
 
-    is_low_resistance = True
+    G_min_lst = tf.constant([1/983.3, 1/10170, 1/1401000])
+    G_max_lst = tf.constant([1/281.3, 1/2826, 1/385700])
+    n_avg_lst = tf.constant([2.132, 2.596, 2.986])
+    n_std_lst = tf.constant([0.095, 0.088, 0.378])
 
-    if is_low_resistance:
-        # Low resistance SiO_x.
-        G_min = tf.constant(1/281)
-        G_max = tf.constant(1/2610)
-        n_avg = tf.constant(2.18)
-        n_std = tf.constant(0.115)
-    else:
-        # High resistance SiO_x.
-        G_min = tf.constant(1/1430000)
-        G_max = tf.constant(1/368000)
-        n_avg = tf.constant(2.88)
-        n_std = tf.constant(0.363)
+    # Choose one of three groups (0, 1 or 2)
+    group_idx = 0
+    G_min = G_min_lst[group_idx]
+    G_max = G_max_lst[group_idx]
+    n_avg= n_avg_lst[group_idx]
+    n_std= n_std_lst[group_idx]
 
     # Mapping weights onto conductances.
     G = badmemristor_tf.map.w_params_to_G(weights, max_weight, G_min, G_max, scheme="differential")
