@@ -130,9 +130,15 @@ batch_size = 100
 num_epochs = 1000
 x_train, y_train, x_test, y_test, use_generator = get_examples(dataset)
 
-dir_path = "models/{}".format(dataset)
-if Train:
-    train_network(dir_path, dataset, x_train, y_train, num_epochs, use_generator, batch_size)
-if Evaluate:
-    evaluate_network(dir_path, dataset, x_test, y_test, batch_size)
+group_idxs = [0, 2, 1]
+num_repeats = 5
+
+for group_idx in group_idxs:
+    for repeat_idx in range(num_repeats):
+        dir_path = "models/{}/group-{}/network-{}".format(
+                dataset, group_idx, repeat_idx)
+        if Train:
+            train_network(dir_path, dataset, x_train, y_train, num_epochs, use_generator, batch_size, group_idx=group_idx)
+        if Evaluate:
+            evaluate_network(dir_path, dataset, x_test, y_test, batch_size, group_idx=group_idx)
 
