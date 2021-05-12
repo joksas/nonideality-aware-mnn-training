@@ -119,20 +119,20 @@ if Train:
 			horizontal_flip=horizontal_flip)  # randomly flip images
 		if keras.__version__[0]=='2':
 			history=model.fit_generator(datagen.flow(X_train, y_train,batch_size=batch_size),steps_per_epoch=X_train.shape[0]/batch_size,
-			#nb_epoch=epochs,validation_data=(X_test, y_test),verbose=2,callbacks=[lrate, cback])
-			nb_epoch=epochs,validation_data=(X_test, y_test),verbose=2,callbacks=[cback])
+			#nb_epoch=epochs, validation_split=0.1,verbose=2,callbacks=[lrate, cback])
+			nb_epoch=epochs, validation_split=0.1,verbose=2,callbacks=[cback])
 		if keras.__version__[0]=='1':
 			history=model.fit_generator(datagen.flow(X_train, y_train,batch_size=batch_size), samples_per_epoch=X_train.shape[0], 
-			#nb_epoch=epochs, verbose=2,validation_data=(X_test,y_test),callbacks=[lrate, cback])
-			nb_epoch=epochs, verbose=2,validation_data=(X_test,y_test),callbacks=[cback])
+			#nb_epoch=epochs, verbose=2, validation_split=0.1,callbacks=[lrate, cback])
+			nb_epoch=epochs, verbose=2, validation_split=0.1,callbacks=[cback])
 
 	else:
 		if keras.__version__[0]=='2':
-			#history=model.fit(X_train, y_train,batch_size=batch_size,validation_data=(X_test, y_test), verbose=2,epochs=epochs,callbacks=[lrate, cback])
-			history=model.fit(X_train, y_train,batch_size=batch_size,validation_data=(X_test, y_test), verbose=2,epochs=epochs,callbacks=[cback])
+			#history=model.fit(X_train, y_train,batch_size=batch_size, validation_split=0.1, verbose=2,epochs=epochs,callbacks=[lrate, cback])
+			history=model.fit(X_train, y_train,batch_size=batch_size, validation_split=0.1, verbose=2,epochs=epochs,callbacks=[cback])
 		if keras.__version__[0]=='1':
-			#history=model.fit(X_train, y_train,batch_size=batch_size,validation_data=(X_test, y_test), verbose=2,nb_epoch=epochs,callbacks=[lrate, cback])
-			history=model.fit(X_train, y_train,batch_size=batch_size,validation_data=(X_test, y_test), verbose=2,nb_epoch=epochs,callbacks=[cback])
+			#history=model.fit(X_train, y_train,batch_size=batch_size, validation_split=0.1, verbose=2,nb_epoch=epochs,callbacks=[lrate, cback])
+			history=model.fit(X_train, y_train,batch_size=batch_size, validation_split=0.1, verbose=2,nb_epoch=epochs,callbacks=[cback])
 	dic={'hard':history.history}
 	foo=open('models/'+dataset+'/history_output_model.pkl','wb')
 	pickle.dump(dic,foo)
