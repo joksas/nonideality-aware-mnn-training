@@ -112,7 +112,10 @@ def disturbance_faulty(weights, type_='unelectroformed', eff=True):
     return disturbed_weights
 
 
-def disturbed_outputs_i_v_non_linear(x, weights):
+def disturbed_outputs_i_v_non_linear(x, weights, group_idx=None):
+    if group_idx is None:
+        group_idx = 0
+
     max_weight = tf.math.reduce_max(tf.math.abs(weights))
     V_ref = tf.constant(0.25)
     # Quantise weights
@@ -125,8 +128,6 @@ def disturbed_outputs_i_v_non_linear(x, weights):
     n_avg_lst = tf.constant([2.132, 2.596, 2.986])
     n_std_lst = tf.constant([0.095, 0.088, 0.378])
 
-    # Choose one of three groups (0, 1 or 2)
-    group_idx = 0
     G_min = G_min_lst[group_idx]
     G_max = G_max_lst[group_idx]
     n_avg= n_avg_lst[group_idx]
@@ -220,10 +221,11 @@ def disturbance(weights, type_='lognormal', faulty_type='unelectroformed',
 
 
 class memristor_dense(Layer):
-    def __init__(self,n_in,n_out,**kwargs):
+    def __init__(self, n_in, n_out, group_idx=None, **kwargs):
         self.n_in=n_in
         self.n_out=n_out
-        super(memristor_dense,self).__init__(**kwargs)
+        self.group_idx = group_idx
+        super(memristor_dense, self).__init__(**kwargs)
 
     # Adding this funcion removes an issue with custom layer checkpoint
     def get_config(self):
@@ -304,8 +306,7 @@ class memristor_dense(Layer):
         return self.out
 
     def apply_output_disturbance(self, inputs, weights):
-
-        disturbed_outputs = disturbed_outputs_i_v_non_linear(inputs, weights)
+        disturbed_outputs = disturbed_outputs_i_v_non_linear(inputs, weights, group_idx=self.group_idx)
         return disturbed_outputs
 
     def get_output_shape_for(self,input_shape):

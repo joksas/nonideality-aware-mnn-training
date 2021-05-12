@@ -67,10 +67,10 @@ def step_decay(epoch):
     lrate = initial_lrate * math.pow(drop, math.floor((1+epoch)/epochs_drop))
     return lrate
 
-def train_network(dir_path, dataset, x_train, y_train, num_epochs, use_generator, batch_size):
+def train_network(dir_path, dataset, x_train, y_train, num_epochs, use_generator, batch_size, group_idx=None):
     os.makedirs(dir_path, exist_ok=True)
 
-    model = get_model(dataset, batch_size)
+    model = get_model(dataset, batch_size, group_idx=group_idx)
 
     lr = 0.01
     opt = keras.optimizers.SGD(lr=lr)
@@ -113,9 +113,9 @@ def train_network(dir_path, dataset, x_train, y_train, num_epochs, use_generator
     with open(history_path,'wb') as handle:
         pickle.dump(dic, handle)
 
-def evaluate_network(dir_path, dataset, x_test, y_test, batch_size):
+def evaluate_network(dir_path, dataset, x_test, y_test, batch_size, group_idx=None):
     weights_path= dir_path + "/output_model.h5"
-    model = get_model(dataset, batch_size)
+    model = get_model(dataset, batch_size, group_idx=group_idx)
     model.load_weights(weights_path)
     opt = keras.optimizers.SGD()
     model.compile(loss='sparse_categorical_crossentropy', optimizer=opt, metrics=['accuracy'])
