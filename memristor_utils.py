@@ -221,10 +221,11 @@ def disturbance(weights, type_='lognormal', faulty_type='unelectroformed',
 
 
 class memristor_dense(Layer):
-    def __init__(self, n_in, n_out, group_idx=None, **kwargs):
+    def __init__(self, n_in, n_out, group_idx=None, is_regularized=True, **kwargs):
         self.n_in=n_in
         self.n_out=n_out
         self.group_idx = group_idx
+        self.is_regularized = is_regularized
         super(memristor_dense, self).__init__(**kwargs)
 
     # Adding this funcion removes an issue with custom layer checkpoint
@@ -240,26 +241,25 @@ class memristor_dense(Layer):
     # Create trainable weights and biases
     def build(self, input_shape):
         stdv=1/np.sqrt(self.n_in)
-        reg_gamma = 1e-4
+        kwargs = {}
+        if self.is_regularized:
+            reg_gamma = 1e-4
+            kwargs["regularizer"] = tf.keras.regularizers.l1(reg_gamma)
 
         self.w_pos = self.add_weight(
             shape=(self.n_in,self.n_out),
             initializer=tf.keras.initializers.RandomNormal(mean=0.5, stddev=stdv),
-            #initializer=tf.random_uniform_initializer(minval=0.0, maxval=1.0, seed=None),
             name="weights_pos",
             trainable=True,
-            regularizer=tf.keras.regularizers.l1(reg_gamma),
-            #regularizer=column_l2_regulariser(reg_gamma),
+            **kwargs
         )
 
         self.w_neg = self.add_weight(
             shape=(self.n_in,self.n_out),
             initializer=tf.keras.initializers.RandomNormal(mean=0.5, stddev=stdv),
-            #initializer=tf.random_uniform_initializer(minval=0.0, maxval=1.0, seed=None),
             name="weights_neg",
             trainable=True,
-            regularizer=tf.keras.regularizers.l1(reg_gamma),
-            #regularizer=column_l2_regulariser(reg_gamma),
+            **kwargs
         )
 
         self.b_pos = self.add_weight(
@@ -267,7 +267,7 @@ class memristor_dense(Layer):
             initializer=tf.keras.initializers.Constant(value=0.5),
             name="biasess_pos",
             trainable=True,
-            regularizer=tf.keras.regularizers.l1(reg_gamma),
+            **kwargs
         )
 
         self.b_neg = self.add_weight(
@@ -275,7 +275,7 @@ class memristor_dense(Layer):
             initializer=tf.keras.initializers.Constant(value=0.5),
             name="biasess_neg",
             trainable=True,
-            regularizer=tf.keras.regularizers.l1(reg_gamma),
+            **kwargs
         )
 
 

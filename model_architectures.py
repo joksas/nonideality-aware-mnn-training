@@ -10,15 +10,15 @@ from memristor_utils import *
 batch_norm_eps=1e-4
 batch_norm_momentum=0.9
 
-def get_model(dataset, batch_size, group_idx=None):
+def get_model(dataset, batch_size, group_idx=None, is_regularized=True):
 	if dataset=='MNIST':
 		model=Sequential()
-		model.add(memristor_dense(n_in=784, n_out=25, group_idx=group_idx, input_shape=[784]))
+		model.add(memristor_dense(n_in=784, n_out=25, group_idx=group_idx, is_regularized=is_regularized, input_shape=[784]))
 		#model.add(BatchNormalization(axis=-1, momentum=batch_norm_momentum, epsilon=batch_norm_eps))
         # We will try to introduce non-linearities using dense layers.
 		model.add(Activation('sigmoid'))
 		#model.add(tf.keras.layers.Dense(10))
-		model.add(memristor_dense(n_in=int(model.output.get_shape()[1]),n_out=10, group_idx=group_idx))
+		model.add(memristor_dense(n_in=int(model.output.get_shape()[1]),n_out=10, group_idx=group_idx, is_regularized=is_regularized))
 		#model.add(BatchNormalization(axis=-1, momentum=batch_norm_momentum, epsilon=batch_norm_eps))
 		model.add(Activation('softmax'))
 

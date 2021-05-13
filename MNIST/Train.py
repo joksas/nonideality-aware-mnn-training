@@ -67,10 +67,10 @@ def step_decay(epoch):
     lrate = initial_lrate * math.pow(drop, math.floor((1+epoch)/epochs_drop))
     return lrate
 
-def train_network(dir_path, dataset, x_train, y_train, num_epochs, use_generator, batch_size, group_idx=None):
+def train_network(dir_path, dataset, x_train, y_train, num_epochs, use_generator, batch_size, group_idx=None, is_regularized=False):
     os.makedirs(dir_path, exist_ok=True)
 
-    model = get_model(dataset, batch_size, group_idx=group_idx)
+    model = get_model(dataset, batch_size, group_idx=group_idx, is_regularized=is_regularized)
 
     lr = 0.01
     opt = keras.optimizers.SGD(lr=lr)
@@ -113,9 +113,9 @@ def train_network(dir_path, dataset, x_train, y_train, num_epochs, use_generator
     with open(history_path,'wb') as handle:
         pickle.dump(dic, handle)
 
-def evaluate_network(dir_path, dataset, x_test, y_test, batch_size, group_idx=None):
+def evaluate_network(dir_path, dataset, x_test, y_test, batch_size, group_idx=None, is_regularized=True):
     weights_path= dir_path + "/output_model.h5"
-    model = get_model(dataset, batch_size, group_idx=group_idx)
+    model = get_model(dataset, batch_size, group_idx=group_idx, is_regularized=is_regularized)
     model.load_weights(weights_path)
     opt = keras.optimizers.SGD()
     model.compile(loss='sparse_categorical_crossentropy', optimizer=opt, metrics=['accuracy'])
@@ -133,12 +133,17 @@ x_train, y_train, x_test, y_test, use_generator = get_examples(dataset)
 group_idxs = [0, 2, 1]
 num_repeats = 5
 
-for group_idx in group_idxs:
-    for repeat_idx in range(num_repeats):
-        dir_path = "models/{}/group-{}/network-{}".format(
-                dataset, group_idx, repeat_idx)
-        if Train:
-            train_network(dir_path, dataset, x_train, y_train, num_epochs, use_generator, batch_size, group_idx=group_idx)
-        if Evaluate:
-            evaluate_network(dir_path, dataset, x_test, y_test, batch_size, group_idx=group_idx)
+for is_regularized in [True, False]:
+    if is_regularized:
+        regularized_label = "regularized"
+    else:
+        regularized_label = "non-regularized"
+    for group_idx in group_idxs:
+        for repeat_idx in range(num_repeats):
+            dir_path = "models/{}/{}/group-{}/network-{}".format(
+                    dataset, regularized_label, group_idx, repeat_idx)
+            if Train:
+                train_network(dir_path, dataset, x_train, y_train, num_epochs, use_generator, batch_size, group_idx=group_idx, is_regularized=is_regularized)
+            if Evaluate:
+                evaluate_network(dir_path, dataset, x_test, y_test, batch_size, group_idx=group_idx, is_regularized=is_regularized)
 
