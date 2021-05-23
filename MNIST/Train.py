@@ -113,25 +113,35 @@ def train_network(dir_path, dataset, x_train, y_train, num_epochs, use_generator
     with open(history_path,'wb') as handle:
         pickle.dump(dic, handle)
 
-def evaluate_network(dir_path, dataset, x_test, y_test, batch_size, group_idx=None, is_regularized=True):
+def evaluate_network(dir_path, dataset, x_test, y_test, batch_size, group_idx=None, is_regularized=True, log_dir_full_path=None):
     weights_path= dir_path + "/output_model.h5"
-    model = get_model(dataset, batch_size, group_idx=group_idx, is_regularized=is_regularized)
+    model = get_model(dataset, batch_size, group_idx=group_idx, is_regularized=is_regularized, log_dir_full_path=log_dir_full_path)
     model.load_weights(weights_path)
     opt = keras.optimizers.SGD()
     model.compile(loss='sparse_categorical_crossentropy', optimizer=opt, metrics=['accuracy'])
     score = model.evaluate(x_test, y_test, verbose=0, batch_size=batch_size)
-    print("Test loss was %0.4f, test accuracy was %0.4f"%(score[0], score[1]))
+    if log_dir_full_path is None:
+        print("Test loss was %0.4f, test accuracy was %0.4f"%(score[0], score[1]))
+    else:
+        log_file_full_path = "{}/accuracy.csv".format(log_dir_full_path)
+        open(log_file_full_path, "a").close()
+        tf.print(score[1], output_stream="file://{}".format(log_file_full_path))
+
 
 
 dataset = "MNIST"
-Train = True
+Train = False
 Evaluate = True
-batch_size = 100
+if Train:
+    batch_size = 100
+else:
+    batch_size = 10000
 num_epochs = 1000
 x_train, y_train, x_test, y_test, use_generator = get_examples(dataset)
 
 group_idxs = [0, 2, 1]
-num_repeats = 5
+num_training_repeats = 5
+num_inference_repeats = 25
 
 for is_regularized in [True, False]:
     if is_regularized:
@@ -139,11 +149,13 @@ for is_regularized in [True, False]:
     else:
         regularized_label = "non-regularized"
     for group_idx in group_idxs:
-        for repeat_idx in range(num_repeats):
+        log_dir_full_path = "path-to-project/Non-Idealility-Aware-MBNN-Training/MNIST/models/{}/{}/group-{}".format(dataset, regularized_label, group_idx)
+        for training_repeat_idx in range(num_training_repeats):
             dir_path = "models/{}/{}/group-{}/network-{}".format(
-                    dataset, regularized_label, group_idx, repeat_idx)
+                    dataset, regularized_label, group_idx, training_repeat_idx)
             if Train:
                 train_network(dir_path, dataset, x_train, y_train, num_epochs, use_generator, batch_size, group_idx=group_idx, is_regularized=is_regularized)
             if Evaluate:
-                evaluate_network(dir_path, dataset, x_test, y_test, batch_size, group_idx=group_idx, is_regularized=is_regularized)
+                for inference_repeat_idx in range(num_inference_repeats):
+                    evaluate_network(dir_path, dataset, x_test, y_test, batch_size, group_idx=group_idx, is_regularized=is_regularized, log_dir_full_path=log_dir_full_path)
 

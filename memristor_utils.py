@@ -112,7 +112,7 @@ def disturbance_faulty(weights, type_='unelectroformed', eff=True):
     return disturbed_weights
 
 
-def disturbed_outputs_i_v_non_linear(x, weights, group_idx=None):
+def disturbed_outputs_i_v_non_linear(x, weights, group_idx=None, log_dir_full_path=None):
     if group_idx is None:
         group_idx = 0
 
@@ -142,8 +142,14 @@ def disturbed_outputs_i_v_non_linear(x, weights, group_idx=None):
     V = badmemristor_tf.map.x_to_V(x, k_V)
 
     # Computing currents
-    I, _ = badmemristor_tf.nonideality.i_v_non_linear.compute_I(
+    I, I_ind = badmemristor_tf.nonideality.i_v_non_linear.compute_I(
             V, G, V_ref, G_min, G_max, n_avg=n_avg, n_std=n_std, eff=False, model="nonlinear_param")
+    if log_dir_full_path is not None:
+        log_file_full_path = "{}/power.csv".format(log_dir_full_path)
+        open(log_file_full_path, "a").close()
+        P_avg = compute_avg_crossbar_power(V, I_ind)
+        tf.print(P_avg, output_stream="file://{}".format(log_file_full_path))
+
 
     # Converting to outputs.
     y_disturbed = badmemristor_tf.map.I_to_y(I, k_V, max_weight, G_max, G_min, scheme="differential")
@@ -221,11 +227,12 @@ def disturbance(weights, type_='lognormal', faulty_type='unelectroformed',
 
 
 class memristor_dense(Layer):
-    def __init__(self, n_in, n_out, group_idx=None, is_regularized=True, **kwargs):
+    def __init__(self, n_in, n_out, group_idx=None, is_regularized=True, log_dir_full_path=None, **kwargs):
         self.n_in=n_in
         self.n_out=n_out
         self.group_idx = group_idx
         self.is_regularized = is_regularized
+        self.log_dir_full_path = log_dir_full_path
         super(memristor_dense, self).__init__(**kwargs)
 
     # Adding this funcion removes an issue with custom layer checkpoint
@@ -306,7 +313,7 @@ class memristor_dense(Layer):
         return self.out
 
     def apply_output_disturbance(self, inputs, weights):
-        disturbed_outputs = disturbed_outputs_i_v_non_linear(inputs, weights, group_idx=self.group_idx)
+        disturbed_outputs = disturbed_outputs_i_v_non_linear(inputs, weights, group_idx=self.group_idx, log_dir_full_path=self.log_dir_full_path)
         return disturbed_outputs
 
     def get_output_shape_for(self,input_shape):

@@ -3,3 +3,4 @@ MNIST/models/*
 memristor_utils_g_extradim.py
 memristor_utils_g_posneg.py
 *.log
+*.pdf
