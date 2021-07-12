@@ -23,94 +23,6 @@ from tensorflow.python.framework import ops
 import badmemristor_tf
 import badmemristor_tf.nonideality
 
-# A decorator for customising gradients
-def tf_custom_gradient_method(f):
-    @functools.wraps(f)
-    def wrapped(self, *args, **kwargs):
-        if not hasattr(self, '_tf_custom_gradient_wrappers'):
-            self._tf_custom_gradient_wrappers = {}
-        if f not in self._tf_custom_gradient_wrappers:
-            self._tf_custom_gradient_wrappers[f] = tf.custom_gradient(lambda *a, **kw: f(self, *a, **kw))
-        return self._tf_custom_gradient_wrappers[f](*args, **kwargs)
-    return wrapped
-
-def discretise_with_percentage(x, x_min, x_max, percentage):
-    '''Element-wise rounding to target percentage intervals with full gradient propagation.
-    A trick from [Sergey Ioffe](http://stackoverflow.com/a/36480182)
-    '''
-    clipped = tf.clip_by_value(x,x_min,x_max)
-    k = 1.0 / ( (x_max - x_min) * percentage )
-    rounded = tf.round((x - x_min) * k) / k + x_min
-    return clipped + tf.stop_gradient(rounded - clipped)
-
-#def column_l2_regulariser(x, gamma):
-#    return gamma * tf.reduce_sum(tf.sqrt(tf.reduce_sum(tf.square(x), axis=1)))
-
-class column_l2_regulariser(tf.keras.regularizers.Regularizer):
-
-    def __init__(self, strength):
-        self.strength = strength
-
-    def __call__(self, x):
-        return self.strength * tf.reduce_sum(tf.sqrt(tf.reduce_sum(tf.square(x), axis=-1)))
-
-    def get_config(self):
-        return {'strength': self.strength}
-
-def disturbance_lognormal(weights, eff=True):
-    # I picked this myself, but you may want to create a function that decides
-    # how large `max_weight` should be, given an array of weights.
-    # TODO: It would make more sense to pick it separately for each weight
-    # array. E.g. set it to the highest-absolute-value weight.
-    max_weight = 2.5
-    # These are arbitrary, but you may be given some values to work with or may
-    # need to research what these values could be.
-    G_min = 1e-4
-    G_max = 1e-3
-    # Some arbitrary values for lognormal disturbance (again, you might be
-    # given some or might need to find them yourself).
-    lognormal_G = [1e-4, 5e-4, 9e-4]
-    lognormal_mean = [-5, -4, -3]
-    lognormal_sigma = [0.5, 0.3, 0.1]
-    lognormal_rate = [0.5, 0.6, 0.5]
-
-    if eff:
-        G_eff = badmemristor_tf.map.w_to_G_eff(weights, max_weight, G_min, G_max)
-        G_eff_disturbed = badmemristor_tf.nonideality.model.lognormal(G_eff,
-                lognormal_G, lognormal_mean, lognormal_sigma, lognormal_rate,
-                eff=True)
-        disturbed_weights = badmemristor_tf.map.G_eff_to_w(G_eff_disturbed,
-                max_weight, G_max)
-    else:
-        G = badmemristor_tf.map.w_to_G(weights, max_weight, G_min, G_max)
-        G_disturbed = badmemristor_tf.nonideality.model.lognormal(G, lognormal_G,
-                lognormal_mean, lognormal_sigma, lognormal_rate)
-        disturbed_weights = badmemristor_tf.map.G_to_w(G_disturbed, max_weight, G_max)
-
-    return disturbed_weights
-
-
-def disturbance_faulty(weights, type_='unelectroformed', eff=True):
-    max_weight = 2.5
-    G_min = 1e-4
-    G_max = 1e-3
-    # An arbitrary proportion
-    proportion = 0.05
-
-    if eff:
-        G_eff = badmemristor_tf.map.w_to_G_eff(weights, max_weight, G_min, G_max)
-        G_eff_disturbed = badmemristor_tf.nonideality.D2D.faulty(G_eff,
-                proportion, G_min=G_min, G_max=G_max, type_=type_, eff=eff)
-        disturbed_weights = badmemristor_tf.map.G_eff_to_w(G_eff_disturbed,
-                max_weight, G_max)
-    else:
-        G = badmemristor_tf.map.w_to_G(weights, max_weight, G_min, G_max)
-        G_disturbed = badmemristor_tf.nonideality.D2D.faulty(G, proportion,
-                G_min=G_min, G_max=G_max, type_=type_, eff=eff)
-        disturbed_weights = badmemristor_tf.map.G_to_w(G_disturbed, max_weight, G_max)
-
-    return disturbed_weights
-
 
 def disturbed_outputs_i_v_non_linear(x, weights, group_idx=None, log_dir_full_path=None):
     if group_idx is None:
@@ -118,10 +30,6 @@ def disturbed_outputs_i_v_non_linear(x, weights, group_idx=None, log_dir_full_pa
 
     max_weight = tf.math.reduce_max(tf.math.abs(weights))
     V_ref = tf.constant(0.25)
-    # Quantise weights
-    # weights_q = discretise_with_percentage(weights, 0.0, max_weight, 0.01)
-    # No weight quantisation
-    weights_q = weights
 
     G_min_lst = tf.constant([1/983.3, 1/10170, 1/1401000])
     G_max_lst = tf.constant([1/281.3, 1/2826, 1/385700])
@@ -134,7 +42,7 @@ def disturbed_outputs_i_v_non_linear(x, weights, group_idx=None, log_dir_full_pa
     n_std= n_std_lst[group_idx]
 
     # Mapping weights onto conductances.
-    G = badmemristor_tf.map.w_params_to_G(weights, max_weight, G_min, G_max, scheme="differential")
+    G = badmemristor_tf.map.w_params_to_G(weights, max_weight, G_min, G_max)
 
     k_V = 2*V_ref
 
@@ -143,16 +51,15 @@ def disturbed_outputs_i_v_non_linear(x, weights, group_idx=None, log_dir_full_pa
 
     # Computing currents
     I, I_ind = badmemristor_tf.nonideality.i_v_non_linear.compute_I(
-            V, G, V_ref, G_min, G_max, n_avg=n_avg, n_std=n_std, eff=False, model="nonlinear_param")
+            V, G, V_ref, G_min, G_max, n_avg, n_std=n_std)
     if log_dir_full_path is not None:
         log_file_full_path = "{}/power.csv".format(log_dir_full_path)
         open(log_file_full_path, "a").close()
         P_avg = compute_avg_crossbar_power(V, I_ind)
         tf.print(P_avg, output_stream="file://{}".format(log_file_full_path))
 
-
     # Converting to outputs.
-    y_disturbed = badmemristor_tf.map.I_to_y(I, k_V, max_weight, G_max, G_min, scheme="differential")
+    y_disturbed = badmemristor_tf.map.I_to_y(I, k_V, max_weight, G_max, G_min)
 
     tf.debugging.assert_all_finite(
         y_disturbed, "nan in outputs", name=None
@@ -209,21 +116,6 @@ def compute_avg_crossbar_power(V, I_ind):
     P_avg = P_sum/tf.cast(tf.shape(V)[0], tf.float32)
 
     return P_avg
-
-
-def disturbance(weights, type_='lognormal', faulty_type='unelectroformed',
-        eff=True):
-    if type_ == 'lognormal':
-        disturbed_weights = disturbance_lognormal(weights, eff=eff)
-    elif type == 'faulty':
-        disturbed_weights = disturbance_faulty(weights, type_=faulty_type,
-                eff=eff)
-    else:
-        raise ValueError(
-                'Disturbance type "{}" is not supported!'.format(type_)
-                )
-
-    return disturbed_weights
 
 
 class memristor_dense(Layer):
@@ -320,17 +212,4 @@ class memristor_dense(Layer):
         return (input_shape[0], self.n_out)
     def compute_output_shape(self,input_shape):
         return (input_shape[0], self.n_out)
-
-class my_flat(Layer):
-    def __init__(self,**kwargs):
-        super(my_flat,self).__init__(**kwargs)
-    def build(self, input_shape):
-        return
-
-    def call(self, x, mask=None):
-        self.out=tf.reshape(x,[-1,np.prod(x.get_shape().as_list()[1:])])
-        return self.out
-    def  compute_output_shape(self,input_shape):
-        shpe=(input_shape[0],int(np.prod(input_shape[1:])))
-        return shpe
 
