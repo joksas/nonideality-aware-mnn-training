@@ -21,7 +21,6 @@ from tensorflow.python.framework import ops
 
 # Import memristor non-idealities
 import badmemristor_tf
-import badmemristor_tf.nonideality
 
 
 def disturbed_outputs_i_v_non_linear(x, weights, group_idx=None, log_dir_full_path=None):
@@ -50,7 +49,7 @@ def disturbed_outputs_i_v_non_linear(x, weights, group_idx=None, log_dir_full_pa
     V = badmemristor_tf.map.x_to_V(x, k_V)
 
     # Computing currents
-    I, I_ind = badmemristor_tf.nonideality.i_v_non_linear.compute_I(
+    I, I_ind = badmemristor_tf.nonlinear_IV.compute_I(
             V, G, V_ref, G_min, G_max, n_avg, n_std=n_std)
     if log_dir_full_path is not None:
         log_file_full_path = "{}/power.csv".format(log_dir_full_path)
