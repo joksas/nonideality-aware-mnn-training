@@ -129,7 +129,7 @@ def evaluate_network(dir_path, dataset, x_test, y_test, batch_size, group_idx=No
 
 
 dataset = "MNIST"
-Train = False
+Train = True
 Evaluate = True
 if Train:
     batch_size = 100
