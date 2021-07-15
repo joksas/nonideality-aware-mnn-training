@@ -5,7 +5,6 @@ import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras.datasets import cifar10, mnist
 from tensorflow.keras.optimizers import SGD
-from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 import os
 import sys

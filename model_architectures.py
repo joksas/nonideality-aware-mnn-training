@@ -1,10 +1,7 @@
-import tensorflow as tf
-from tensorflow import keras
 from tensorflow.keras.models import Sequential, Model
-from tensorflow.keras.layers import Dense, Convolution2D, Activation, Flatten, MaxPooling2D,Input,Dropout,GlobalAveragePooling2D
-from tensorflow.keras.layers import BatchNormalization
-from tensorflow.python.framework import ops
+from tensorflow.keras.layers import Activation
 from memristor_utils import *
+
 
 batch_norm_eps=1e-4
 batch_norm_momentum=0.9

@@ -1,23 +1,8 @@
 import numpy as np
-import pickle
-import matplotlib.pyplot as plt
-import matplotlib
-import functools
 
 import tensorflow as tf
-import tensorflow.keras as keras
-from tensorflow.keras.models import Sequential, Model
-from tensorflow.keras.layers import Dense, Convolution2D, Activation, Flatten, MaxPooling2D,Input,Dropout,GlobalAveragePooling2D,Cropping2D
 from tensorflow.keras import backend as K
-from tensorflow.keras.datasets import cifar10
-import tensorflow.keras.utils
-from tensorflow.keras.optimizers import SGD
 from tensorflow.keras.layers import Layer
-from tensorflow.keras.models import load_model
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
-import os
-from tensorflow.keras.layers import BatchNormalization
-from tensorflow.python.framework import ops
 
 # Import memristor non-idealities
 import crossbar
