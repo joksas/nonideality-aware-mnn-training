@@ -1,2 +1,0 @@
-import badmemristor_tf.map
-import badmemristor_tf.nonlinear_IV

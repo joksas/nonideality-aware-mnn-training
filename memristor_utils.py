@@ -20,7 +20,7 @@ from tensorflow.keras.layers import BatchNormalization
 from tensorflow.python.framework import ops
 
 # Import memristor non-idealities
-import badmemristor_tf
+import crossbar
 
 
 def disturbed_outputs_i_v_non_linear(x, weights, group_idx=None, log_dir_full_path=None):
@@ -41,15 +41,15 @@ def disturbed_outputs_i_v_non_linear(x, weights, group_idx=None, log_dir_full_pa
     n_std= n_std_lst[group_idx]
 
     # Mapping weights onto conductances.
-    G = badmemristor_tf.map.w_params_to_G(weights, max_weight, G_min, G_max)
+    G = crossbar.map.w_params_to_G(weights, max_weight, G_min, G_max)
 
     k_V = 2*V_ref
 
     # Mapping inputs onto voltages.
-    V = badmemristor_tf.map.x_to_V(x, k_V)
+    V = crossbar.map.x_to_V(x, k_V)
 
     # Computing currents
-    I, I_ind = badmemristor_tf.nonlinear_IV.compute_I(
+    I, I_ind = crossbar.nonlinear_IV.compute_I(
             V, G, V_ref, G_min, G_max, n_avg, n_std=n_std)
     if log_dir_full_path is not None:
         log_file_full_path = "{}/power.csv".format(log_dir_full_path)
@@ -58,7 +58,7 @@ def disturbed_outputs_i_v_non_linear(x, weights, group_idx=None, log_dir_full_pa
         tf.print(P_avg, output_stream="file://{}".format(log_file_full_path))
 
     # Converting to outputs.
-    y_disturbed = badmemristor_tf.map.I_to_y(I, k_V, max_weight, G_max, G_min)
+    y_disturbed = crossbar.map.I_to_y(I, k_V, max_weight, G_max, G_min)
 
     tf.debugging.assert_all_finite(
         y_disturbed, "nan in outputs", name=None
