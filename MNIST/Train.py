@@ -129,6 +129,7 @@ def evaluate_network(dir_path, dataset, x_test, y_test, batch_size, group_idx=No
 
 
 dataset = "MNIST"
+path_to_project = "path/to/project"
 Train = True
 Evaluate = True
 if Train:
@@ -148,7 +149,8 @@ for is_regularized in [True, False]:
     else:
         regularized_label = "non-regularized"
     for group_idx in group_idxs:
-        log_dir_full_path = "path-to-project/Non-Idealility-Aware-MBNN-Training/MNIST/models/{}/{}/group-{}".format(dataset, regularized_label, group_idx)
+        log_dir_full_path = "{}/MNIST/models/{}/{}/group-{}".format(
+                path_to_project, dataset, regularized_label, group_idx)
         for training_repeat_idx in range(num_training_repeats):
             dir_path = "models/{}/{}/group-{}/network-{}".format(
                     dataset, regularized_label, group_idx, training_repeat_idx)
