@@ -5,3 +5,5 @@ memristor_utils_g_posneg.py
 *.log
 *.pdf
 /main.py
+*.h5
+*.pkl

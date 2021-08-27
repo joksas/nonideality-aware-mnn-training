@@ -1,5 +1,6 @@
 from typing import NamedTuple, List
 import os
+from . import network, utils
 
 
 class NonlinearityParams:
@@ -36,6 +37,16 @@ class Iterable:
     repeat_idx = 0
 
 
+class Dataset:
+    def __init__(self, dataset: str):
+        x_train, y_train, x_test, y_test, use_generator = utils.get_examples(dataset)
+        self.x_train = x_train
+        self.y_train = y_train
+        self.x_test = x_test
+        self.y_test = y_test
+        self.use_generator = use_generator
+
+
 class Training(Nonideal, Iterable):
     def __init__(self, batch_size: int = 1, num_epochs: int = 1, nonlinearity_params_lst: List[NonlinearityParams] = [], num_repeats: int = 0) -> None:
         self.batch_size = batch_size
@@ -66,11 +77,12 @@ class Inference(Nonideal):
         return "repeat-{}".format(self.repeat_idx)
 
 
-class Iterator:
+class Iterator(Dataset):
     def __init__(self, dataset: str, training: Training = Training(), inference: Inference = Inference()) -> None:
         self.dataset = dataset
         self.training = training
         self.inference = inference
+        Dataset.__init__(self, dataset)
 
     def training_nonideality_dir(self):
         return os.path.join(
@@ -84,12 +96,12 @@ class Iterator:
 
     def weights_path(self):
         return os.path.join(
-                self.network_dir(), "output_model.h5"
+                self.network_dir(), "model.h5"
                 )
 
-    def weights_path(self):
+    def history_path(self):
         return os.path.join(
-                self.network_dir(), "history_output_model.pkl"
+                self.network_dir(), "history.pkl"
                 )
 
     def inference_nonideality_dir(self):
@@ -101,8 +113,7 @@ class Iterator:
         if self.training.is_memristive():
             for _ in range(len(self.training.nonlinearity_params_lst)):
                 for _ in range(self.training.num_repeats):
-                    print(self.network_dir())
-                    os.makedirs(self.network_dir(), exist_ok=True)
+                    network.train(self)
                     self.training.repeat_idx += 1
 
                 self.training.repeat_idx = 0

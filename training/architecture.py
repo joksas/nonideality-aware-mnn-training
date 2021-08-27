@@ -1,27 +1,28 @@
+import tensorflow as tf
 from tensorflow.keras.models import Sequential, Model
-from tensorflow.keras.layers import Activation
+from tensorflow.keras.layers import Activation, Layer
+import numpy as np
+import crossbar
 
 
-def get_model(dataset, batch_size, group_idx=None, is_regularized=True, log_dir_full_path=None):
-	if dataset=='MNIST':
+def get_model(iterator):
+	if iterator.dataset=='MNIST':
 		model=Sequential()
-		model.add(MemristorDense(n_in=784, n_out=25, group_idx=group_idx, is_regularized=is_regularized, log_dir_full_path=log_dir_full_path, input_shape=[784]))
+		model.add(MemristorDense(784, 25, iterator, input_shape=[784]))
         # We will try to introduce non-linearities using dense layers.
 		model.add(Activation('sigmoid'))
-		model.add(MemristorDense(n_in=int(model.output.get_shape()[1]),n_out=10, group_idx=group_idx, log_dir_full_path=log_dir_full_path, is_regularized=is_regularized))
+		model.add(MemristorDense(int(model.output.get_shape()[1]), 10, iterator))
 		model.add(Activation('softmax'))
 	else:
-		raise("Dataset {} is not recognised!".format(dataset))
+		raise("Dataset {} is not recognised!".format(iterator.dataset))
 	return model
 
 
 class MemristorDense(Layer):
-    def __init__(self, n_in, n_out, group_idx=None, is_regularized=True, log_dir_full_path=None, **kwargs):
+    def __init__(self, n_in, n_out, iterator, **kwargs):
         self.n_in=n_in
         self.n_out=n_out
-        self.group_idx = group_idx
-        self.is_regularized = is_regularized
-        self.log_dir_full_path = log_dir_full_path
+        self.iterator = iterator
         super(MemristorDense, self).__init__(**kwargs)
 
     # Adding this funcion removes an issue with custom layer checkpoint
@@ -38,7 +39,7 @@ class MemristorDense(Layer):
     def build(self, input_shape):
         stdv=1/np.sqrt(self.n_in)
         kwargs = {}
-        if self.is_regularized:
+        if self.iterator.training.is_regularized:
             reg_gamma = 1e-4
             kwargs["regularizer"] = tf.keras.regularizers.l1(reg_gamma)
 
@@ -107,21 +108,14 @@ class MemristorDense(Layer):
         return self.nonlinear_iv_outputs(inputs, weights)
 
     def nonlinear_iv_outputs(self, x, weights):
-        if group_idx is None:
-            group_idx = 0
-
         max_weight = tf.math.reduce_max(tf.math.abs(weights))
         V_ref = tf.constant(0.25)
 
-        G_min_lst = tf.constant([1/983.3, 1/10170, 1/1401000])
-        G_max_lst = tf.constant([1/281.3, 1/2826, 1/385700])
-        n_avg_lst = tf.constant([2.132, 2.596, 2.986])
-        n_std_lst = tf.constant([0.095, 0.088, 0.378])
-
-        G_min = G_min_lst[group_idx]
-        G_max = G_max_lst[group_idx]
-        n_avg= n_avg_lst[group_idx]
-        n_std= n_std_lst[group_idx]
+        nonideality_params = self.iterator.training.nonideality_params()
+        G_min = tf.constant(nonideality_params.G_min)
+        G_max = tf.constant(nonideality_params.G_max)
+        n_avg = tf.constant(nonideality_params.n_avg)
+        n_std = tf.constant(nonideality_params.n_std)
 
         # Mapping weights onto conductances.
         G = crossbar.map.w_params_to_G(weights, max_weight, G_min, G_max)
@@ -134,11 +128,11 @@ class MemristorDense(Layer):
         # Computing currents
         I, I_ind = crossbar.nonlinear_IV.compute_I(
                 V, G, V_ref, G_min, G_max, n_avg, n_std=n_std)
-        if log_dir_full_path is not None:
-            log_file_full_path = "{}/power.csv".format(log_dir_full_path)
-            open(log_file_full_path, "a").close()
-            P_avg = compute_avg_crossbar_power(V, I_ind)
-            tf.print(P_avg, output_stream="file://{}".format(log_file_full_path))
+        # if True:
+        #     log_file_full_path = "{}/power.csv".format(log_dir_full_path)
+        #     open(log_file_full_path, "a").close()
+        #     P_avg = compute_avg_crossbar_power(V, I_ind)
+        #     tf.print(P_avg, output_stream="file://{}".format(log_file_full_path))
 
         # Converting to outputs.
         y_disturbed = crossbar.map.I_to_y(I, k_V, max_weight, G_max, G_min)

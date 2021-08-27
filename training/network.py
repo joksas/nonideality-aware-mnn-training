@@ -9,7 +9,7 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator
 import os
 import sys
 sys.path.insert(0, '..')
-from model_architectures import get_model
+from .architecture import get_model
 
 
 def train(iterator):
@@ -23,7 +23,7 @@ def train(iterator):
 
     cback=keras.callbacks.ModelCheckpoint(iterator.weights_path(), monitor='val_accuracy', save_best_only=True)
 
-    if use_generator:
+    if iterator.use_generator:
         if iterator.dataset=="CIFAR-10" or iterator.dataset=="binarynet":
             horizontal_flip=True
         if iterator.dataset=="SVHN" or iterator.dataset=="binarynet-svhn":
@@ -35,23 +35,23 @@ def train(iterator):
                 horizontal_flip=horizontal_flip)  # randomly flip images
         if keras.__version__[0]=='2':
             history=model.fit_generator(
-                    datagen.flow(x_train, y_train, batch_size=iterator.batch_size),
-                    steps_per_epoch=x_train.shape[0]/iterator.batch_size,
+                    datagen.flow(iterator.x_train, y_train, batch_size=iterator.training.batch_size),
+                    steps_per_epoch=iterator.x_train.shape[0]/iterator.training.batch_size,
                     nb_epoch=num_epochs, validation_split=0.1,
                     verbose=2, callbacks=[cback])
         if keras.__version__[0]=='1':
             history=model.fit_generator(
-                    datagen.flow(x_train, y_train, batch_size=iterator.batch_size),
-                    samples_per_epoch=x_train.shape[0], nb_epoch=num_epochs,
+                    datagen.flow(iterator.x_train, y_train, batch_size=iterator.training.batch_size),
+                    samples_per_epoch=iterator.x_train.shape[0], nb_epoch=num_epochs,
                     verbose=2, validation_split=0.1, callbacks=[cback])
     else:
         if keras.__version__[0]=='2':
-            history=model.fit(x_train, y_train, batch_size=iterator.batch_size,validation_split=0.1, verbose=2, epochs=iterator.training.num_epochs,callbacks=[cback])
+            history=model.fit(iterator.x_train, iterator.y_train, batch_size=iterator.training.batch_size,validation_split=0.1, verbose=2, epochs=iterator.training.num_epochs,callbacks=[cback])
         if keras.__version__[0]=='1':
-            history=model.fit(x_train, y_train,batch_size=iterator.batch_size,validation_split=0.1, verbose=2, nb_epoch=num_epochs,callbacks=[cback])
+            history=model.fit(iterator.x_train, iterator.y_train, batch_size=iterator.training.batch_size,validation_split=0.1, verbose=2, nb_epoch=num_epochs,callbacks=[cback])
 
     dic={'hard': history.history}
-    with open(iterator.history_path(),'wb') as handle:
+    with open(iterator.history_path(), 'wb') as handle:
         pickle.dump(dic, handle)
 
 
@@ -68,5 +68,4 @@ def evaluate(dir_path, dataset, x_test, y_test, batch_size, group_idx=None, is_r
         log_file_full_path = "{}/accuracy.csv".format(log_dir_full_path)
         open(log_file_full_path, "a").close()
         tf.print(score[1], output_stream="file://{}".format(log_file_full_path))
-
 
