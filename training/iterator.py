@@ -20,6 +20,12 @@ class Nonideal:
         else:
             return "ideal"
 
+    def is_nonideal(self) -> bool:
+        if self.iv_nonlinearity is not None:
+            return True
+        else:
+            return False
+
 
 class Iterable:
     repeat_idx = 0
@@ -104,6 +110,12 @@ class Iterator(Dataset):
         return os.path.join(
                 self.network_dir(), "power.csv"
                 )
+
+    def current_stage(self) -> bool:
+        if self.is_training:
+            return self.training
+        else:
+            return self.inference
 
     def Train(self):
         self.is_training = True

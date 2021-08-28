@@ -163,3 +163,35 @@ def w_params_to_G(weight_params, max_weight, G_min, G_max):
 
     return G
 
+
+def w_to_G(weights, max_weight, G_min, G_max):
+    """Maps weights onto conductances.
+
+    Parameters
+    ----------
+    weight : ndarray
+        Weights of shape `m x n`.
+    max_weight : float
+        Assumed maximum weight.
+    G_min : float
+        Minimum conductance of electroformed memristors.
+    G_max : float
+        Maximum conductance of electroformed memristors.
+
+    Returns
+    ----------
+    ndarray
+        Conductances of shape `m x n`.
+    """
+    # We implement the pairs by choosing the lowest possible conductances.
+    G_pos = tf.math.maximum(G_eff, 0.0) + G_min
+    G_neg = tf.math.minimum(-G_eff, 0.0) + G_min
+
+    # Odd columns dedicated to positive weights.
+    # Even columns dedicated to negative weights.
+    G = tf.reshape(
+        tf.concat([G_pos[...,tf.newaxis], G_neg[...,tf.newaxis]], axis=-1),
+        [tf.shape(G_pos)[0],-1])
+
+    return G
+
