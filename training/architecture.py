@@ -96,9 +96,10 @@ class MemristorDense(Layer):
             )
 
     def call(self, x, mask=None):
+        ones = tf.ones([tf.shape(x)[0], 1])
+        inputs = tf.concat([x, ones], 1)
+
         if self.iterator.training.is_nonideal():
-            ones = tf.ones([tf.shape(x)[0], 1])
-            inputs = tf.concat([x, ones], 1)
             b_pos = tf.expand_dims(self.b_pos, axis=0)
             b_neg = tf.expand_dims(self.b_neg, axis=0)
             combined_weights_pos = tf.concat([self.w_pos, b_pos], 0)
@@ -113,14 +114,14 @@ class MemristorDense(Layer):
                     [tf.shape(combined_weights_pos)[0], -1]
                     )
         else:
-            self.out = K.dot(x, self.w) + self.b
+            bias = tf.expand_dims(self.b, axis=0)
+            combined_weights = tf.concat([self.w, bias], 0)
+
+        self.out = self.memristive_outputs(inputs, combined_weights)
 
         return self.out
 
-    def apply_output_disturbance(self, inputs, weights):
-        return self.nonlinear_iv_outputs(inputs, weights)
-
-    def nonideal_outputs(self, x, weights):
+    def memristive_outputs(self, x, weights):
         # Mapping inputs onto voltages.
         V_ref = tf.constant(0.25)
         k_V = 2*V_ref
@@ -150,7 +151,7 @@ class MemristorDense(Layer):
         else:
             # Ideal case for computing output currents.
             # TODO: implement function for computing currents in every branch.
-            I = K.dot(x, weights)
+            I = K.dot(V, G)
 
         # Converting to outputs.
         y_disturbed = crossbar.map.I_to_y(I, k_V, max_weight, G_max, G_min)

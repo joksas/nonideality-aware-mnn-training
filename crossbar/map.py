@@ -193,8 +193,9 @@ def w_to_G(weights, max_weight, G_min, G_max):
     # Odd columns dedicated to positive weights.
     # Even columns dedicated to negative weights.
     G = tf.reshape(
-            tf.concat([G_pos[...,tf.newaxis], G_neg[...,tf.newaxis]], axis=-1),
-            [tf.shape(G_pos)[0],-1])
+            tf.concat([G_pos[..., tf.newaxis], G_neg[..., tf.newaxis]], axis=-1),
+            [tf.shape(G_pos)[0], -1]
+            )
 
     return G
 
