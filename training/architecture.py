@@ -3,6 +3,7 @@ from tensorflow.keras.models import Sequential, Model
 from tensorflow.keras.layers import Activation, Layer
 import numpy as np
 import crossbar
+from . import utils
 
 
 def get_model(iterator):
@@ -127,11 +128,11 @@ class MemristorDense(Layer):
         # Computing currents
         I, I_ind = crossbar.nonlinear_IV.compute_I(
                 V, G, V_ref, G_min, G_max, n_avg, n_std=n_std)
-        # if True:
-        #     log_file_full_path = "{}/power.csv".format(log_dir_full_path)
-        #     open(log_file_full_path, "a").close()
-        #     P_avg = compute_avg_crossbar_power(V, I_ind)
-        #     tf.print(P_avg, output_stream="file://{}".format(log_file_full_path))
+        if not self.iterator.is_training:
+            power_path = self.iterator.power_path()
+            open(power_path, "a").close()
+            P_avg = utils.compute_avg_crossbar_power(V, I_ind)
+            tf.print(P_avg, output_stream="file://{}".format(power_path))
 
         # Converting to outputs.
         y_disturbed = crossbar.map.I_to_y(I, k_V, max_weight, G_max, G_min)

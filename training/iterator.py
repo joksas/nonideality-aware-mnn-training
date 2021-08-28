@@ -65,6 +65,8 @@ class Inference(Nonideal):
 
 
 class Iterator(Dataset):
+    is_training = False
+
     def __init__(self, dataset: str, G_min: float, G_max: float, training: Training, inference: Inference = None) -> None:
         self.dataset = dataset
         self.G_min = G_min
@@ -98,7 +100,13 @@ class Iterator(Dataset):
                 network_dir, self.inference.nonideality_label()
                 )
 
+    def power_path(self):
+        return os.path.join(
+                self.network_dir(), "power.csv"
+                )
+
     def Train(self):
+        self.is_training = True
         for _ in range(self.training.num_repeats):
             os.makedirs(self.network_dir(), exist_ok=True)
             network.train(self)
