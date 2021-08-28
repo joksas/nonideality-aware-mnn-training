@@ -140,7 +140,7 @@ def w_params_to_G(weight_params, max_weight, G_min, G_max):
 
     Parameters
     ----------
-    weights_params : ndarray
+    weight_params : ndarray
         Weight parameters of shape `m x 2n`. These are used to
         train each conductance (instead of pair of conductances)
         directly.
@@ -156,7 +156,7 @@ def w_params_to_G(weight_params, max_weight, G_min, G_max):
     ndarray
         Conductances of shape `m x 2n`.
     """
-    weights_params = clip_weights(weight_params, max_weight)
+    weight_params = clip_weights(weight_params, max_weight)
 
     k_G = compute_k_G(max_weight, G_max, G_min)
     G = k_G*weight_params + G_min
