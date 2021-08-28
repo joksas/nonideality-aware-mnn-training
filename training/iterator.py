@@ -3,32 +3,20 @@ import os
 from . import network, utils
 
 
-class NonlinearityParams:
-    def __init__(self, label: str, G_min: float, G_max: float, n_avg: float, n_std: float):
+class IVNonlinearity:
+    def __init__(self, label: str, n_avg: float, n_std: float):
         self.label = label
-        self.G_min = G_min
-        self.G_max = G_max
         self.n_avg = n_avg
         self.n_std = n_std
 
+
 class Nonideal:
-    nonlinearity_params_idx = 0
-
-    def __init__(self, nonlinearity_params_lst: List[NonlinearityParams]) -> None:
-        self.nonlinearity_params_lst = nonlinearity_params_lst
-
-    def is_memristive(self) -> bool:
-        return self.num_nonideality_params() > 0
-
-    def nonideality_params(self):
-        return self.nonlinearity_params_lst[self.nonlinearity_params_idx]
-
-    def num_nonideality_params(self):
-        return len(self.nonlinearity_params_lst)
+    def __init__(self, iv_nonlinearity: IVNonlinearity = None) -> None:
+        self.iv_nonlinearity = iv_nonlinearity
 
     def nonideality_label(self) -> str:
-        if len(self.nonlinearity_params_lst) > 0:
-            return self.nonlinearity_params_lst[self.nonlinearity_params_idx].label
+        if self.iv_nonlinearity is not None:
+            return self.iv_nonlinearity.label
         else:
             return "ideal"
 
@@ -48,12 +36,12 @@ class Dataset:
 
 
 class Training(Nonideal, Iterable):
-    def __init__(self, batch_size: int = 1, num_epochs: int = 1, nonlinearity_params_lst: List[NonlinearityParams] = [], num_repeats: int = 0) -> None:
+    def __init__(self, batch_size: int = 1, num_epochs: int = 1, is_regularized: bool = False, iv_nonlinearity: IVNonlinearity = None, num_repeats: int = 0) -> None:
         self.batch_size = batch_size
         self.num_epochs = num_epochs
         self.num_repeats = num_repeats
-        self.is_regularized = False
-        Nonideal.__init__(self, nonlinearity_params_lst)
+        self.is_regularized = is_regularized
+        Nonideal.__init__(self, iv_nonlinearity)
         Iterable.__init__(self)
 
     def regularized_label(self) -> str:
@@ -67,10 +55,9 @@ class Training(Nonideal, Iterable):
 
 
 class Inference(Nonideal):
-    def __init__(self, nonlinearity_params_lst: List[NonlinearityParams] = [], num_repeats: int = 0) -> None:
-        self.nonlinearity_params_lst = nonlinearity_params_lst
+    def __init__(self, iv_nonlinearity: IVNonlinearity = None, num_repeats: int = 0) -> None:
         self.num_repeats = num_repeats
-        Nonideal.__init__(self, nonlinearity_params_lst)
+        Nonideal.__init__(self, iv_nonlinearity)
         Iterable.__init__(self)
 
     def repeat_label(self):
@@ -78,8 +65,10 @@ class Inference(Nonideal):
 
 
 class Iterator(Dataset):
-    def __init__(self, dataset: str, training: Training = Training(), inference: Inference = Inference()) -> None:
+    def __init__(self, dataset: str, G_min: float, G_max: float, training: Training, inference: Inference = None) -> None:
         self.dataset = dataset
+        self.G_min = G_min
+        self.G_max = G_max
         self.training = training
         self.inference = inference
         Dataset.__init__(self, dataset)
@@ -110,21 +99,10 @@ class Iterator(Dataset):
                 )
 
     def Train(self):
-        if self.training.is_memristive():
-            for _ in range(len(self.training.nonlinearity_params_lst)):
-                for _ in range(self.training.num_repeats):
-                    network.train(self)
-                    self.training.repeat_idx += 1
+        for _ in range(self.training.num_repeats):
+            os.makedirs(self.network_dir(), exist_ok=True)
+            network.train(self)
+            self.training.repeat_idx += 1
 
-                self.training.repeat_idx = 0
-                self.training.nonlinearity_params_idx += 1
-
-            self.training.nonlinearity_params_idx = 0
-        else:
-            for _ in range(self.training.num_repeats):
-                print(self.network_dir())
-                os.makedirs(self.network_dir(), exist_ok=True)
-                self.training.repeat_idx += 1
-
-            self.training.repeat_idx = 0
+        self.training.repeat_idx = 0
 
