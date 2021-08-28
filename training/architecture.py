@@ -46,7 +46,7 @@ class MemristorDense(Layer):
             reg_gamma = 1e-4
             kwargs["regularizer"] = tf.keras.regularizers.l1(reg_gamma)
 
-        if self.iterator.training.is_nonideal():
+        if self.iterator.training.is_aware():
             self.w_pos = self.add_weight(
                 shape=(self.n_in,self.n_out),
                 initializer=tf.keras.initializers.RandomNormal(mean=0.5, stddev=stdv),
@@ -99,7 +99,7 @@ class MemristorDense(Layer):
         ones = tf.ones([tf.shape(x)[0], 1])
         inputs = tf.concat([x, ones], 1)
 
-        if self.iterator.training.is_nonideal():
+        if self.iterator.training.is_aware():
             b_pos = tf.expand_dims(self.b_pos, axis=0)
             b_neg = tf.expand_dims(self.b_neg, axis=0)
             combined_weights_pos = tf.concat([self.w_pos, b_pos], 0)
@@ -131,7 +131,7 @@ class MemristorDense(Layer):
         max_weight = tf.math.reduce_max(tf.math.abs(weights))
         G_min = tf.constant(self.iterator.G_min)
         G_max = tf.constant(self.iterator.G_max)
-        if self.iterator.training.is_nonideal():
+        if self.iterator.training.is_aware():
             G = crossbar.map.w_params_to_G(weights, max_weight, G_min, G_max)
         else:
             G = crossbar.map.w_to_G(weights, max_weight, G_min, G_max)

@@ -56,6 +56,9 @@ class Training(Nonideal, Iterable):
         else:
             return "non-regularized"
 
+    def is_aware(self) -> bool:
+        return self.is_nonideal()
+
     def network_label(self):
         return "network-{}".format(self.repeat_idx)
 
