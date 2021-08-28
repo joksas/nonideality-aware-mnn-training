@@ -75,7 +75,7 @@ class Iterator(Dataset):
 
     def training_nonideality_dir(self):
         return os.path.join(
-                os.getcwd(), "new-models", self.dataset, self.training.regularized_label(), self.training.nonideality_label()
+                os.getcwd(), "models", self.dataset, self.training.regularized_label(), self.training.nonideality_label()
                 )
 
     def network_dir(self):
