@@ -4,16 +4,31 @@
 
 TensorFlow 2.0 or higher.
 
-## Test
+## Repository structure
 
-To train, go to `MNIST`, set `path_to_project` in `MNIST/Train.py` and then run `python Train.py`.
+`crossbar`: memristor nonidealities and mapping onto crossbar arrays.
 
-## Repo organisation
+`training`: network training.
 
-`model_architectures.py`: model topology.
+## Example
 
-`memristor_utils.py`: custom layers including `memristor_dense`.
+```python
+from training.iterator import Iterator, Training, Inference, IVNonlinearity
 
-`crossbar`: mapping and nonidealities.
 
-`MNIST/Train.py`: training setup.
+dataset = "MNIST"
+G_off = 1/983.3
+G_on = 1/281.3
+iv_nonlinearity = IVNonlinearity("low-resistance", 2.132, 0.095)
+
+iterator = Iterator(
+	dataset,
+	G_off,
+	G_on,
+        Training(num_repeats=2, num_epochs=100, batch_size=100, iv_nonlinearity=iv_nonlinearity),
+        Inference(num_repeats=3, iv_nonlinearity=iv_nonlinearity),
+        )
+
+iterator.train()
+iterator.infer()
+```
