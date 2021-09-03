@@ -63,7 +63,7 @@ class Training(Nonideal, Iterable):
         return "network-{}".format(self.repeat_idx)
 
 
-class Inference(Nonideal):
+class Inference(Nonideal, Iterable):
     def __init__(self, iv_nonlinearity: IVNonlinearity = None, num_repeats: int = 0) -> None:
         self.num_repeats = num_repeats
         Nonideal.__init__(self, iv_nonlinearity)
@@ -106,12 +106,26 @@ class Iterator(Dataset):
 
     def inference_nonideality_dir(self):
         return os.path.join(
-                network_dir, self.inference.nonideality_label()
+                self.network_dir(), self.inference.nonideality_label()
+                )
+
+    def inference_repeat_dir(self):
+        return os.path.join(
+                self.inference_nonideality_dir(), self.inference.repeat_label()
                 )
 
     def power_path(self):
         return os.path.join(
-                self.network_dir(), "power.csv"
+                self.inference_repeat_dir(), "power.csv"
+                )
+
+    def loss_path(self):
+        return os.path.join(
+                self.inference_repeat_dir(), "loss.csv"
+                )
+    def accuracy_path(self):
+        return os.path.join(
+                self.inference_repeat_dir(), "accuracy.csv"
                 )
 
     def current_stage(self) -> bool:
@@ -120,12 +134,22 @@ class Iterator(Dataset):
         else:
             return self.inference
 
-    def Train(self):
+    def train(self):
         self.is_training = True
         for _ in range(self.training.num_repeats):
-            os.makedirs(self.network_dir(), exist_ok=True)
             network.train(self)
             self.training.repeat_idx += 1
 
         self.training.repeat_idx = 0
 
+    def infer(self):
+        self.is_training = False
+        for _ in range(self.training.num_repeats):
+            for _ in range(self.inference.num_repeats):
+                network.infer(self)
+                self.inference.repeat_idx += 1
+
+            self.inference.repeat_idx = 0
+            self.training.repeat_idx += 1
+
+        self.training.repeat_idx = 0
