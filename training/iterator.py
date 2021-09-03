@@ -1,5 +1,5 @@
-from typing import NamedTuple, List
 import os
+import pickle
 from . import network, utils
 
 
@@ -127,6 +127,10 @@ class Iterator(Dataset):
         return os.path.join(
                 self.inference_repeat_dir(), "accuracy.csv"
                 )
+
+    def history(self):
+        with open(self.history_path(), "rb") as pickle_file:
+            return pickle.load(pickle_file)
 
     def current_stage(self) -> bool:
         if self.is_training:
