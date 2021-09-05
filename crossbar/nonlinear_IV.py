@@ -1,7 +1,7 @@
 import tensorflow as tf
 
 
-def compute_I(V, G, V_ref, G_min, G_max, n_avg, n_std=tf.constant(0.0)):
+def compute_I(V, G, V_ref, n_avg, n_std=tf.constant(0.0)):
     """Computes output currents of a crossbar consisting of devices suffering
     from I/V non-linearities.
 
@@ -14,10 +14,6 @@ def compute_I(V, G, V_ref, G_min, G_max, n_avg, n_std=tf.constant(0.0)):
     V_ref :
         Reference voltage values of length r (in increasing order) or voltage
         at which the devices behave Ohmically.
-    G_min : float
-        Minimum conductance of electroformed memristors.
-    G_max : float
-        Maximum conductance of electroformed memristors.
     n_avg : tf.constant
         Average value of non-linearity parameter.
     n_std: tf.constant, optional
@@ -31,22 +27,18 @@ def compute_I(V, G, V_ref, G_min, G_max, n_avg, n_std=tf.constant(0.0)):
         Currents of shape `p x m x n` produced by each of the conductances in
         the crossbar array.
     """
-    I_ind = compute_currents(G_min, G_max, n_avg, V_ref, G, V, n_std=n_std)
+    I_ind = compute_currents(n_avg, V_ref, G, V, n_std=n_std)
     I = add_I_BL(I_ind)
 
     return I, I_ind
 
 
-def compute_currents(G_min, G_max, n_avg, V_ref, G, V, n_std=tf.constant(0.0)):
+def compute_currents(n_avg, V_ref, G, V, n_std=tf.constant(0.0)):
     """Compute current values by modelling I-V behaviour using nonlinearity
     parameter.
 
     Parameters
     ----------
-    G_min : float
-        Minimum conductance of electroformed memristors.
-    G_max : float
-        Maximum conductance of electroformed memristors.
     n_avg : tf.constant
         Average value of non-linearity parameter.
     V_ref : float

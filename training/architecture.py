@@ -141,7 +141,7 @@ class MemristorDense(Layer):
             n_std = tf.constant(self.iterator.training.iv_nonlinearity.n_std)
             # Computing currents
             I, I_ind = crossbar.nonlinear_IV.compute_I(
-                    V, G, V_ref, G_min, G_max, n_avg, n_std=n_std)
+                    V, G, V_ref, n_avg, n_std=n_std)
 
             if not self.iterator.is_training:
                 power_path = self.iterator.power_path()
