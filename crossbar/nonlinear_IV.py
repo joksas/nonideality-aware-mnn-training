@@ -64,7 +64,7 @@ def compute_currents(G_min, G_max, n_avg, V_ref, G, V, n_std=tf.constant(0.0)):
         Currents of shape `p x m x n` produced by each of the conductances in
         the crossbar array.
     """
-    epsilon = 1e-4
+    epsilon = 1e-8
 
     exponent = tf.math.log((tf.math.abs(V)+epsilon)/V_ref)/tf.math.log(2.0)
 
