@@ -1,4 +1,5 @@
 import tensorflow as tf
+from . import utils
 
 
 def compute_I(V, G, V_ref, n_avg, n_std=tf.constant(0.0)):
@@ -61,12 +62,13 @@ def compute_currents(n_avg, V_ref, G, V, n_std=tf.constant(0.0)):
         Currents of shape `p x m x n` produced by each of the conductances in
         the crossbar array.
     """
-    epsilon = 1e-8
-
-    exponent = tf.math.log((tf.math.abs(V)+epsilon)/V_ref)/tf.math.log(2.0)
-
     n = tf.random.normal(G.get_shape().as_list(), mean=n_avg, stddev=n_std, dtype=tf.float32)
-    I = tf.sign(tf.expand_dims(V, axis=-1)) * V_ref * tf.expand_dims(G, axis=0) * tf.expand_dims(n, axis=0) ** (tf.expand_dims(exponent, axis=-1))
+
+    ohmic_current = V_ref * tf.expand_dims(G, axis=0)
+    ratio = tf.expand_dims(V/V_ref, axis=-1)
+    exponent = utils.tf_log2(n)
+
+    I = ohmic_current * ratio ** exponent
 
     return I
 
