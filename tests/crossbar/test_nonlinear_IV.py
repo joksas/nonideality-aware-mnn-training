@@ -107,6 +107,36 @@ test_compute_currents_testdata = [
                         ],
                     ])
                 ),
+        (
+                {
+                    "n_avg": tf.constant(5.0),
+                    "n_std": tf.constant(0.0),
+                    "V_ref": tf.constant(0.5),
+                    "G": tf.constant([
+                        [1.0, 2.0, 3.0, 4.0],
+                        [5.0, 6.0, 7.0, 8.0],
+                        [9.0, 10.0, 11.0, 12.0],
+                        [13.0, 14.0, 15.0, 16.0],
+                        ]),
+                    "V": tf.constant([
+                        [-0.5, -0.25, -1.0, 0.5],
+                        ]),
+                    },
+                tf.constant([
+                    [
+                        # Baseline because V_ref = 0.5
+                        [-0.5*1.0, -0.5*2.0, -0.5*3.0, -0.5*4.0],
+                        # Dividing by additional factor of 5 because -0.25/-0.5
+                        # = 1/2 and n_avg = 5
+                        [-0.5*5.0/5.0, -0.5*6.0/5.0, -0.5*7.0/5.0, -0.5*8.0/5.0],
+                        # Multiplying by additional factor of 5 because
+                        # -1.0/-0.5 = 1/2 and n_avg = 5
+                        [-0.5*9.0*5.0, -0.5*10.0*5.0, -0.5*11.0*5.0, -0.5*12.0*5.0],
+                        # Baseline because V_ref = 0.5
+                        [0.5*13.0, 0.5*14.0, 0.5*15.0, 0.5*16.0],
+                        ],
+                    ])
+                ),
         ]
 
 

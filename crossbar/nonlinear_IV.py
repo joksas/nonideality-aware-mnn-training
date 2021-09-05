@@ -65,10 +65,13 @@ def compute_currents(n_avg, V_ref, G, V, n_std=tf.constant(0.0)):
     n = tf.random.normal(G.get_shape().as_list(), mean=n_avg, stddev=n_std, dtype=tf.float32)
 
     ohmic_current = V_ref * tf.expand_dims(G, axis=0)
-    ratio = tf.expand_dims(V/V_ref, axis=-1)
+    # Take absolute value of V to prevent negative numbers from being raised to
+    # a negative power. We assume symmetrical behaviour with negative voltages.
+    ratio = tf.expand_dims(tf.abs(V)/V_ref, axis=-1)
     exponent = utils.tf_log2(n)
+    sign = tf.expand_dims(tf.sign(V), axis=-1)
 
-    I = ohmic_current * ratio ** exponent
+    I = sign * ohmic_current * ratio ** exponent
 
     return I
 
