@@ -65,12 +65,8 @@ def compute_currents(n_avg, V_ref, G, V, n_std=tf.constant(0.0)):
 
     exponent = tf.math.log((tf.math.abs(V)+epsilon)/V_ref)/tf.math.log(2.0)
 
-    if n_std == tf.constant(0.0):
-        n = n_avg
-        I = tf.sign(tf.expand_dims(V, axis=-1)) * V_ref * tf.expand_dims(G, axis=0) * n ** (tf.expand_dims(exponent, axis=-1))
-    else:
-        n = tf.random.normal(G.get_shape().as_list(), mean=n_avg, stddev=n_std, dtype=tf.float32)
-        I = tf.sign(tf.expand_dims(V, axis=-1)) * V_ref * tf.expand_dims(G, axis=0) * tf.expand_dims(n, axis=0) ** (tf.expand_dims(exponent, axis=-1))
+    n = tf.random.normal(G.get_shape().as_list(), mean=n_avg, stddev=n_std, dtype=tf.float32)
+    I = tf.sign(tf.expand_dims(V, axis=-1)) * V_ref * tf.expand_dims(G, axis=0) * tf.expand_dims(n, axis=0) ** (tf.expand_dims(exponent, axis=-1))
 
     return I
 
