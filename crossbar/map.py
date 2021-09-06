@@ -135,17 +135,15 @@ def x_to_V(x, k_V):
     return k_V*x
 
 
-def w_params_to_G(weight_params, max_weight, G_min, G_max):
+def w_params_to_G(weight_params, G_min, G_max):
     """Maps weight parameters onto conductances.
 
     Parameters
     ----------
-    weights_params : ndarray
+    weight_params : ndarray
         Weight parameters of shape `m x 2n`. These are used to
         train each conductance (instead of pair of conductances)
         directly.
-    max_weight : float
-        Assumed maximum weight.
     G_min : float
         Minimum conductance of electroformed memristors.
     G_max : float
@@ -153,13 +151,54 @@ def w_params_to_G(weight_params, max_weight, G_min, G_max):
 
     Returns
     ----------
-    ndarray
+    G : ndarray
         Conductances of shape `m x 2n`.
+    max_weight : float
+        Assumed maximum weight.
     """
-    weights_params = clip_weights(weight_params, max_weight)
+    max_weight = tf.math.reduce_max(weight_params)
+
+    weight_params = clip_weights(weight_params, max_weight)
 
     k_G = compute_k_G(max_weight, G_max, G_min)
     G = k_G*weight_params + G_min
 
-    return G
+    return G, max_weight
 
+
+def w_to_G(weights, G_min, G_max):
+    """Maps weights onto conductances.
+
+    Parameters
+    ----------
+    weight : ndarray
+        Weights of shape `m x n`.
+    G_min : float
+        Minimum conductance of electroformed memristors.
+    G_max : float
+        Maximum conductance of electroformed memristors.
+
+    Returns
+    ----------
+    G : ndarray
+        Conductances of shape `m x n`.
+    max_weight : float
+        Assumed maximum weight.
+    """
+    max_weight = tf.math.reduce_max(tf.math.abs(weights))
+
+    k_G = compute_k_G(max_weight, G_max, G_min)
+    G_eff = k_G*weights
+
+    # We implement the pairs by choosing the lowest possible conductances.
+    G_pos = tf.math.maximum(G_eff, 0.0) + G_min
+    G_neg = -tf.math.minimum(G_eff, 0.0) + G_min
+
+    # Odd columns dedicated to positive weights.
+    # Even columns dedicated to negative weights.
+    G = tf.reshape(
+            tf.concat([G_pos[..., tf.newaxis], G_neg[..., tf.newaxis]], axis=-1),
+            [tf.shape(G_pos)[0], -1]
+            )
+
+    return G, max_weight
