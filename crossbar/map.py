@@ -188,7 +188,7 @@ def w_to_G(weights, max_weight, G_min, G_max):
 
     # We implement the pairs by choosing the lowest possible conductances.
     G_pos = tf.math.maximum(G_eff, 0.0) + G_min
-    G_neg = tf.math.minimum(-G_eff, 0.0) + G_min
+    G_neg = -tf.math.minimum(G_eff, 0.0) + G_min
 
     # Odd columns dedicated to positive weights.
     # Even columns dedicated to negative weights.
