@@ -144,3 +144,65 @@ test_compute_currents_testdata = [
 def test_compute_currents(args, expected):
     I = nonlinear_IV.compute_currents(**args)
     utils.assert_tf_approx(I, expected)
+
+
+test_compute_I_testdata = [
+        (
+            {
+                "n_avg": tf.constant(2.0),
+                "n_std": tf.constant(0.0),
+                "V_ref": tf.constant(0.5),
+                "G": tf.constant([
+                    [1.0, 2.0, 3.0, 4.0],
+                    [5.0, 6.0, 7.0, 8.0],
+                    [9.0, 10.0, 11.0, 12.0],
+                    ]),
+                "V": tf.constant([
+                    [1.0, 0.0, -0.5],
+                    [0.0, 0.25, 0.0],
+                    ]),
+                },
+            [
+                # With {n_avg = 2, n_std = 0} the bit-line outputs should
+                # represent the vector-matrix product of voltages and
+                # conductances.
+                tf.constant(
+                    [
+                        [
+                            1.0*1.0 + 0.0*5.0 + (-0.5)*9.0,
+                            1.0*2.0 + 0.0*6.0 + (-0.5)*10.0,
+                            1.0*3.0 + 0.0*7.0 + (-0.5)*11.0,
+                            1.0*4.0 + 0.0*8.0 + (-0.5)*12.0,
+                            ],
+                        [
+                            0.0*1.0 + 0.25*5.0 + 0.0*9.0,
+                            0.0*2.0 + 0.25*6.0 + 0.0*10.0,
+                            0.0*3.0 + 0.25*7.0 + 0.0*11.0,
+                            0.0*4.0 + 0.25*8.0 + 0.0*12.0,
+                            ],
+                    ]),
+                # With {n_avg = 2, n_std = 0} currents should be produced
+                # according to Ohm's law.
+                tf.constant([
+                    [
+                        [1.0*1.0, 1.0*2.0, 1.0*3.0, 1.0*4.0],
+                        [0.0*5.0, 0.0*6.0, 0.0*7.0, 0.0*8.0],
+                        [-0.5*9.0, -0.5*10.0, -0.5*11.0, -0.5*12.0],
+                        ],
+                    [
+                        [0.0*1.0, 0.0*2.0, 0.0*3.0, 0.0*4.0],
+                        [0.25*5.0, 0.25*6.0, 0.25*7.0, 0.25*8.0],
+                        [0.0*9.0, 0.0*10.0, 0.0*11.0, 0.0*12.0],
+                        ],
+                    ]),
+                ],
+            ),
+        ]
+
+
+@pytest.mark.parametrize("args,expected", test_compute_I_testdata)
+def test_compute_I(args, expected):
+    I_exp, I_ind_exp = expected
+    I, I_ind = nonlinear_IV.compute_I(**args)
+    utils.assert_tf_approx(I, I_exp)
+    utils.assert_tf_approx(I_ind, I_ind_exp)
