@@ -2,7 +2,7 @@ import tensorflow as tf
 from . import utils
 
 
-def compute_I(V, G, V_ref, n_avg, n_std=tf.constant(0.0)):
+def compute_I_all(V, G, V_ref, n_avg, n_std=tf.constant(0.0)):
     """Computes output currents of a crossbar consisting of devices suffering
     from I/V non-linearities.
 
@@ -29,7 +29,7 @@ def compute_I(V, G, V_ref, n_avg, n_std=tf.constant(0.0)):
         the crossbar array.
     """
     I_ind = compute_currents(n_avg, V_ref, G, V, n_std=n_std)
-    I = add_I_BL(I_ind)
+    I = utils.add_I_BL(I_ind)
 
     return I, I_ind
 
@@ -73,23 +73,5 @@ def compute_currents(n_avg, V_ref, G, V, n_std=tf.constant(0.0)):
 
     I = sign * ohmic_current * ratio ** exponent
 
-    return I
-
-
-def add_I_BL(I_ind):
-    """Adds currents along the bit lines.
-
-    Parameters
-    ----------
-    I_ind : ndarray
-        Currents of shape `p x m x n` produced by each of the conductances in
-        the crossbar array.
-
-    Returns
-    ----------
-    I : ndarray
-        Output currents of shape `p x n`.
-    """
-    I = tf.math.reduce_sum(I_ind, axis=1)
     return I
 

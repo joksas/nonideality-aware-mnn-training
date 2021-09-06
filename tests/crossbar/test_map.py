@@ -5,7 +5,7 @@ Tests of functions of crossbar.nonlinear_IV
 import tensorflow as tf
 import pytest
 import crossbar
-from . import utils
+from tests import utils
 
 
 w_params_to_G_testdata = [

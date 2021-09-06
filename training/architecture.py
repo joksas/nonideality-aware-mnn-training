@@ -1,7 +1,6 @@
 import tensorflow as tf
-from tensorflow.keras.models import Sequential, Model
+from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Activation, Layer
-from tensorflow.keras import backend as K
 import numpy as np
 import crossbar
 from . import utils
@@ -139,18 +138,21 @@ class MemristorDense(Layer):
             n_avg = tf.constant(self.iterator.current_stage().iv_nonlinearity.n_avg)
             n_std = tf.constant(self.iterator.current_stage().iv_nonlinearity.n_std)
             # Computing currents
-            I, I_ind = crossbar.nonlinear_IV.compute_I(
+            I, I_ind = crossbar.nonlinear_IV.compute_I_all(
                     V, G, V_ref, n_avg, n_std=n_std)
 
-            if not self.iterator.is_training:
-                power_path = self.iterator.power_path()
-                open(power_path, "a").close()
-                P_avg = utils.compute_avg_crossbar_power(V, I_ind)
-                tf.print(P_avg, output_stream="file://{}".format(power_path))
         else:
             # Ideal case for computing output currents.
-            # TODO: implement function for computing currents in every branch.
-            I = K.dot(V, G)
+            if self.iterator.is_training:
+                I = crossbar.ideal.compute_I(V, G)
+            else:
+                I, I_ind = crossbar.ideal.compute_I_all(V, G)
+
+        if not self.iterator.is_training:
+            power_path = self.iterator.power_path()
+            open(power_path, "a").close()
+            P_avg = utils.compute_avg_crossbar_power(V, I_ind)
+            tf.print(P_avg, output_stream="file://{}".format(power_path))
 
         # Converting to outputs.
         y_disturbed = crossbar.map.I_to_y(I, k_V, max_weight, G_max, G_min)

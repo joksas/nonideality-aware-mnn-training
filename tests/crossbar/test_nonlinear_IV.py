@@ -5,7 +5,7 @@ Tests of functions of crossbar.nonlinear_IV
 import tensorflow as tf
 import pytest
 from crossbar import nonlinear_IV
-from . import utils
+from tests import utils
 
 
 # I feel it is appropriate to use multiplication for expected tensors because
@@ -146,7 +146,7 @@ def test_compute_currents(args, expected):
     utils.assert_tf_approx(I, expected)
 
 
-compute_I_testdata = [
+compute_I_all_testdata = [
         (
             {
                 "n_avg": tf.constant(2.0),
@@ -200,9 +200,9 @@ compute_I_testdata = [
         ]
 
 
-@pytest.mark.parametrize("args,expected", compute_I_testdata)
-def test_compute_I(args, expected):
+@pytest.mark.parametrize("args,expected", compute_I_all_testdata)
+def test_compute_I_all(args, expected):
     I_exp, I_ind_exp = expected
-    I, I_ind = nonlinear_IV.compute_I(**args)
+    I, I_ind = nonlinear_IV.compute_I_all(**args)
     utils.assert_tf_approx(I, I_exp)
     utils.assert_tf_approx(I_ind, I_ind_exp)
