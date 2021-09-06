@@ -128,13 +128,12 @@ class MemristorDense(Layer):
         V = crossbar.map.x_to_V(x, k_V)
 
         # Mapping weights onto conductances.
-        max_weight = tf.math.reduce_max(tf.math.abs(weights))
         G_min = tf.constant(self.iterator.G_min)
         G_max = tf.constant(self.iterator.G_max)
         if self.iterator.training.is_aware():
-            G = crossbar.map.w_params_to_G(weights, max_weight, G_min, G_max)
+            G, max_weight = crossbar.map.w_params_to_G(weights, G_min, G_max)
         else:
-            G = crossbar.map.w_to_G(weights, max_weight, G_min, G_max)
+            G = crossbar.map.w_to_G(weights, G_min, G_max)
 
         if self.iterator.current_stage().iv_nonlinearity is not None:
             n_avg = tf.constant(self.iterator.training.iv_nonlinearity.n_avg)
