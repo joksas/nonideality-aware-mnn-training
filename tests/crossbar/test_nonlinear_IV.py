@@ -11,7 +11,7 @@ from . import utils
 # I feel it is appropriate to use multiplication for expected tensors because
 # it is not the underlying operation that we are testing. Writing it out
 # reveals the logic behind the calculations that *should* take place - Dovydas
-test_compute_currents_testdata = [
+compute_currents_testdata = [
         (
             {
                 "n_avg": tf.constant(2.0),
@@ -140,13 +140,13 @@ test_compute_currents_testdata = [
         ]
 
 
-@pytest.mark.parametrize("args,expected", test_compute_currents_testdata)
+@pytest.mark.parametrize("args,expected", compute_currents_testdata)
 def test_compute_currents(args, expected):
     I = nonlinear_IV.compute_currents(**args)
     utils.assert_tf_approx(I, expected)
 
 
-test_compute_I_testdata = [
+compute_I_testdata = [
         (
             {
                 "n_avg": tf.constant(2.0),
@@ -200,7 +200,7 @@ test_compute_I_testdata = [
         ]
 
 
-@pytest.mark.parametrize("args,expected", test_compute_I_testdata)
+@pytest.mark.parametrize("args,expected", compute_I_testdata)
 def test_compute_I(args, expected):
     I_exp, I_ind_exp = expected
     I, I_ind = nonlinear_IV.compute_I(**args)
