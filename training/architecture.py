@@ -109,6 +109,8 @@ class MemristorDense(layers.Layer):
                     )
 
     def call(self, x, mask=None):
+        # tf.print("x shape:", x.shape)
+        # tf.print("x:", x)
         ones = tf.ones([tf.shape(x)[0], 1])
         inputs = tf.concat([x, ones], 1)
 
@@ -135,8 +137,6 @@ class MemristorDense(layers.Layer):
         return self.out
 
     def memristive_outputs(self, x, weights):
-        # tf.print("x:", x.shape, x)
-        # tf.print("x:", x.shape)
         # Mapping inputs onto voltages.
         V_ref = tf.constant(0.25)
         k_V = 2*V_ref
@@ -170,7 +170,6 @@ class MemristorDense(layers.Layer):
             P_avg = utils.compute_avg_crossbar_power(V, I_ind)
             tf.print(P_avg, output_stream="file://{}".format(power_path))
 
-        # tf.print("I:", I)
         # Converting to outputs.
         y_disturbed = crossbar.map.I_to_y(I, k_V, max_weight, G_max, G_min)
 
@@ -178,7 +177,6 @@ class MemristorDense(layers.Layer):
                 y_disturbed, "nan in outputs", name=None
                 )
 
-        # tf.print("y:", y_disturbed)
         return y_disturbed
 
     def get_output_shape_for(self,input_shape):
