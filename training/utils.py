@@ -67,10 +67,7 @@ def get_examples(dataset):
     else:
         raise "Dataset should be one of the following: [MNIST, CIFAR-10]."
 
-    x_train = x_train.astype(np.float32)
-    x_test = x_test.astype(np.float32)
-    x_train /= 255
-    x_test /= 255
+    x_train, x_test = x_train/255.0, x_test/255.0
 
     print("x_train shape:", x_train.shape)
     print(x_train.shape[0], "train samples")

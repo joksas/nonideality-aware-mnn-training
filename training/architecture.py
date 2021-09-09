@@ -1,39 +1,53 @@
 import tensorflow as tf
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Activation, Layer
+from tensorflow.keras import layers, models
 import numpy as np
 import crossbar
 from . import utils
 
 
 def get_model(iterator):
-	if iterator.dataset=='MNIST':
-		model=Sequential()
-		model.add(MemristorDense(784, 25, iterator, input_shape=[784]))
-        # We will try to introduce non-linearities using dense layers.
-		model.add(Activation('sigmoid'))
-		model.add(MemristorDense(int(model.output.get_shape()[1]), 10, iterator))
-		model.add(Activation('softmax'))
-	else:
-		raise("Dataset {} is not recognised!".format(iterator.dataset))
-	return model
+    num_hidden_neurons = 25
+    if iterator.dataset == "MNIST":
+        model = models.Sequential()
+        model.add(MemristorDense(784, num_hidden_neurons, iterator, input_shape=[784]))
+        model.add(layers.Activation("sigmoid"))
+        model.add(MemristorDense(num_hidden_neurons, 10, iterator))
+        model.add(layers.Activation("softmax"))
+    elif iterator.dataset == "CIFAR-10":
+        model = models.Sequential()
+
+        # Convolutional layers
+        model.add(layers.Conv2D(32, (3, 3), activation="relu", input_shape=(32, 32, 3)))
+        model.add(layers.MaxPooling2D((2, 2)))
+        model.add(layers.Conv2D(64, (3, 3), activation="relu"))
+        model.add(layers.MaxPooling2D((2, 2)))
+        model.add(layers.Conv2D(64, (3, 3), activation="sigmoid"))
+
+        # Fully connected layers
+        model.add(layers.Flatten())
+        model.add(MemristorDense(1024, num_hidden_neurons, iterator))
+        model.add(layers.Activation("sigmoid"))
+        model.add(MemristorDense(num_hidden_neurons, 10, iterator))
+        model.add(layers.Activation("softmax"))
+    else:
+        raise "Dataset {} is not recognised!".format(iterator.dataset)
+    return model
 
 
-class MemristorDense(Layer):
+class MemristorDense(layers.Layer):
     def __init__(self, n_in, n_out, iterator, **kwargs):
         self.n_in=n_in
         self.n_out=n_out
         self.iterator = iterator
         super(MemristorDense, self).__init__(**kwargs)
 
-    # Adding this funcion removes an issue with custom layer checkpoint
+    # Adding this function removes an issue with custom layer checkpoint
     def get_config(self):
-
         config = super().get_config().copy()
         config.update({
-            'n_in': self.n_in,
-            'n_out': self.n_out,
-        })
+            "n_in": self.n_in,
+            "n_out": self.n_out,
+            })
         return config
 
     # Create trainable weights and biases
@@ -47,52 +61,52 @@ class MemristorDense(Layer):
 
         if self.iterator.training.is_aware():
             self.w_pos = self.add_weight(
-                shape=(self.n_in,self.n_out),
-                initializer=tf.keras.initializers.RandomNormal(mean=0.5, stddev=stdv),
-                name="weights_pos",
-                trainable=True,
-                **kwargs
-            )
+                    shape=(self.n_in,self.n_out),
+                    initializer=tf.keras.initializers.RandomNormal(mean=0.5, stddev=stdv),
+                    name="weights_pos",
+                    trainable=True,
+                    **kwargs
+                    )
 
             self.w_neg = self.add_weight(
-                shape=(self.n_in,self.n_out),
-                initializer=tf.keras.initializers.RandomNormal(mean=0.5, stddev=stdv),
-                name="weights_neg",
-                trainable=True,
-                **kwargs
-            )
+                    shape=(self.n_in,self.n_out),
+                    initializer=tf.keras.initializers.RandomNormal(mean=0.5, stddev=stdv),
+                    name="weights_neg",
+                    trainable=True,
+                    **kwargs
+                    )
 
             self.b_pos = self.add_weight(
-                shape=(self.n_out,),
-                initializer=tf.keras.initializers.Constant(value=0.5),
-                name="biases_pos",
-                trainable=True,
-                **kwargs
-            )
+                    shape=(self.n_out,),
+                    initializer=tf.keras.initializers.Constant(value=0.5),
+                    name="biases_pos",
+                    trainable=True,
+                    **kwargs
+                    )
 
             self.b_neg = self.add_weight(
-                shape=(self.n_out,),
-                initializer=tf.keras.initializers.Constant(value=0.5),
-                name="biases_neg",
-                trainable=True,
-                **kwargs
-            )
+                    shape=(self.n_out,),
+                    initializer=tf.keras.initializers.Constant(value=0.5),
+                    name="biases_neg",
+                    trainable=True,
+                    **kwargs
+                    )
         else:
             self.w = self.add_weight(
-                shape=(self.n_in,self.n_out),
-                initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=stdv),
-                name="weights",
-                trainable=True,
-                **kwargs
-                )
+                    shape=(self.n_in,self.n_out),
+                    initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=stdv),
+                    name="weights",
+                    trainable=True,
+                    **kwargs
+                    )
 
             self.b = self.add_weight(
-                shape=(self.n_out,),
-                initializer=tf.keras.initializers.Constant(value=0.0),
-                name="biases",
-                trainable=True,
-                **kwargs
-            )
+                    shape=(self.n_out,),
+                    initializer=tf.keras.initializers.Constant(value=0.0),
+                    name="biases",
+                    trainable=True,
+                    **kwargs
+                    )
 
     def call(self, x, mask=None):
         ones = tf.ones([tf.shape(x)[0], 1])
@@ -121,6 +135,8 @@ class MemristorDense(Layer):
         return self.out
 
     def memristive_outputs(self, x, weights):
+        # tf.print("x:", x.shape, x)
+        # tf.print("x:", x.shape)
         # Mapping inputs onto voltages.
         V_ref = tf.constant(0.25)
         k_V = 2*V_ref
@@ -154,15 +170,16 @@ class MemristorDense(Layer):
             P_avg = utils.compute_avg_crossbar_power(V, I_ind)
             tf.print(P_avg, output_stream="file://{}".format(power_path))
 
+        # tf.print("I:", I)
         # Converting to outputs.
         y_disturbed = crossbar.map.I_to_y(I, k_V, max_weight, G_max, G_min)
 
         tf.debugging.assert_all_finite(
-            y_disturbed, "nan in outputs", name=None
-        )
+                y_disturbed, "nan in outputs", name=None
+                )
 
+        # tf.print("y:", y_disturbed)
         return y_disturbed
-
 
     def get_output_shape_for(self,input_shape):
         return (input_shape[0], self.n_out)
