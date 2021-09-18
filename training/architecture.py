@@ -13,6 +13,8 @@ def get_model(iterator):
         model.add(layers.Activation("sigmoid"))
         model.add(MemristorDense(num_hidden_neurons, 10, iterator))
         model.add(layers.Activation("softmax"))
+
+        opt = tf.keras.optimizers.SGD()
     elif iterator.dataset == "CIFAR-10":
         model = models.Sequential()
 
@@ -29,8 +31,15 @@ def get_model(iterator):
         model.add(layers.Activation("sigmoid"))
         model.add(MemristorDense(num_hidden_neurons, 10, iterator))
         model.add(layers.Activation("softmax"))
+
+        opt = tf.keras.optimizers.Adam()
     else:
         raise "Dataset {} is not recognised!".format(iterator.dataset)
+
+    if not iterator.is_training:
+        model.load_weights(iterator.weights_path())
+
+    model.compile(optimizer=opt, loss=tf.keras.losses.SparseCategoricalCrossentropy(), metrics=["accuracy"])
     return model
 
 

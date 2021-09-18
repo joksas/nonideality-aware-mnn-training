@@ -9,26 +9,10 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator
 sys.path.insert(0, "..")
 
 
-def model_compile_kwargs(dataset):
-    if dataset == "MNIST":
-        return  {
-                "loss": tf.keras.losses.SparseCategoricalCrossentropy(),
-                "optimizer": keras.optimizers.SGD(),
-                "metrics": ["accuracy"],
-                }
-    elif dataset == "CIFAR-10":
-        return {
-                "loss": tf.keras.losses.SparseCategoricalCrossentropy(),
-                "optimizer": keras.optimizers.Adam(),
-                "metrics": ["accuracy"]
-                }
-
-
 def train(iterator):
     os.makedirs(iterator.network_dir(), exist_ok=True)
 
     model = get_model(iterator)
-    model.compile(**model_compile_kwargs(iterator.dataset))
 
     cback=keras.callbacks.ModelCheckpoint(
             iterator.weights_path(),
@@ -54,8 +38,7 @@ def infer(iterator):
     os.makedirs(iterator.inference_repeat_dir(), exist_ok=True)
 
     model = get_model(iterator)
-    model.load_weights(iterator.weights_path())
-    model.compile(**model_compile_kwargs(iterator.dataset))
+
     # All at once, so that a single value of average power is computed for each synaptic layer.
     score = model.evaluate(iterator.x_test, iterator.y_test, verbose=0, batch_size=iterator.x_test.shape[0])
 
