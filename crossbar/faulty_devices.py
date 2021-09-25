@@ -1,6 +1,24 @@
 import tensorflow as tf
 
 
+def random_devices_stuck(G, val, prob):
+    """Sets random elements of G to val.
+
+    Parameters
+    ----------
+    G : tf.Tensor
+        Conductances.
+    val : float
+        Conductances to set randomly selected devices to.
+    prob : float
+        Probability that a given device will be set to val. Probability must be in the [0.0, 1.0]
+        range.
+    """
+    mask = random_bool_tensor(G.shape, prob)
+    G = tf.where(mask, val, G)
+    return G
+
+
 def random_bool_tensor(shape, prob_true):
     """Returns random boolean tensor.
 
