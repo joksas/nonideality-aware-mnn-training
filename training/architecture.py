@@ -159,13 +159,21 @@ class MemristorDense(layers.Layer):
         else:
             G, max_weight = crossbar.map.w_to_G(weights, G_min, G_max)
 
+        # Linearity-preserving nonidealities
+        if self.iterator.current_stage().stuck_at_G_min is not None or self.iterator.current_stage().stuck_at_G_min is not None:
+            p = self.iterator.current_stage().stuck_at_G_min.p
+            if self.iterator.current_stage().stuck_at_G_min is not None:
+                G = crossbar.faulty_devices.random_devices_stuck(G, G_min, p)
+            elif self.iterator.current_stage().stuck_at_G_max is not None:
+                G = crossbar.faulty_devices.random_devices_stuck(G, G_max, p)
+
+        # Other nonidealities
         if self.iterator.current_stage().iv_nonlinearity is not None:
             n_avg = tf.constant(self.iterator.current_stage().iv_nonlinearity.n_avg)
             n_std = tf.constant(self.iterator.current_stage().iv_nonlinearity.n_std)
             # Computing currents
             I, I_ind = crossbar.nonlinear_IV.compute_I_all(
                     V, G, V_ref, n_avg, n_std=n_std)
-
         else:
             # Ideal case for computing output currents.
             if self.iterator.is_training:
