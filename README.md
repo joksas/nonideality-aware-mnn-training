@@ -19,7 +19,7 @@ from training.iterator import Iterator, Training, Inference, IVNonlinearity
 dataset = "MNIST"
 G_off = 1/983.3
 G_on = 1/281.3
-iv_nonlinearity = IVNonlinearity("low-resistance", 2.132, 0.095)
+iv_nonlinearity = IVNonlinearity(2.132, 0.095)
 
 iterator = Iterator(
 	dataset,

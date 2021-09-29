@@ -4,8 +4,7 @@ from . import network, utils
 
 
 class IVNonlinearity:
-    def __init__(self, label: str, n_avg: float, n_std: float):
-        self.label = label
+    def __init__(self, n_avg: float, n_std: float):
         self.n_avg = n_avg
         self.n_std = n_std
 
@@ -16,7 +15,8 @@ class Nonideal:
 
     def nonideality_label(self) -> str:
         if self.iv_nonlinearity is not None:
-            return self.iv_nonlinearity.label
+            return "IVNL:{:.3f}_{:.3f}".format(self.iv_nonlinearity.n_avg,
+                    self.iv_nonlinearity.n_std)
         else:
             return "ideal"
 
