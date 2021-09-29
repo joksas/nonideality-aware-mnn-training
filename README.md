@@ -22,11 +22,11 @@ G_on = 1/281.3
 iv_nonlinearity = IVNonlinearity(2.132, 0.095)
 
 iterator = Iterator(
-	dataset,
-	G_off,
-	G_on,
-        Training(num_repeats=2, num_epochs=100, batch_size=100, iv_nonlinearity=iv_nonlinearity),
-        Inference(num_repeats=3, iv_nonlinearity=iv_nonlinearity),
+    dataset,
+    G_off,
+    G_on,
+    Training(num_repeats=2, num_epochs=100, batch_size=100, nonidealities={"iv_nonlinearity": iv_nonlinearity}),
+    Inference(num_repeats=3, nonidealities={"iv_nonlinearity": iv_nonlinearity}),
         )
 
 iterator.train()

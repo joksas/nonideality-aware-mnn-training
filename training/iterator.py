@@ -8,17 +8,55 @@ class IVNonlinearity:
         self.n_avg = n_avg
         self.n_std = n_std
 
+    def label(self):
+        return "IVNL:{:.3f}_{:.3f}".format(self.n_avg, self.n_std)
+
+
+class Stuck:
+    def __init__(self, p: float):
+        self.p = p
+
+
+class StuckAtGMin(Stuck):
+    def __init__(self, p: float):
+        Stuck.__init__(self, p)
+
+    def label(self) -> str:
+        return "StuckMin:{:.3f}".format(self.p)
+
+
+class StuckAtGMax(Stuck):
+    def __init__(self, p: float):
+        Stuck.__init__(self, p)
+
+    def label(self) -> str:
+        return "StuckMax:{:.3f}".format(self.p)
+
 
 class Nonideal:
-    def __init__(self, iv_nonlinearity: IVNonlinearity = None) -> None:
+    def __init__(self,
+            iv_nonlinearity: IVNonlinearity = None,
+            stuck_at_G_min: StuckAtGMin = None,
+            stuck_at_G_max: StuckAtGMax  = None,
+            ) -> None:
         self.iv_nonlinearity = iv_nonlinearity
+        self.stuck_at_G_min = stuck_at_G_min
+        self.stuck_at_G_max = stuck_at_G_max
+
+    def nonideality_list(self):
+        nonidealities = []
+        for nonideality in [self.iv_nonlinearity, self.stuck_at_G_min, self.stuck_at_G_max]:
+            if nonideality is not None:
+                nonidealities.append(nonideality)
+
+        return nonidealities
 
     def nonideality_label(self) -> str:
-        if self.iv_nonlinearity is not None:
-            return "IVNL:{:.3f}_{:.3f}".format(self.iv_nonlinearity.n_avg,
-                    self.iv_nonlinearity.n_std)
-        else:
+        nonidealities = self.nonideality_list()
+        if len(nonidealities) == 0:
             return "ideal"
+
+        return "+".join(nonideality.label() for nonideality in nonidealities)
 
     def is_nonideal(self) -> bool:
         if self.iv_nonlinearity is not None:
@@ -42,12 +80,13 @@ class Dataset:
 
 
 class Training(Nonideal, Iterable):
-    def __init__(self, batch_size: int = 1, num_epochs: int = 1, is_regularized: bool = False, iv_nonlinearity: IVNonlinearity = None, num_repeats: int = 0) -> None:
+    def __init__(self, batch_size: int = 1, num_epochs: int = 1, is_regularized: bool = False,
+            num_repeats: int = 0, nonidealities={}) -> None:
         self.batch_size = batch_size
         self.num_epochs = num_epochs
         self.num_repeats = num_repeats
         self.is_regularized = is_regularized
-        Nonideal.__init__(self, iv_nonlinearity)
+        Nonideal.__init__(self, **nonidealities)
         Iterable.__init__(self)
 
     def regularized_label(self) -> str:
@@ -64,9 +103,9 @@ class Training(Nonideal, Iterable):
 
 
 class Inference(Nonideal, Iterable):
-    def __init__(self, iv_nonlinearity: IVNonlinearity = None, num_repeats: int = 0) -> None:
+    def __init__(self, num_repeats: int = 0, nonidealities={}) -> None:
         self.num_repeats = num_repeats
-        Nonideal.__init__(self, iv_nonlinearity)
+        Nonideal.__init__(self, **nonidealities)
         Iterable.__init__(self)
 
     def repeat_label(self):
