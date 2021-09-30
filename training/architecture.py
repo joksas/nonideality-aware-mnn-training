@@ -34,7 +34,7 @@ def get_model(iterator):
 
         opt = tf.keras.optimizers.Adam()
     else:
-        raise "Dataset {} is not recognised!".format(iterator.dataset)
+        raise ValueError(f"Dataset {iterator.dataset} is not recognised!")
 
     if not iterator.is_training:
         model.load_weights(iterator.weights_path())
