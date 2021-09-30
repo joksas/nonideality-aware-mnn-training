@@ -4,7 +4,6 @@ import pickle
 from .architecture import get_model
 import tensorflow as tf
 from tensorflow import keras
-from tensorflow.keras.optimizers import SGD
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 sys.path.insert(0, "..")
 
@@ -21,13 +20,29 @@ def train(iterator):
 
     validation_split = 0.1
     verbose = 2
-    history=model.fit(
-            iterator.x_train, iterator.y_train,
-            batch_size=iterator.training.batch_size,
-            validation_split=validation_split,
-            verbose=verbose,
-            epochs=iterator.training.num_epochs,
-            callbacks=[cback])
+
+    if iterator.use_generator:
+        datagen = ImageDataGenerator(
+                width_shift_range=0.1,
+                height_shift_range=0.1,
+                horizontal_flip=True,
+                validation_split=validation_split,
+                )
+
+        history = model.fit(
+                datagen.flow(iterator.x_train, iterator.y_train, batch_size=iterator.training.batch_size, subset="training"),
+                validation_data=datagen.flow(iterator.x_train, iterator.y_train, subset="validation"),
+                epochs=iterator.training.num_epochs,
+                callbacks=[cback],
+                )
+    else:
+        history=model.fit(
+                iterator.x_train, iterator.y_train,
+                batch_size=iterator.training.batch_size,
+                validation_split=validation_split,
+                verbose=verbose,
+                epochs=iterator.training.num_epochs,
+                callbacks=[cback])
 
     dic={"hard": history.history}
     with open(iterator.history_path(), "wb") as handle:

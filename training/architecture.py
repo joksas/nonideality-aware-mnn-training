@@ -39,7 +39,7 @@ def get_model(iterator):
     if not iterator.is_training:
         model.load_weights(iterator.weights_path())
 
-    model.compile(optimizer=opt, loss=tf.keras.losses.SparseCategoricalCrossentropy(), metrics=["accuracy"])
+    model.compile(optimizer=opt, loss=tf.keras.losses.CategoricalCrossentropy(), metrics=["accuracy"])
     return model
 
 

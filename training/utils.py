@@ -60,14 +60,20 @@ def get_examples(dataset):
         (x_train, y_train), (x_test, y_test) = mnist.load_data()
         x_train = x_train.reshape(-1, 784)
         x_test = x_test.reshape(-1, 784)
+        num_classes = 10
         use_generator = False
     elif dataset == "CIFAR-10":
         (x_train, y_train), (x_test, y_test) = cifar10.load_data()
         use_generator = True
+        num_classes = 10
     else:
         raise "Dataset should be one of the following: [MNIST, CIFAR-10]."
 
     x_train, x_test = x_train/255.0, x_test/255.0
+    x_train = x_train.astype("float32")
+    x_test = x_test.astype("float32")
+    y_train = tf.keras.utils.to_categorical(y_train, num_classes)
+    y_test = tf.keras.utils.to_categorical(y_test, num_classes)
 
     print("x_train shape:", x_train.shape)
     print(x_train.shape[0], "train samples")
