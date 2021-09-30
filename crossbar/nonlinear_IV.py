@@ -1,5 +1,6 @@
 import tensorflow as tf
 from . import utils
+import math
 
 
 def compute_I_all(V, G, V_ref, n_avg, n_std=tf.constant(0.0)):
@@ -63,6 +64,8 @@ def compute_currents(n_avg, V_ref, G, V, n_std=tf.constant(0.0)):
         the crossbar array.
     """
     n = tf.random.normal(G.get_shape().as_list(), mean=n_avg, stddev=n_std, dtype=tf.float32)
+    # n <= 1 would produce unrealistic behaviour
+    n = tf.clip_by_value(n+tf.keras.backend.epsilon(), 1.0, math.inf)
 
     ohmic_current = V_ref * tf.expand_dims(G, axis=0)
     # Take absolute value of V to prevent negative numbers from being raised to
