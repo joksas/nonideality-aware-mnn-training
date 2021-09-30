@@ -67,7 +67,7 @@ def get_examples(dataset):
         use_generator = True
         num_classes = 10
     else:
-        raise "Dataset should be one of the following: [MNIST, CIFAR-10]."
+        raise ValueError("Dataset should be one of the following: [MNIST, CIFAR-10].")
 
     x_train, x_test = x_train/255.0, x_test/255.0
     x_train = x_train.astype("float32")
