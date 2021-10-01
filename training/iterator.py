@@ -9,7 +9,7 @@ class IVNonlinearity:
         self.n_std = n_std
 
     def label(self):
-        return "IVNL:{:.3f}_{:.3f}".format(self.n_avg, self.n_std)
+        return f"IVNL:{self.n_avg:.3g}_{self.n_std:.3g}"
 
 
 class Stuck:
@@ -22,7 +22,7 @@ class StuckAtGMin(Stuck):
         Stuck.__init__(self, p)
 
     def label(self) -> str:
-        return "StuckMin:{:.3f}".format(self.p)
+        return f"StuckMin:{self.p:.3g}"
 
 
 class StuckAtGMax(Stuck):
@@ -30,7 +30,7 @@ class StuckAtGMax(Stuck):
         Stuck.__init__(self, p)
 
     def label(self) -> str:
-        return "StuckMax:{:.3f}".format(self.p)
+        return f"StuckMax:{self.p:.3g}"
 
 
 class Nonideal:
@@ -124,7 +124,7 @@ class Iterator(Dataset):
         Dataset.__init__(self, dataset)
 
     def conductance_label(self):
-        return f"{self.G_min:.3}-{self.G_max:.3}"
+        return f"{self.G_min:.3g}_{self.G_max:.3g}"
 
     def training_nonideality_dir(self):
         return os.path.join(

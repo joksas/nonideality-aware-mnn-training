@@ -89,4 +89,3 @@ def step_decay(epoch):
     epochs_drop = 50.0
     lrate = initial_lrate * math.pow(drop, math.floor((1+epoch)/epochs_drop))
     return lrate
-

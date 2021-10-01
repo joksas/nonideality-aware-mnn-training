@@ -16,7 +16,7 @@ nonideality_label_testdata = [
             iterator.Nonideal(
                 iv_nonlinearity=iterator.IVNonlinearity(1.53, 0.625),
                 ),
-            "IVNL:1.530_0.625",
+            "IVNL:1.53_0.625",
             ),
         (
             iterator.Nonideal(
@@ -27,9 +27,9 @@ nonideality_label_testdata = [
         (
             iterator.Nonideal(
                 iv_nonlinearity=iterator.IVNonlinearity(1.530, 0.123),
-                stuck_at_G_min=iterator.StuckAtGMin(0.6341),
+                stuck_at_G_min=iterator.StuckAtGMin(0.06341),
                 ),
-            "IVNL:1.530_0.123+StuckMin:0.634",
+            "IVNL:1.53_0.123+StuckMin:0.0634",
             ),
         (
             iterator.Nonideal(
@@ -37,7 +37,7 @@ nonideality_label_testdata = [
                 stuck_at_G_min=iterator.StuckAtGMin(0.0009),
                 stuck_at_G_max=iterator.StuckAtGMax(0.1),
                 ),
-            "IVNL:3.100_0.120+StuckMin:0.001+StuckMax:0.100",
+            "IVNL:3.1_0.12+StuckMin:0.0009+StuckMax:0.1",
             ),
         ]
 
