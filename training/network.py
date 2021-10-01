@@ -54,8 +54,7 @@ def infer(iterator):
 
     model = get_model(iterator)
 
-    # All at once, so that a single value of average power is computed for each synaptic layer.
-    score = model.evaluate(iterator.x_test, iterator.y_test, verbose=0, batch_size=iterator.x_test.shape[0])
+    score = model.evaluate(iterator.x_test, iterator.y_test, verbose=0, batch_size=10)
 
     print("Test loss: %0.4f\nTest accuracy: %0.4f"%(score[0], score[1]))
 
