@@ -123,9 +123,13 @@ class Iterator(Dataset):
         self.inference = inference
         Dataset.__init__(self, dataset)
 
+    def conductance_label(self):
+        return f"{self.G_min:.3}-{self.G_max:.3}"
+
     def training_nonideality_dir(self):
         return os.path.join(
-                os.getcwd(), "models", self.dataset, self.training.regularized_label(), self.training.nonideality_label()
+                os.getcwd(), "models", self.dataset, self.training.regularized_label(),
+                self.conductance_label(), self.training.nonideality_label()
                 )
 
     def network_dir(self):
