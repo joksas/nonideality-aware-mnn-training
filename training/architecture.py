@@ -23,7 +23,7 @@ def get_model(iterator):
         model.add(layers.MaxPooling2D((2, 2)))
         model.add(layers.Conv2D(64, (3, 3), activation="relu"))
         model.add(layers.MaxPooling2D((2, 2)))
-        model.add(layers.Conv2D(64, (3, 3), activation="sigmoid"))
+        model.add(layers.Conv2D(64, (3, 3), activation="relu"))
 
         # Fully connected layers
         model.add(layers.Flatten())
@@ -118,8 +118,6 @@ class MemristorDense(layers.Layer):
                     )
 
     def call(self, x, mask=None):
-        # tf.print("x shape:", x.shape)
-        # tf.print("x:", x)
         ones = tf.ones([tf.shape(x)[0], 1])
         inputs = tf.concat([x, ones], 1)
 

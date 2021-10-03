@@ -63,9 +63,9 @@ def compute_currents(n_avg, V_ref, G, V, n_std=tf.constant(0.0)):
         Currents of shape `p x m x n` produced by each of the conductances in
         the crossbar array.
     """
-    n = tf.random.normal(G.get_shape().as_list(), mean=n_avg, stddev=n_std, dtype=tf.float32)
-    # n <= 1 would produce unrealistic behaviour
-    n = tf.clip_by_value(n+tf.keras.backend.epsilon(), 1.0, math.inf)
+    n = tf.random.normal(G.get_shape().as_list(), mean=n_avg, stddev=n_std)
+    # n <= 1 would produce unrealistic behaviour, while 1 < n < 2 is not typical in I-V curves
+    n = tf.clip_by_value(n, 2.0, math.inf)
 
     ohmic_current = V_ref * tf.expand_dims(G, axis=0)
     # Take absolute value of V to prevent negative numbers from being raised to
