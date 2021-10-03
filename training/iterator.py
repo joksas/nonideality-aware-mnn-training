@@ -80,12 +80,13 @@ class Dataset:
 
 
 class Training(Nonideal, Iterable):
-    def __init__(self, batch_size: int = 1, num_epochs: int = 1, is_regularized: bool = False,
+    def __init__(self, batch_size: int = 1, validation_split: float = 1/6, num_epochs: int = 1, is_regularized: bool = False,
             num_repeats: int = 0, nonidealities={}) -> None:
         self.batch_size = batch_size
         self.num_epochs = num_epochs
         self.num_repeats = num_repeats
         self.is_regularized = is_regularized
+        self.validation_split = validation_split
         Nonideal.__init__(self, **nonidealities)
         Iterable.__init__(self)
 
