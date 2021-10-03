@@ -142,9 +142,9 @@ class Iterator(Dataset):
                 self.network_dir(), "model.h5"
                 )
 
-    def history_path(self):
+    def info_path(self):
         return os.path.join(
-                self.network_dir(), "history.pkl"
+                self.network_dir(), "info.pkl"
                 )
 
     def inference_nonideality_dir(self):
@@ -171,8 +171,8 @@ class Iterator(Dataset):
                 self.inference_repeat_dir(), "accuracy.csv"
                 )
 
-    def history(self):
-        with open(self.history_path(), "rb") as pickle_file:
+    def info(self):
+        with open(self.info_path(), "rb") as pickle_file:
             return pickle.load(pickle_file)
 
     def current_stage(self) -> bool:

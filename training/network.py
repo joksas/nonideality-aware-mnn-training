@@ -44,9 +44,14 @@ def train(iterator):
                 epochs=iterator.training.num_epochs,
                 callbacks=[cback])
 
-    dic={"hard": history.history}
-    with open(iterator.history_path(), "wb") as handle:
-        pickle.dump(dic, handle)
+    info = {
+            "history": history.history,
+            "validation_split": validation_split,
+            "batch_size": iterator.training.batch_size,
+            }
+
+    with open(iterator.info_path(), "wb") as handle:
+        pickle.dump(info, handle)
 
 
 def infer(iterator):
