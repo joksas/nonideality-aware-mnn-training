@@ -31,6 +31,7 @@ def train(iterator):
                 validation_data=datagen.flow(iterator.x_train, iterator.y_train, subset="validation"),
                 epochs=iterator.training.num_epochs,
                 callbacks=[cback],
+                verbose=2,
                 )
     else:
         history=model.fit(

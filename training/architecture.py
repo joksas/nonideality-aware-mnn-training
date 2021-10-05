@@ -160,13 +160,17 @@ class MemristorDense(layers.Layer):
         current_stage = self.iterator.current_stage()
 
         # Linearity-preserving nonidealities
-        if current_stage.stuck_at_G_min is not None or current_stage.stuck_at_G_max is not None:
+        if current_stage.stuck_at_G_min is not None or current_stage.stuck_at_G_max is not None or current_stage.d2d_lognormal is not None:
             if current_stage.stuck_at_G_min is not None:
                 G = crossbar.faulty_devices.random_devices_stuck(
                         G, G_min, current_stage.stuck_at_G_min.p)
             elif current_stage.stuck_at_G_max is not None:
                 G = crossbar.faulty_devices.random_devices_stuck(
                         G, G_max, current_stage.stuck_at_G_max.p)
+            elif current_stage.d2d_lognormal is not None:
+                G = crossbar.d2d.lognormal(
+                        G, G_min, G_max,
+                        current_stage.d2d_lognormal.R_min_std, current_stage.d2d_lognormal.R_max_std)
 
         # Other nonidealities
         if current_stage.iv_nonlinearity is not None:

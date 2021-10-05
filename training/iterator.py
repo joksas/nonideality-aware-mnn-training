@@ -3,6 +3,15 @@ import pickle
 from . import network, utils
 
 
+class D2DLognormal:
+    def __init__(self, R_min_std: float, R_max_std: float):
+        self.R_min_std = R_min_std
+        self.R_max_std = R_max_std
+
+    def label(self):
+        return f"D2DLN:{self.R_min_std:.3g}_{self.R_max_std:.3g}"
+
+
 class IVNonlinearity:
     def __init__(self, n_avg: float, n_std: float):
         self.n_avg = n_avg
@@ -38,14 +47,16 @@ class Nonideal:
             iv_nonlinearity: IVNonlinearity = None,
             stuck_at_G_min: StuckAtGMin = None,
             stuck_at_G_max: StuckAtGMax  = None,
+            d2d_lognormal: D2DLognormal  = None,
             ) -> None:
         self.iv_nonlinearity = iv_nonlinearity
         self.stuck_at_G_min = stuck_at_G_min
         self.stuck_at_G_max = stuck_at_G_max
+        self.d2d_lognormal = d2d_lognormal
 
     def nonideality_list(self):
         nonidealities = []
-        for nonideality in [self.iv_nonlinearity, self.stuck_at_G_min, self.stuck_at_G_max]:
+        for nonideality in [self.iv_nonlinearity, self.stuck_at_G_min, self.stuck_at_G_max, self.d2d_lognormal]:
             if nonideality is not None:
                 nonidealities.append(nonideality)
 
@@ -59,10 +70,10 @@ class Nonideal:
         return "+".join(nonideality.label() for nonideality in nonidealities)
 
     def is_nonideal(self) -> bool:
-        if self.iv_nonlinearity is not None:
-            return True
-        else:
+        if len(self.nonideality_list()) == 0:
             return False
+        
+        return True
 
 
 class Iterable:
