@@ -1,6 +1,7 @@
 import os
 import pickle
 from . import network, utils
+import numpy as np
 
 
 class D2DLognormal:
@@ -192,6 +193,48 @@ class Iterator(Dataset):
             return self.training
         else:
             return self.inference
+
+    def avg_power(self):
+        average_power = np.zeros((self.training.num_repeats, self.inference.num_repeats))
+
+        for i in range(self.training.num_repeats):
+            for j in range(self.inference.num_repeats):
+                filename = self.power_path()
+                csv = np.genfromtxt(filename)
+                power = np.mean(csv)
+                # Two synaptic layers.
+                power = 2*power
+                average_power[i, j] = power
+
+                self.inference.repeat_idx += 1
+
+            self.inference.repeat_idx = 0
+            self.training.repeat_idx += 1
+
+        self.training.repeat_idx = 0
+
+        return average_power
+
+    def acc(self):
+        accuracy = np.zeros((self.training.num_repeats, self.inference.num_repeats))
+
+        for i in range(self.training.num_repeats):
+            for j in range(self.inference.num_repeats):
+                filename = self.accuracy_path()
+                csv = np.genfromtxt(filename)
+                accuracy[i, j] = csv
+
+                self.inference.repeat_idx += 1
+
+            self.inference.repeat_idx = 0
+            self.training.repeat_idx += 1
+
+        self.training.repeat_idx = 0
+
+        return accuracy
+
+    def err(self):
+        return 1 - self.acc()
 
     def train(self):
         self.is_training = True
