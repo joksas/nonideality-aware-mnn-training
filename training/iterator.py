@@ -137,6 +137,9 @@ class Iterator(Dataset):
         Dataset.__init__(self, dataset)
 
     def conductance_label(self):
+        if self.G_min is None and self.G_max is None:
+            return "none_none"
+
         return f"{self.G_min:.3g}_{self.G_max:.3g}"
 
     def training_nonideality_dir(self):
