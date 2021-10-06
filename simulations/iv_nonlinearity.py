@@ -21,7 +21,7 @@ def custom_iterator(G_min, G_max, nonidealities, is_regularized):
             )
 
 
-def get_iterators():
+def get_setup():
     iterators = []
     callbacks_lst = []
 
@@ -45,7 +45,7 @@ def get_iterators():
 
 
 def main():
-    for iterator, callbacks in zip(*get_iterators()):
+    for iterator, callbacks in zip(*get_setup()):
         iterator.train(callbacks=callbacks)
 
 
