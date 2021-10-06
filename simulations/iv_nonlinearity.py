@@ -47,7 +47,6 @@ def get_iterators():
 def main():
     for iterator, callbacks in zip(*get_iterators()):
         iterator.train(callbacks=callbacks)
-        print(iterator.info())
 
 
 if __name__ == "__main__":
