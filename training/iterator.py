@@ -180,8 +180,6 @@ class Inference(Nonideal, Iterable):
 
 
 class Iterator(Dataset):
-    is_training = False
-
     def __init__(self, dataset: str, G_min: float, G_max: float, training: Training, inference: Inference = None) -> None:
         self.dataset = dataset
         self.G_min = G_min
@@ -189,6 +187,7 @@ class Iterator(Dataset):
         self.training = training
         self.inference = inference
         self.is_callback = False
+        self.is_training = False
         Dataset.__init__(self, dataset)
 
     def conductance_label(self):
