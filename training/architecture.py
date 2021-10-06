@@ -118,6 +118,9 @@ class MemristorDense(layers.Layer):
                     )
 
     def call(self, x, mask=None):
+        if not self.iterator.training.is_aware() and self.iterator.is_training:
+            return tf.tensordot(x, self.w, axes=1) + self.b
+
         ones = tf.ones([tf.shape(x)[0], 1])
         inputs = tf.concat([x, ones], 1)
 
