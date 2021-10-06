@@ -5,7 +5,7 @@ import crossbar
 from . import utils
 
 
-def get_model(iterator):
+def get_model(iterator, custom_weights_path=None):
     num_hidden_neurons = 25
     if iterator.dataset == "MNIST":
         model = models.Sequential()
@@ -36,7 +36,9 @@ def get_model(iterator):
     else:
         raise ValueError(f"Dataset {iterator.dataset} is not recognised!")
 
-    if not iterator.is_training:
+    if custom_weights_path is not None:
+        model.load_weights(custom_weights_path)
+    elif not iterator.is_training:
         model.load_weights(iterator.weights_path())
 
     model.compile(optimizer=opt, loss=tf.keras.losses.CategoricalCrossentropy(), metrics=["accuracy"])
@@ -189,7 +191,7 @@ class MemristorDense(layers.Layer):
             else:
                 I, I_ind = crossbar.ideal.compute_I_all(V, G)
 
-        if not self.iterator.is_training:
+        if not self.iterator.is_training and not self.iterator.is_callback:
             power_path = self.iterator.power_path()
             open(power_path, "a").close()
             P_avg = utils.compute_avg_crossbar_power(V, I_ind)

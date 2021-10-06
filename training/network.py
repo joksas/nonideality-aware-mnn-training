@@ -1,6 +1,7 @@
 import sys
 import os
 import pickle
+import copy
 from .architecture import get_model
 import tensorflow as tf
 from tensorflow import keras
@@ -8,12 +9,12 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator
 sys.path.insert(0, "..")
 
 
-def train(iterator):
+def train(iterator, callbacks=[]):
     os.makedirs(iterator.network_dir(), exist_ok=True)
 
     model = get_model(iterator)
 
-    cback=keras.callbacks.ModelCheckpoint(
+    history_callback=keras.callbacks.ModelCheckpoint(
             iterator.weights_path(),
             monitor="val_accuracy",
             save_best_only=True)
@@ -30,7 +31,7 @@ def train(iterator):
                 datagen.flow(iterator.x_train, iterator.y_train, batch_size=iterator.training.batch_size, subset="training"),
                 validation_data=datagen.flow(iterator.x_train, iterator.y_train, subset="validation"),
                 epochs=iterator.training.num_epochs,
-                callbacks=[cback],
+                callbacks=[history_callback],
                 verbose=2,
                 )
     else:
@@ -40,12 +41,13 @@ def train(iterator):
                 validation_split=iterator.training.validation_split,
                 verbose=2,
                 epochs=iterator.training.num_epochs,
-                callbacks=[cback])
+                callbacks=[history_callback]+callbacks)
 
     info = {
             "history": history.history,
             "validation_split": iterator.training.validation_split,
             "batch_size": iterator.training.batch_size,
+            "callback_infos": [callback.info() for callback in callbacks],
             }
 
     with open(iterator.info_path(), "wb") as handle:
@@ -68,3 +70,5 @@ def infer(iterator):
     accuracy_path = iterator.accuracy_path()
     open(accuracy_path, "a").close()
     tf.print(score[1], output_stream="file://{}".format(accuracy_path))
+
+

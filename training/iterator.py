@@ -2,6 +2,60 @@ import os
 import pickle
 from . import network, utils
 import numpy as np
+import tensorflow as tf
+import copy
+from .architecture import get_model
+
+
+class TrainingCallback(tf.keras.callbacks.Callback):
+    def __init__(self, iterator, G_min, G_max, nonidealities):
+        self.iterator = copy.deepcopy(iterator)
+        # G_min and G_max may change so saving it now.
+        self.callback_weights_path = self.iterator.callback_weights_path()
+        self.iterator.G_min = G_min
+        self.iterator.G_max = G_max
+        self.iterator.inference = Inference(nonidealities=nonidealities)
+        self.iterator.is_callback = True
+        self.iterator.is_training = False
+        self.every = 10
+        self.num_repeats = 25
+        self.epoch_no = []
+        self.loss = []
+        self.accuracy = []
+
+    def on_epoch_end(self, epoch, logs=None):
+        # Will evaluate on first epoch and then every `self.every` epochs.
+        if epoch != 0 and (epoch+1)%self.every != 0:
+            return
+
+        self.model.save_weights(self.callback_weights_path)
+        callback_model = get_model(self.iterator, custom_weights_path=self.callback_weights_path)
+        accuracy = []
+        loss = []
+        for _ in range(self.num_repeats):
+            score = callback_model.evaluate(self.iterator.x_test, self.iterator.y_test, verbose=0, batch_size=128)
+            loss.append(score[0])
+            accuracy.append(score[1])
+        self.loss.append(loss)
+        self.accuracy.append(accuracy)
+        self.epoch_no.append(epoch+1)
+        print(
+                self.iterator.inference.nonideality_label(),
+                "median loss:", f"{np.median(loss):.4f}",
+                "median accuracy:", f"{np.median(accuracy):.4f}",
+                )
+
+    def info(self):
+        return {
+                "G_min": self.iterator.G_min,
+                "G_max": self.iterator.G_max,
+                "nonideality_label": self.iterator.inference.nonideality_label(),
+                "history": {
+                    "epoch_no": self.epoch_no,
+                    "loss": self.loss,
+                    "accuracy": self.accuracy,
+                    },
+                }
 
 
 class D2DLognormal:
@@ -134,6 +188,7 @@ class Iterator(Dataset):
         self.G_max = G_max
         self.training = training
         self.inference = inference
+        self.is_callback = False
         Dataset.__init__(self, dataset)
 
     def conductance_label(self):
@@ -156,6 +211,11 @@ class Iterator(Dataset):
     def weights_path(self):
         return os.path.join(
                 self.network_dir(), "model.h5"
+                )
+
+    def callback_weights_path(self):
+        return os.path.join(
+                self.network_dir(), "callback-model.h5"
                 )
 
     def info_path(self):
@@ -239,10 +299,10 @@ class Iterator(Dataset):
     def err(self):
         return 1 - self.acc()
 
-    def train(self):
+    def train(self, callbacks=[]):
         self.is_training = True
         for _ in range(self.training.num_repeats):
-            network.train(self)
+            network.train(self, callbacks=callbacks)
             self.training.repeat_idx += 1
 
         self.training.repeat_idx = 0
