@@ -14,7 +14,7 @@ def train(iterator, callbacks=[]):
 
     model = get_model(iterator)
 
-    history_callback=keras.callbacks.ModelCheckpoint(
+    checkpoint_callback=keras.callbacks.ModelCheckpoint(
             iterator.weights_path(),
             monitor="val_accuracy",
             save_best_only=True)
@@ -31,7 +31,7 @@ def train(iterator, callbacks=[]):
                 datagen.flow(iterator.x_train, iterator.y_train, batch_size=iterator.training.batch_size, subset="training"),
                 validation_data=datagen.flow(iterator.x_train, iterator.y_train, subset="validation"),
                 epochs=iterator.training.num_epochs,
-                callbacks=[history_callback],
+                callbacks=[checkpoint_callback],
                 verbose=2,
                 )
     else:
@@ -41,7 +41,7 @@ def train(iterator, callbacks=[]):
                 validation_split=iterator.training.validation_split,
                 verbose=2,
                 epochs=iterator.training.num_epochs,
-                callbacks=[history_callback]+callbacks)
+                callbacks=[checkpoint_callback]+callbacks)
 
     info = {
             "history": history.history,
