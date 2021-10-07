@@ -10,23 +10,37 @@ TensorFlow 2.0 or higher.
 
 `training`: network training.
 
+`simulations`: simulations presented in the manuscript.
+
+`plotting`: figures presented in the manuscript.
+
 ## Example
 
 ```python
 from training.iterator import Iterator, Training, Inference, IVNonlinearity
 
 
-dataset = "MNIST"
-G_off = 1/983.3
-G_on = 1/281.3
-iv_nonlinearity = IVNonlinearity(2.132, 0.095)
+DATASET = "MNIST"
+IDEAL = {
+        "G_min": None,
+        "G_max": None,
+        "nonidealities": {}
+        }
+DEVICE_1 = {
+        "G_min": 1/1003,
+        "G_max": 1/284.6,
+        "nonidealities": {"iv_nonlinearity": IVNonlinearity(2.132, 0.095)}
+        }
+DEVICE_2 = {
+        "G_min": 1/1295000,
+        "G_max": 1/366200,
+        "nonidealities": {"iv_nonlinearity": IVNonlinearity(2.989, 0.369)}
+        }
 
 iterator = Iterator(
-    dataset,
-    G_off,
-    G_on,
-    Training(num_repeats=2, num_epochs=100, batch_size=100, nonidealities={"iv_nonlinearity": iv_nonlinearity}),
-    Inference(num_repeats=3, nonidealities={"iv_nonlinearity": iv_nonlinearity}),
+        DATASET,
+        Training(num_repeats=2, num_epochs=100, batch_size=100, **IDEAL),
+        [Inference(num_repeats=5, **DEVICE_1), Inference(num_repeats=3, **DEVICE_2)],
         )
 
 iterator.train()

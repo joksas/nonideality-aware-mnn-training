@@ -8,53 +8,50 @@ from .architecture import get_model
 
 
 class TrainingCallback(tf.keras.callbacks.Callback):
-    def __init__(self, iterator, G_min, G_max, nonidealities):
+    def __init__(self, iterator):
         self.iterator = copy.deepcopy(iterator)
-        # G_min and G_max may change so saving it now.
-        self.callback_weights_path = self.iterator.callback_weights_path()
-        self.iterator.G_min = G_min
-        self.iterator.G_max = G_max
-        self.iterator.inference = Inference(nonidealities=nonidealities)
         self.iterator.is_callback = True
         self.iterator.is_training = False
-        self.every = 10
-        self.num_repeats = 25
-        self.epoch_no = []
-        self.loss = []
-        self.accuracy = []
+        self.every = 2
+        self.num_repeats = 3
+        self.history = [{
+            "nonideality_label": inference.nonideality_label(),
+            "epoch_no": [],
+            "loss": [],
+            "accuracy": []
+            } for inference in self.iterator.inferences]
 
     def on_epoch_end(self, epoch, logs=None):
         # Will evaluate on first epoch and then every `self.every` epochs.
         if epoch != 0 and (epoch+1)%self.every != 0:
             return
 
-        self.model.save_weights(self.callback_weights_path)
-        callback_model = get_model(self.iterator, custom_weights_path=self.callback_weights_path)
-        accuracy = []
-        loss = []
-        for _ in range(self.num_repeats):
-            score = callback_model.evaluate(self.iterator.x_test, self.iterator.y_test, verbose=0, batch_size=128)
-            loss.append(score[0])
-            accuracy.append(score[1])
-        self.loss.append(loss)
-        self.accuracy.append(accuracy)
-        self.epoch_no.append(epoch+1)
-        print(
-                self.iterator.inference.nonideality_label(),
-                "median loss:", f"{np.median(loss):.4f}",
-                "median accuracy:", f"{np.median(accuracy):.4f}",
-                )
+        self.model.save_weights(self.iterator.callback_weights_path())
+
+        for inference_idx in range(len(self.iterator.inferences)):
+            self.iterator.inference_idx = inference_idx
+            callback_model = get_model(self.iterator, custom_weights_path=self.iterator.callback_weights_path())
+            inference = self.iterator.inferences[inference_idx]
+            accuracy = []
+            loss = []
+            for _ in range(self.num_repeats):
+                score = callback_model.evaluate(self.iterator.x_test, self.iterator.y_test, verbose=0, batch_size=128)
+                loss.append(score[0])
+                accuracy.append(score[1])
+            self.history[inference_idx]["loss"].append(loss)
+            self.history[inference_idx]["accuracy"].append(accuracy)
+            self.history[inference_idx]["epoch_no"].append(epoch+1)
+            print(
+                    inference.nonideality_label(),
+                    "median loss:", f"{np.median(loss):.4f}",
+                    "median accuracy:", f"{np.median(accuracy):.4f}",
+                    )
+
+        self.iterator.inference_idx = None
 
     def info(self):
         return {
-                "G_min": self.iterator.G_min,
-                "G_max": self.iterator.G_max,
-                "nonideality_label": self.iterator.inference.nonideality_label(),
-                "history": {
-                    "epoch_no": self.epoch_no,
-                    "loss": self.loss,
-                    "accuracy": self.accuracy,
-                    },
+                "history": self.history,
                 }
 
 
@@ -99,11 +96,15 @@ class StuckAtGMax(Stuck):
 
 class Nonideal:
     def __init__(self,
+            G_min: float = None,
+            G_max: float = None,
             iv_nonlinearity: IVNonlinearity = None,
             stuck_at_G_min: StuckAtGMin = None,
             stuck_at_G_max: StuckAtGMax  = None,
             d2d_lognormal: D2DLognormal  = None,
             ) -> None:
+        self.G_min = G_min
+        self.G_max = G_max
         self.iv_nonlinearity = iv_nonlinearity
         self.stuck_at_G_min = stuck_at_G_min
         self.stuck_at_G_max = stuck_at_G_max
@@ -117,12 +118,21 @@ class Nonideal:
 
         return nonidealities
 
+    def conductance_label(self):
+        if self.G_min is None and self.G_max is None:
+            return "none_none"
+
+        return f"{self.G_min:.3g}_{self.G_max:.3g}"
+
     def nonideality_label(self) -> str:
         nonidealities = self.nonideality_list()
         if len(nonidealities) == 0:
             return "ideal"
 
         return "+".join(nonideality.label() for nonideality in nonidealities)
+
+    def label(self):
+        return f"{self.conductance_label()}__{self.nonideality_label()}"
 
     def is_nonideal(self) -> bool:
         if len(self.nonideality_list()) == 0:
@@ -132,7 +142,8 @@ class Nonideal:
 
 
 class Iterable:
-    repeat_idx = 0
+    def __init__(self):
+        self.repeat_idx = 0
 
 
 class Dataset:
@@ -147,20 +158,23 @@ class Dataset:
 
 class Training(Nonideal, Iterable):
     def __init__(self, batch_size: int = 1, validation_split: float = 1/6, num_epochs: int = 1, is_regularized: bool = False,
-            num_repeats: int = 0, nonidealities={}) -> None:
+            num_repeats: int = 0, G_min: float = None, G_max: float = None, nonidealities={}) -> None:
         self.batch_size = batch_size
         self.num_epochs = num_epochs
         self.num_repeats = num_repeats
         self.is_regularized = is_regularized
         self.validation_split = validation_split
-        Nonideal.__init__(self, **nonidealities)
+        Nonideal.__init__(self, G_min=G_min, G_max=G_max, **nonidealities)
         Iterable.__init__(self)
 
     def regularized_label(self) -> str:
         if self.is_regularized:
-            return "regularized"
+            return "reg"
         else:
-            return "non-regularized"
+            return "nonreg"
+
+    def label(self):
+        return f"{self.regularized_label()}__{Nonideal.label(self)}"
 
     def is_aware(self) -> bool:
         return self.is_nonideal()
@@ -170,9 +184,9 @@ class Training(Nonideal, Iterable):
 
 
 class Inference(Nonideal, Iterable):
-    def __init__(self, num_repeats: int = 0, nonidealities={}) -> None:
+    def __init__(self, num_repeats: int = 0, G_min: float = None, G_max: float = None, nonidealities={}) -> None:
         self.num_repeats = num_repeats
-        Nonideal.__init__(self, **nonidealities)
+        Nonideal.__init__(self, G_min=G_min, G_max=G_max, **nonidealities)
         Iterable.__init__(self)
 
     def repeat_label(self):
@@ -180,31 +194,23 @@ class Inference(Nonideal, Iterable):
 
 
 class Iterator(Dataset):
-    def __init__(self, dataset: str, G_min: float, G_max: float, training: Training, inference: Inference = None) -> None:
+    def __init__(self, dataset: str, training: Training, inferences: list[Inference]) -> None:
         self.dataset = dataset
-        self.G_min = G_min
-        self.G_max = G_max
         self.training = training
-        self.inference = inference
+        self.inferences = inferences
         self.is_callback = False
         self.is_training = False
+        self.inference_idx = None
         Dataset.__init__(self, dataset)
 
-    def conductance_label(self):
-        if self.G_min is None and self.G_max is None:
-            return "none_none"
-
-        return f"{self.G_min:.3g}_{self.G_max:.3g}"
-
-    def training_nonideality_dir(self):
+    def training_dir(self):
         return os.path.join(
-                os.getcwd(), "models", self.dataset, self.training.regularized_label(),
-                self.conductance_label(), self.training.nonideality_label()
+                os.getcwd(), "models", self.dataset, self.training.label()
                 )
 
     def network_dir(self):
         return os.path.join(
-                self.training_nonideality_dir(), self.training.network_label()
+                self.training_dir(), self.training.network_label()
                 )
 
     def weights_path(self):
@@ -224,12 +230,12 @@ class Iterator(Dataset):
 
     def inference_nonideality_dir(self):
         return os.path.join(
-                self.network_dir(), self.inference.nonideality_label()
+                self.network_dir(), self.inferences[self.inference_idx].label()
                 )
 
     def inference_repeat_dir(self):
         return os.path.join(
-                self.inference_nonideality_dir(), self.inference.repeat_label()
+                self.inference_nonideality_dir(), self.inferences[self.inference_idx].repeat_label()
                 )
 
     def power_path(self):
@@ -254,49 +260,59 @@ class Iterator(Dataset):
         if self.is_training:
             return self.training
         else:
-            return self.inference
+            return self.inferences[self.inference_idx]
 
     def avg_power(self):
-        average_power = np.zeros((self.training.num_repeats, self.inference.num_repeats))
+        average_powers = []
+        for inference_idx in range(self.inference_idx):
+            self.inference_idx = self.inference_idx
+            inference = self.inferences[self.inference_idx]
+            average_power = np.zeros((self.training.num_repeats, inference.num_repeats))
 
-        for i in range(self.training.num_repeats):
-            for j in range(self.inference.num_repeats):
-                filename = self.power_path()
-                csv = np.genfromtxt(filename)
-                power = np.mean(csv)
-                # Two synaptic layers.
-                power = 2*power
-                average_power[i, j] = power
+            for i in range(self.training.num_repeats):
+                for j in range(inference.num_repeats):
+                    filename = self.power_path()
+                    csv = np.genfromtxt(filename)
+                    power = np.mean(csv)
+                    # Two synaptic layers.
+                    power = 2*power
+                    average_power[i, j] = power
 
-                self.inference.repeat_idx += 1
+                    inference.repeat_idx += 1
 
-            self.inference.repeat_idx = 0
-            self.training.repeat_idx += 1
+                inference.repeat_idx = 0
+                self.training.repeat_idx += 1
 
-        self.training.repeat_idx = 0
+            self.training.repeat_idx = 0
+            average_powers.append(average_power)
 
-        return average_power
+        return average_powers
 
     def acc(self):
-        accuracy = np.zeros((self.training.num_repeats, self.inference.num_repeats))
+        accuracies = []
+        for inference_idx in range(self.inference_idx):
+            self.inference_idx = self.inference_idx
+            inference = self.inferences[self.inference_idx]
+            accuracy = np.zeros((self.training.num_repeats, inference.num_repeats))
 
-        for i in range(self.training.num_repeats):
-            for j in range(self.inference.num_repeats):
-                filename = self.accuracy_path()
-                csv = np.genfromtxt(filename)
-                accuracy[i, j] = csv
+            for i in range(self.training.num_repeats):
+                for j in range(inference.num_repeats):
+                    filename = self.accuracy_path()
+                    csv = np.genfromtxt(filename)
+                    accuracy[i, j] = csv
 
-                self.inference.repeat_idx += 1
+                    inference.repeat_idx += 1
 
-            self.inference.repeat_idx = 0
-            self.training.repeat_idx += 1
+                inference.repeat_idx = 0
+                self.training.repeat_idx += 1
 
-        self.training.repeat_idx = 0
+            self.training.repeat_idx = 0
+            accuracies.append(accuracy)
 
-        return accuracy
+        return accuracies
 
     def err(self):
-        return 1 - self.acc()
+        return [1 - accuracy for accuracy in self.acc()]
 
     def train(self, callbacks=[]):
         self.is_training = True
@@ -308,12 +324,16 @@ class Iterator(Dataset):
 
     def infer(self):
         self.is_training = False
-        for _ in range(self.training.num_repeats):
-            for _ in range(self.inference.num_repeats):
-                network.infer(self)
-                self.inference.repeat_idx += 1
+        for idx in range(len(self.inferences)):
+            self.inference_idx = idx
+            inference = self.inferences[self.inference_idx]
+            for _ in range(self.training.num_repeats):
+                for _ in range(inference.num_repeats):
+                    network.infer(self)
+                    inference.repeat_idx += 1
 
-            self.inference.repeat_idx = 0
-            self.training.repeat_idx += 1
+                inference.repeat_idx = 0
+                self.training.repeat_idx += 1
 
-        self.training.repeat_idx = 0
+            self.training.repeat_idx = 0
+        self.inference_idx = None

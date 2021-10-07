@@ -154,15 +154,16 @@ class MemristorDense(layers.Layer):
         k_V = 2*V_ref
         V = crossbar.map.x_to_V(x, k_V)
 
+        current_stage = self.iterator.current_stage()
+
         # Mapping weights onto conductances.
-        G_min = tf.constant(self.iterator.G_min)
-        G_max = tf.constant(self.iterator.G_max)
+        G_min = current_stage.G_min
+        G_max = current_stage.G_max
         if self.iterator.training.is_aware():
             G, max_weight = crossbar.map.w_params_to_G(weights, G_min, G_max)
         else:
             G, max_weight = crossbar.map.w_to_G(weights, G_min, G_max)
 
-        current_stage = self.iterator.current_stage()
 
         # Linearity-preserving nonidealities
         if current_stage.stuck_at_G_min is not None or current_stage.stuck_at_G_max is not None or current_stage.d2d_lognormal is not None:
