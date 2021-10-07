@@ -33,7 +33,3 @@ def main():
     for iterator in get_iterators():
         iterator.train([TrainingCallback(iterator)])
         iterator.infer()
-
-
-if __name__ == "__main__":
-    main()
