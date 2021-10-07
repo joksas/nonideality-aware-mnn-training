@@ -12,8 +12,8 @@ class TrainingCallback(tf.keras.callbacks.Callback):
         self.iterator = copy.deepcopy(iterator)
         self.iterator.is_callback = True
         self.iterator.is_training = False
-        self.every = 2
-        self.num_repeats = 3
+        self.every = 25
+        self.num_repeats = 25
         self.history = [{
             "nonideality_label": inference.nonideality_label(),
             "epoch_no": [],
