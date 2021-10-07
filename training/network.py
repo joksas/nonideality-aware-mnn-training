@@ -31,7 +31,7 @@ def train(iterator, callbacks=[]):
                 datagen.flow(iterator.x_train, iterator.y_train, batch_size=iterator.training.batch_size, subset="training"),
                 validation_data=datagen.flow(iterator.x_train, iterator.y_train, subset="validation"),
                 epochs=iterator.training.num_epochs,
-                callbacks=[checkpoint_callback],
+                callbacks=[checkpoint_callback]+callbacks,
                 verbose=2,
                 )
     else:
