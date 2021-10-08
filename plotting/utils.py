@@ -1,3 +1,6 @@
+import matplotlib.transforms as mtransforms
+
+
 def color_list():
     """Okabe-Ito colorblind-friendly palette.
 
@@ -21,3 +24,8 @@ def color_dict():
     color_names = ["orange", "sky-blue", "bluish-green", "yellow", "blue", "vermilion", "reddish-purple", "black"]
     colors = dict(zip(color_names, color_list()))
     return colors
+
+
+def add_subfigure_label(fig, axis, letter_idx, fontsize):
+    trans = mtransforms.ScaledTranslation(-16/72, 2/72, fig.dpi_scale_trans)
+    axis.text(0.0, 1.0, chr(letter_idx+65), transform=axis.transAxes + trans, fontweight="bold", fontsize=fontsize)
