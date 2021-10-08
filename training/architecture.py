@@ -119,13 +119,7 @@ class MemristorDense(layers.Layer):
                     **kwargs
                     )
 
-    def call(self, x, mask=None):
-        if not self.iterator.training.is_aware() and self.iterator.is_training:
-            return tf.tensordot(x, self.w, axes=1) + self.b
-
-        ones = tf.ones([tf.shape(x)[0], 1])
-        inputs = tf.concat([x, ones], 1)
-
+    def combined_weights(self):
         if self.iterator.training.is_aware():
             b_pos = tf.expand_dims(self.b_pos, axis=0)
             b_neg = tf.expand_dims(self.b_neg, axis=0)
@@ -144,7 +138,16 @@ class MemristorDense(layers.Layer):
             bias = tf.expand_dims(self.b, axis=0)
             combined_weights = tf.concat([self.w, bias], 0)
 
-        self.out = self.memristive_outputs(inputs, combined_weights)
+        return combined_weights
+
+    def call(self, x, mask=None):
+        if not self.iterator.training.is_aware() and self.iterator.is_training:
+            return tf.tensordot(x, self.w, axes=1) + self.b
+
+        ones = tf.ones([tf.shape(x)[0], 1])
+        inputs = tf.concat([x, ones], 1)
+
+        self.out = self.memristive_outputs(inputs, self.combined_weights())
 
         return self.out
 
