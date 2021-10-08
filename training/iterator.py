@@ -290,8 +290,8 @@ class Iterator(Dataset):
 
     def acc(self):
         accuracies = []
-        for inference_idx in range(self.inference_idx):
-            self.inference_idx = self.inference_idx
+        for inference_idx in range(len(self.inferences)):
+            self.inference_idx = inference_idx
             inference = self.inferences[self.inference_idx]
             accuracy = np.zeros((self.training.num_repeats, inference.num_repeats))
 
@@ -308,6 +308,8 @@ class Iterator(Dataset):
 
             self.training.repeat_idx = 0
             accuracies.append(accuracy)
+
+        self.inference_idx = None
 
         return accuracies
 
