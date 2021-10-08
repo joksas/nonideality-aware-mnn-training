@@ -6,7 +6,7 @@ DATASET = "MNIST"
 NUM_EPOCHS = 1000
 BATCH_SIZE = 32
 NUM_TRAINING_REPEATS = 1
-NUM_INFERENCE_REPEATS = 3
+NUM_INFERENCE_REPEATS = 25
 
 
 def custom_iterator(training_setup, inference_setups, is_regularized):
