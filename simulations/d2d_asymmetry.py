@@ -1,12 +1,12 @@
-from training.iterator import Iterator, Training, TrainingCallback, Inference
+from training.iterator import Iterator, Training, Inference
 from . import devices
 
 
-DATASET = "CIFAR-10"
+DATASET = "MNIST"
 NUM_EPOCHS = 1000
-BATCH_SIZE = 64
+BATCH_SIZE = 32
 NUM_TRAINING_REPEATS = 1
-NUM_INFERENCE_REPEATS = 250
+NUM_INFERENCE_REPEATS = 3
 
 
 def custom_iterator(training_setup, inference_setups):
@@ -19,8 +19,9 @@ def custom_iterator(training_setup, inference_setups):
 
 def get_iterators():
     iterators = [
-            custom_iterator(devices.ideal(), [devices.high_R()]),
-            custom_iterator(devices.high_R(), [devices.high_R()]),
+            # custom_iterator(devices.ideal(), [devices.symmetric_d2d()]),
+            custom_iterator(devices.symmetric_d2d(), [devices.symmetric_d2d()]),
+            custom_iterator(devices.asymmetric_d2d(), [devices.asymmetric_d2d()]),
             ]
 
     return iterators
