@@ -4,8 +4,8 @@ from . import devices
 
 DATASET = "MNIST"
 NUM_EPOCHS = 1000
-BATCH_SIZE = 32
-NUM_TRAINING_REPEATS = 1
+BATCH_SIZE = 64
+NUM_TRAINING_REPEATS = 3
 NUM_INFERENCE_REPEATS = 25
 
 
@@ -31,5 +31,5 @@ def get_iterators():
 
 def main():
     for iterator in get_iterators():
-        iterator.train([TrainingCallback(iterator)])
+        iterator.train(training_callback=TrainingCallback(iterator))
         iterator.infer()

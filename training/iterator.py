@@ -21,6 +21,14 @@ class TrainingCallback(tf.keras.callbacks.Callback):
             "accuracy": []
             } for inference in self.iterator.inferences]
 
+    def reset(self):
+        self.history = [{
+            "nonideality_label": inference.nonideality_label(),
+            "epoch_no": [],
+            "loss": [],
+            "accuracy": []
+            } for inference in self.iterator.inferences]
+
     def on_epoch_end(self, epoch, logs=None):
         # Will evaluate on first epoch and then every `self.every` epochs.
         if epoch != 0 and (epoch+1)%self.every != 0:
@@ -318,9 +326,14 @@ class Iterator(Dataset):
     def err(self):
         return [1 - accuracy for accuracy in self.acc()]
 
-    def train(self, callbacks=[]):
+    def train(self, training_callback=None):
         self.is_training = True
         for _ in range(self.training.num_repeats):
+            callbacks = []
+            if training_callback is not None:
+                training_callback.reset()
+                callbacks.append(training_callback)
+
             network.train(self, callbacks=callbacks)
             self.training.repeat_idx += 1
 
