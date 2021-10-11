@@ -182,7 +182,7 @@ class Training(Nonideal, Iterable):
             return "nonreg"
 
     def label(self):
-        return f"{self.regularized_label()}__{Nonideal.label(self)}"
+        return f"{self.regularized_label()}__{self.batch_size}__{Nonideal.label(self)}"
 
     def is_aware(self) -> bool:
         return self.is_nonideal()
