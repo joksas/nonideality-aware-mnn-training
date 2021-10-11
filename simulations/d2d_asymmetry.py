@@ -1,4 +1,4 @@
-from training.iterator import Iterator, Training, Inference
+from training.iterator import Iterator, Training, Inference, TrainingCallback
 from . import devices
 
 
@@ -29,5 +29,5 @@ def get_iterators():
 
 def main():
     for iterator in get_iterators():
-        iterator.train()
+        iterator.train(training_callback=TrainingCallback(iterator))
         iterator.infer()
