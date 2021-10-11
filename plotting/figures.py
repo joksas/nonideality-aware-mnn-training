@@ -19,24 +19,21 @@ def iv_nonlinearity_error_curves():
     spacing = 1
     num_rows = 2
     num_cols = 3
+    training_idx = 0
     colors = utils.color_dict()
     fig, axes = plt.subplots(num_rows, num_cols, sharex=True, sharey=True, figsize=(18/2.54, 9/2.54))
 
     temp_iterators = simulations.iv_nonlinearity.get_iterators()
+    for i in range(len(temp_iterators)):
+        temp_iterators[i].training.repeat_idx = training_idx
     iterators = np.array([[temp_iterators[idx] for idx in row] for row in 
         [
             [0, 1, 2],
             [0, 3, 4],
             ]
             ])
-    ### test_histories = np.array([[iterators[i, j].info()["callback_infos"][0]["history"][idx] for j, idx in enumerate(row)]
-    ###     for i, row in enumerate([
-    ###             [0, 0, 0],
-    ###             [1, 0, 0],
-    ###             ])
-    ###         ])
-    # Old setup
-    test_histories = np.array([[iterators[i, j].info()["callback_infos"][idx]["history"] for j, idx in enumerate(row)]
+
+    test_histories = np.array([[iterators[i, j].info()["callback_infos"][0]["history"][idx] for j, idx in enumerate(row)]
         for i, row in enumerate([
                 [0, 0, 0],
                 [1, 0, 0],
@@ -53,8 +50,6 @@ def iv_nonlinearity_error_curves():
             test_accuracy = np.array(test_history["accuracy"])
             test_error = 100*(1 - test_accuracy)
             test_error_median = np.median(test_error, axis=1)
-            test_error_p10 = np.quantile(test_error, 0.1, axis=1)
-            test_error_p90 = np.quantile(test_error, 0.9, axis=1)
             axis = axes[i, j]
 
             train_error = 100*(1 - np.array(iterator.info()["history"]["accuracy"][::spacing]))
@@ -100,9 +95,6 @@ def iv_nonlinearity_boxplots():
         color = colors[idx%3]
         boxplot = plt.boxplot(error, positions=[x_pos],
                 widths=[10**(np.log10(x_pos)+w/2.)-10**(np.log10(x_pos)-w/2.)], sym=color)
-        # plt.setp(boxplot["fliers"], marker="x", markersize=4)
-        # for element in ["boxes", "whiskers", "fliers", "means", "medians", "caps"]:
-        #     plt.setp(boxplot[element], color=color)
         plt.setp(boxplot["fliers"], marker="x", markersize=1, markeredgewidth=0.5)
         for element in ["boxes", "whiskers", "fliers", "means", "medians", "caps"]:
             plt.setp(boxplot[element], color=color, linewidth=0.5)
