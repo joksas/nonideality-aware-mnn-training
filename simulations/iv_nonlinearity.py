@@ -3,7 +3,7 @@ from training import callbacks
 from . import devices
 
 
-DATASET = "MNIST"
+DATASET = "mnist"
 NUM_EPOCHS = 1000
 BATCH_SIZE = 32
 NUM_TRAINING_REPEATS = 5

@@ -20,7 +20,7 @@ TensorFlow 2.0 or higher.
 from training.iterator import Iterator, Training, Inference, IVNonlinearity
 
 
-DATASET = "MNIST"
+DATASET = "mnist"
 IDEAL = {
         "G_min": None,
         "G_max": None,

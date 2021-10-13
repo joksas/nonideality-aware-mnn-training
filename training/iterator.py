@@ -1,5 +1,7 @@
 import os
 import pickle
+import tensorflow as tf
+import tensorflow_datasets as tfds
 import numpy as np
 from . import network, utils
 
@@ -95,18 +97,8 @@ class Iterable:
         self.repeat_idx = 0
 
 
-class Dataset:
-    def __init__(self, dataset: str):
-        x_train, y_train, x_test, y_test, use_generator = utils.get_examples(dataset)
-        self.x_train = x_train
-        self.y_train = y_train
-        self.x_test = x_test
-        self.y_test = y_test
-        self.use_generator = use_generator
-
-
 class Training(Nonideal, Iterable):
-    def __init__(self, batch_size: int = 1, validation_split: float = 1/6, num_epochs: int = 1, is_regularized: bool = False,
+    def __init__(self, batch_size: int = 1, validation_split: int = 20, num_epochs: int = 1, is_regularized: bool = False,
             num_repeats: int = 0, G_min: float = None, G_max: float = None, nonidealities={}) -> None:
         self.batch_size = batch_size
         self.num_epochs = num_epochs
@@ -142,7 +134,7 @@ class Inference(Nonideal, Iterable):
         return "repeat-{}".format(self.repeat_idx)
 
 
-class Iterator(Dataset):
+class Iterator():
     def __init__(self, dataset: str, training: Training, inferences: list[Inference]) -> None:
         self.dataset = dataset
         self.training = training
@@ -150,7 +142,55 @@ class Iterator(Dataset):
         self.is_callback = False
         self.is_training = False
         self.inference_idx = None
-        Dataset.__init__(self, dataset)
+        self.__training_data = None
+        self.__validation_data = None
+        self.__testing_data = None
+
+    def data(self, subset):
+        if subset == "training":
+            if self.__training_data is not None:
+                return self.__training_data
+            split = f"train[:{100-self.training.validation_split}%]"
+        elif subset == "validation":
+            if self.__validation_data is not None:
+                return self.__validation_data
+            split = f"train[:{self.training.validation_split}%]"
+        elif subset == "testing":
+            if self.__testing_data is not None:
+                return self.__testing_data
+            split = "test"
+        else:
+            raise ValueError(f"Subset \"{subset}\" is not recognised!")
+
+        ds = tfds.load(
+                self.dataset,
+                split=split,
+                as_supervised=True,
+                shuffle_files=True,
+                )
+        size = ds.cardinality().numpy()
+        print(f"Loaded dataset \"{self.dataset}\" ({subset}): {size} examples.")
+
+        if subset == "testing":
+            ds = ds.map(utils.normalize_img, num_parallel_calls=tf.data.AUTOTUNE)
+            ds = ds.batch(100)
+            ds = ds.cache()
+            ds = ds.prefetch(tf.data.AUTOTUNE)
+        else:
+            ds = ds.map(utils.normalize_img, num_parallel_calls=tf.data.AUTOTUNE)
+            ds = ds.cache()
+            ds = ds.shuffle(size)
+            ds = ds.batch(self.training.batch_size)
+            ds = ds.prefetch(tf.data.AUTOTUNE)
+
+        if subset == "training":
+            self.__training_data = ds
+        elif subset == "validation":
+            self.__validation_data = ds
+        elif subset == "testing":
+            self.__testing_data = ds
+
+        return ds
 
     def training_dir(self):
         return os.path.join(

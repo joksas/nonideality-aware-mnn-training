@@ -52,7 +52,7 @@ class TestCallback(MemristiveCallback):
             accuracy = []
             loss = []
             for _ in range(self.num_repeats):
-                score = callback_model.evaluate(self.iterator.x_test, self.iterator.y_test, verbose=0, batch_size=128)
+                score = callback_model.evaluate(self.iterator.data("testing"), verbose=0)
                 loss.append(score[0])
                 accuracy.append(score[1])
             self.history[inference_idx]["loss"].append(loss)
@@ -93,7 +93,7 @@ class MemristiveCheckpoint(MemristiveCallback):
         accuracy = []
         loss = []
         for _ in range(self.num_repeats):
-            score = self.model.evaluate(self.validation_data, verbose=0, batch_size=128)
+            score = self.model.evaluate(self.iterator.data("validation"), verbose=0, batch_size=128)
             loss.append(score[0])
             accuracy.append(score[1])
         self.history["loss"].append(loss)
@@ -109,7 +109,6 @@ class MemristiveCheckpoint(MemristiveCallback):
         if median_val_accuracy > self.best_median_val_accuracy:
             self.best_median_val_accuracy = median_val_accuracy
             self.model.save_weights(self.iterator.weights_path())
-            print("new best accuracy!")
 
     def name(self):
         return "memristive_checkpoint"

@@ -7,15 +7,16 @@ from . import utils
 
 def get_model(iterator, custom_weights=None):
     num_hidden_neurons = 25
-    if iterator.dataset == "MNIST":
+    if iterator.dataset == "mnist":
         model = models.Sequential()
-        model.add(MemristorDense(784, num_hidden_neurons, iterator, input_shape=[784]))
+        model.add(layers.Flatten(input_shape=(28, 28)))
+        model.add(MemristorDense(784, num_hidden_neurons, iterator))
         model.add(layers.Activation("sigmoid"))
         model.add(MemristorDense(num_hidden_neurons, 10, iterator))
         model.add(layers.Activation("softmax"))
 
         opt = tf.keras.optimizers.SGD()
-    elif iterator.dataset == "CIFAR-10":
+    elif iterator.dataset == "cifar10":
         model = models.Sequential()
 
         # Convolutional layers
@@ -41,7 +42,7 @@ def get_model(iterator, custom_weights=None):
     elif not iterator.is_training:
         model.load_weights(iterator.weights_path())
 
-    model.compile(optimizer=opt, loss=tf.keras.losses.CategoricalCrossentropy(), metrics=["accuracy"])
+    model.compile(optimizer=opt, loss=tf.keras.losses.SparseCategoricalCrossentropy(), metrics=["accuracy"])
     return model
 
 

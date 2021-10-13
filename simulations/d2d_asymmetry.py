@@ -3,7 +3,7 @@ from training import callbacks
 from . import devices
 
 
-DATASET = "MNIST"
+DATASET = "mnist"
 NUM_EPOCHS = 1000
 BATCH_SIZE = 32
 NUM_TRAINING_REPEATS = 1
@@ -30,5 +30,8 @@ def get_iterators():
 
 def main():
     for iterator in get_iterators():
-        iterator.train(callbacks=[callbacks.TestCallback(iterator)])
+        iterator.train(callbacks=[
+            callbacks.RegularCheckpoint(iterator),
+            callbacks.TestCallback(iterator),
+            ])
         iterator.infer()
