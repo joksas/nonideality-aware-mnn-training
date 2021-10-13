@@ -32,5 +32,8 @@ def get_iterators():
 
 def main():
     for iterator in get_iterators():
-        iterator.train(callbacks=[callbacks.TestCallback(iterator)])
+        iterator.train(callbacks=[
+            callbacks.RegularCheckpoint(iterator),
+            callbacks.TestCallback(iterator),
+            ])
         iterator.infer()

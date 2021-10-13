@@ -12,12 +12,16 @@ sys.path.insert(0, "..")
 def train(iterator, callbacks=[]):
     os.makedirs(iterator.network_dir(), exist_ok=True)
 
-    model = get_model(iterator)
+    callback_names = [callback.name() for callback in callbacks]
+    if sum(x in ["regular_checkpoint", "memristive_checkpoint"] for x in callback_names) != 1:
+        raise ValueError("One checkpoint callback must be supplied during training!")
+    validation_freq = 1
+    if "memristive_checkpoint" in callback_names:
+        # Arbitrarily large number to avoid evaluating using validation set. We still want to use it
+        # for access through callbacks though.
+        validation_freq = 1000000
 
-    checkpoint_callback=keras.callbacks.ModelCheckpoint(
-            iterator.weights_path(),
-            monitor="val_accuracy",
-            save_best_only=True)
+    model = get_model(iterator)
 
     if iterator.use_generator:
         datagen = ImageDataGenerator(
@@ -31,8 +35,9 @@ def train(iterator, callbacks=[]):
                 datagen.flow(iterator.x_train, iterator.y_train, batch_size=iterator.training.batch_size, subset="training"),
                 validation_data=datagen.flow(iterator.x_train, iterator.y_train, subset="validation"),
                 epochs=iterator.training.num_epochs,
-                callbacks=[checkpoint_callback]+callbacks,
+                callbacks=callbacks,
                 verbose=2,
+                validation_freq=validation_freq,
                 )
     else:
         history=model.fit(
@@ -41,7 +46,9 @@ def train(iterator, callbacks=[]):
                 validation_split=iterator.training.validation_split,
                 verbose=2,
                 epochs=iterator.training.num_epochs,
-                callbacks=[checkpoint_callback]+callbacks)
+                callbacks=callbacks,
+                validation_freq=validation_freq,
+                )
 
     info = {
             "history": history.history,

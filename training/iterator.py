@@ -266,7 +266,10 @@ class Iterator(Dataset):
         self.is_training = True
         for _ in range(self.training.num_repeats):
             for callback in callbacks:
-                callback.reset_history()
+                try:
+                    callback.reset_history()
+                except AttributeError:
+                    pass
 
             network.train(self, callbacks=callbacks)
             self.training.repeat_idx += 1
