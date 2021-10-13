@@ -1,66 +1,7 @@
 import os
 import pickle
-from . import network, utils
 import numpy as np
-import tensorflow as tf
-import copy
-from .architecture import get_model
-
-
-class TrainingCallback(tf.keras.callbacks.Callback):
-    def __init__(self, iterator):
-        self.iterator = copy.deepcopy(iterator)
-        self.iterator.is_callback = True
-        self.iterator.is_training = False
-        self.every = 25
-        self.num_repeats = 25
-        self.history = [{
-            "nonideality_label": inference.nonideality_label(),
-            "epoch_no": [],
-            "loss": [],
-            "accuracy": []
-            } for inference in self.iterator.inferences]
-
-    def reset(self):
-        self.history = [{
-            "nonideality_label": inference.nonideality_label(),
-            "epoch_no": [],
-            "loss": [],
-            "accuracy": []
-            } for inference in self.iterator.inferences]
-
-    def on_epoch_end(self, epoch, logs=None):
-        # Will evaluate on first epoch and then every `self.every` epochs.
-        if epoch != 0 and (epoch+1)%self.every != 0:
-            return
-
-        model_weights = self.model.get_weights()
-
-        for inference_idx in range(len(self.iterator.inferences)):
-            self.iterator.inference_idx = inference_idx
-            callback_model = get_model(self.iterator, custom_weights=model_weights)
-            inference = self.iterator.inferences[inference_idx]
-            accuracy = []
-            loss = []
-            for _ in range(self.num_repeats):
-                score = callback_model.evaluate(self.iterator.x_test, self.iterator.y_test, verbose=0, batch_size=128)
-                loss.append(score[0])
-                accuracy.append(score[1])
-            self.history[inference_idx]["loss"].append(loss)
-            self.history[inference_idx]["accuracy"].append(accuracy)
-            self.history[inference_idx]["epoch_no"].append(epoch+1)
-            print(
-                    inference.nonideality_label(),
-                    "median loss:", f"{np.median(loss):.4f}",
-                    "median accuracy:", f"{np.median(accuracy):.4f}",
-                    )
-
-        self.iterator.inference_idx = None
-
-    def info(self):
-        return {
-                "history": self.history,
-                }
+from . import network, utils
 
 
 class D2DLognormal:
@@ -321,13 +262,11 @@ class Iterator(Dataset):
     def err(self):
         return [1 - accuracy for accuracy in self.acc()]
 
-    def train(self, training_callback=None):
+    def train(self, callbacks=[]):
         self.is_training = True
         for _ in range(self.training.num_repeats):
-            callbacks = []
-            if training_callback is not None:
-                training_callback.reset()
-                callbacks.append(training_callback)
+            for callback in callbacks:
+                callback.reset_history()
 
             network.train(self, callbacks=callbacks)
             self.training.repeat_idx += 1

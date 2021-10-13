@@ -47,8 +47,15 @@ def train(iterator, callbacks=[]):
             "history": history.history,
             "validation_split": iterator.training.validation_split,
             "batch_size": iterator.training.batch_size,
-            "callback_infos": [callback.info() for callback in callbacks],
+            "callback_infos": {},
             }
+    for callback in callbacks:
+        try:
+            if callback.name() in info["callback_infos"]:
+                raise KeyError(f"Callback \"{callback.name()}\" already exists!")
+            info["callback_infos"][callback.name()] = callback.info()
+        except AttributeError:
+            pass
 
     with open(iterator.info_path(), "wb") as handle:
         pickle.dump(info, handle)
