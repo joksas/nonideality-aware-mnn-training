@@ -16,22 +16,16 @@ LINEWIDTH=0.75
 
 
 def iv_nonlinearity_error_curves():
-    spacing = 1
     num_rows = 2
     num_cols = 3
     training_idx = 0
     colors = utils.color_dict()
     fig, axes = plt.subplots(num_rows, num_cols, sharex=True, sharey=True, figsize=(18/2.54, 9/2.54))
 
-    temp_iterators = simulations.iv_nonlinearity.get_iterators()
-    for i in range(len(temp_iterators)):
-        temp_iterators[i].training.repeat_idx = training_idx
-    iterators = np.array([[temp_iterators[idx] for idx in row] for row in 
-        [
-            [0, 1, 2],
-            [0, 3, 4],
-            ]
-            ])
+    iterators = np.array(simulations.iv_nonlinearity.get_iterators()).reshape((num_rows, num_cols))
+    for row in iterators:
+        for iterator in row:
+            iterator.training.repeat_idx = training_idx
 
     test_histories = np.array([[iterators[i, j].info()["callback_infos"][0]["history"][idx] for j, idx in enumerate(row)]
         for i, row in enumerate([
@@ -40,7 +34,7 @@ def iv_nonlinearity_error_curves():
                 ])
             ])
     num_epochs = len(iterators[0, 0].info()["history"]["accuracy"])
-    epochs = np.arange(1, num_epochs+1, spacing)
+    epochs = np.arange(1, num_epochs+1)
 
     for i in range(num_rows):
         for j in range(num_cols):
@@ -52,8 +46,8 @@ def iv_nonlinearity_error_curves():
             test_error_median = np.median(test_error, axis=1)
             axis = axes[i, j]
 
-            train_error = 100*(1 - np.array(iterator.info()["history"]["accuracy"][::spacing]))
-            validation_error = 100*(1 - np.array(iterator.info()["history"]["val_accuracy"][::spacing]))
+            train_error = 100*(1 - np.array(iterator.info()["history"]["accuracy"]))
+            validation_error = 100*(1 - np.array(iterator.info()["history"]["val_accuracy"]))
 
             axis.plot(epochs, train_error, color=colors["orange"], linewidth=LINEWIDTH)
             axis.plot(epochs, validation_error, color=colors["sky-blue"], linewidth=LINEWIDTH)
@@ -73,7 +67,7 @@ def iv_nonlinearity_error_curves():
     plt.figlegend(["Training", "Validation", "Test (median, nonideal)"], ncol=3,
             bbox_to_anchor=(0, 0, 0.85, 1.05), frameon=False)
 
-    plt.savefig("plotting/error-curves.pdf", bbox_inches="tight")
+    plt.savefig("plotting/c-error-curves.pdf", bbox_inches="tight")
 
 
 def iv_nonlinearity_boxplots():
