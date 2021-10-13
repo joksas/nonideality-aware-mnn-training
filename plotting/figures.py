@@ -22,10 +22,15 @@ def iv_nonlinearity_error_curves():
     colors = utils.color_dict()
     fig, axes = plt.subplots(num_rows, num_cols, sharex=True, sharey=True, figsize=(18/2.54, 9/2.54))
 
-    iterators = np.array(simulations.iv_nonlinearity.get_iterators()).reshape((num_rows, num_cols))
-    for row in iterators:
-        for iterator in row:
-            iterator.training.repeat_idx = training_idx
+    temp_iterators = simulations.iv_nonlinearity.get_iterators()
+    for i in range(len(temp_iterators)):
+        temp_iterators[i].training.repeat_idx = training_idx
+    iterators = np.array([[temp_iterators[idx] for idx in row] for row in 
+        [
+            [0, 1, 2],
+            [0, 3, 4],
+            ]
+            ])
 
     test_histories = np.array([[iterators[i, j].info()["callback_infos"][0]["history"][idx] for j, idx in enumerate(row)]
         for i, row in enumerate([
@@ -67,7 +72,7 @@ def iv_nonlinearity_error_curves():
     plt.figlegend(["Training", "Validation", "Test (median, nonideal)"], ncol=3,
             bbox_to_anchor=(0, 0, 0.85, 1.05), frameon=False)
 
-    plt.savefig("plotting/c-error-curves.pdf", bbox_inches="tight")
+    plt.savefig("plotting/error-curves.pdf", bbox_inches="tight")
 
 
 def iv_nonlinearity_boxplots():
