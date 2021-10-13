@@ -34,11 +34,11 @@ class TrainingCallback(tf.keras.callbacks.Callback):
         if epoch != 0 and (epoch+1)%self.every != 0:
             return
 
-        self.model.save_weights(self.iterator.callback_weights_path())
+        model_weights = self.model.get_weights()
 
         for inference_idx in range(len(self.iterator.inferences)):
             self.iterator.inference_idx = inference_idx
-            callback_model = get_model(self.iterator, custom_weights_path=self.iterator.callback_weights_path())
+            callback_model = get_model(self.iterator, custom_weights=model_weights)
             inference = self.iterator.inferences[inference_idx]
             accuracy = []
             loss = []
@@ -224,11 +224,6 @@ class Iterator(Dataset):
     def weights_path(self):
         return os.path.join(
                 self.network_dir(), "model.h5"
-                )
-
-    def callback_weights_path(self):
-        return os.path.join(
-                self.network_dir(), "callback-model.h5"
                 )
 
     def info_path(self):

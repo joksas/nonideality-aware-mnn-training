@@ -5,7 +5,7 @@ import crossbar
 from . import utils
 
 
-def get_model(iterator, custom_weights_path=None):
+def get_model(iterator, custom_weights=None):
     num_hidden_neurons = 25
     if iterator.dataset == "MNIST":
         model = models.Sequential()
@@ -36,8 +36,8 @@ def get_model(iterator, custom_weights_path=None):
     else:
         raise ValueError(f"Dataset {iterator.dataset} is not recognised!")
 
-    if custom_weights_path is not None:
-        model.load_weights(custom_weights_path)
+    if custom_weights is not None:
+        model.set_weights(custom_weights)
     elif not iterator.is_training:
         model.load_weights(iterator.weights_path())
 
