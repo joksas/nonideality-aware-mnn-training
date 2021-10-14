@@ -16,9 +16,9 @@ def train(iterator, callbacks=[]):
     if sum(x in ["regular_checkpoint", "memristive_checkpoint"] for x in callback_names) != 1:
         raise ValueError("One checkpoint callback must be supplied during training!")
 
-    validation_data = iterator.data("validation")
-    if "memristive_checkpoint" in callback_names:
-        validation_data = None
+    validation_data = None
+    if "regular_checkpoint" in callback_names:
+        validation_data = iterator.data("validation")
 
     model = get_model(iterator)
 
