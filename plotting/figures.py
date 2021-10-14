@@ -32,31 +32,49 @@ def iv_nonlinearity_error_curves():
             ]
             ])
 
-    test_histories = np.array([[iterators[i, j].info()["callback_infos"][0]["history"][idx] for j, idx in enumerate(row)]
+    test_histories = np.array([[iterators[i, j].train_test_histories()[idx] for j, idx in enumerate(row)]
         for i, row in enumerate([
                 [0, 0, 0],
                 [1, 0, 0],
                 ])
             ])
-    num_epochs = len(iterators[0, 0].info()["history"]["accuracy"])
-    epochs = np.arange(1, num_epochs+1)
 
     for i in range(num_rows):
         for j in range(num_cols):
             iterator = iterators[i, j]
             test_history = test_histories[i, j]
+            axis = axes[i, j]
+
+            # Training curve.
+            train_epochs, train_accuracy  = iterator.train_epochs_and_accuracy()
+            train_error = 100*(1 - train_accuracy)
+            axis.plot(train_epochs, train_error, color=colors["orange"], linewidth=LINEWIDTH)
+
+            # Validation curve.
+            validation_epochs, validation_accuracy  = iterator.validation_epochs_and_accuracy()
+            validation_error = 100*(1 - validation_accuracy)
+            if len(validation_error.shape) > 1:
+                validation_error_median = np.median(validation_error, axis=1)
+                validation_error_min = np.min(validation_error, axis=1)
+                validation_error_max = np.max(validation_error, axis=1)
+                axis.fill_between(validation_epochs, validation_error_min, validation_error_max,
+                        color=colors["sky-blue"], alpha=0.25, linewidth=0)
+                axis.plot(validation_epochs, validation_error_median, color=colors["sky-blue"],
+                        linewidth=LINEWIDTH/2)
+            else:
+                axis.plot(validation_epochs, validation_error, color=colors["sky-blue"], linewidth=LINEWIDTH)
+
+            # Testing (during training) curve.
             test_epochs = test_history["epoch_no"]
             test_accuracy = np.array(test_history["accuracy"])
             test_error = 100*(1 - test_accuracy)
             test_error_median = np.median(test_error, axis=1)
-            axis = axes[i, j]
-
-            train_error = 100*(1 - np.array(iterator.info()["history"]["accuracy"]))
-            validation_error = 100*(1 - np.array(iterator.info()["history"]["val_accuracy"]))
-
-            axis.plot(epochs, train_error, color=colors["orange"], linewidth=LINEWIDTH)
-            axis.plot(epochs, validation_error, color=colors["sky-blue"], linewidth=LINEWIDTH)
+            test_error_min = np.min(test_error, axis=1)
+            test_error_max = np.max(test_error, axis=1)
+            axis.fill_between(test_epochs, test_error_min, test_error_max,
+                    color=colors["reddish-purple"], alpha=0.25, linewidth=0)
             axis.plot(test_epochs, test_error_median, color=colors["reddish-purple"], linewidth=LINEWIDTH)
+
             utils.add_subfigure_label(fig, axis, i*num_cols+j, SUBPLOT_LABEL_SIZE)
             plt.setp(axis.get_xticklabels(), fontsize=TICKS_FONT_SIZE)
             plt.setp(axis.get_yticklabels(), fontsize=TICKS_FONT_SIZE)
@@ -68,9 +86,9 @@ def iv_nonlinearity_error_curves():
             if j == 0:
                 axes[i, j].set_ylabel("Error (%)", fontsize=AXIS_LABEL_FONT_SIZE)
 
-    plt.xlim([0, num_epochs])
-    plt.figlegend(["Training", "Validation", "Test (median, nonideal)"], ncol=3,
-            bbox_to_anchor=(0, 0, 0.85, 1.05), frameon=False)
+    plt.xlim([0, len(train_epochs)])
+    plt.figlegend(["Training", "Validation", "Test (nonideal)"], ncol=3,
+            bbox_to_anchor=(0, 0, 0.8, 1.05), frameon=False)
 
     plt.savefig("plotting/error-curves.pdf", bbox_inches="tight")
 

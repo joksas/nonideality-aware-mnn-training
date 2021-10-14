@@ -282,7 +282,28 @@ class Iterator():
 
         return average_powers
 
-    def acc(self):
+    def train_epochs_and_accuracy(self):
+        accuracy = np.array(self.info()["history"]["accuracy"])
+        num_epochs = len(accuracy)
+        epochs = np.arange(1, num_epochs+1)
+        return epochs, accuracy
+
+    def validation_epochs_and_accuracy(self):
+        try:
+            accuracy = self.info()["history"]["val_accuracy"]
+            num_epochs = len(accuracy)
+            epochs = np.arange(1, num_epochs+1)
+        except KeyError:
+            epochs = self.info()["callback_infos"]["memristive_checkpoint"]["history"]["epoch_no"]
+            accuracy = self.info()["callback_infos"]["memristive_checkpoint"]["history"]["accuracy"]
+        epochs = np.array(epochs)
+        accuracy = np.array(accuracy)
+        return epochs, accuracy
+
+    def train_test_histories(self):
+        return self.info()["callback_infos"]["memristive_test"]["history"]
+
+    def test_accuracy(self):
         accuracies = []
         for inference_idx in range(len(self.inferences)):
             self.inference_idx = inference_idx
@@ -307,8 +328,8 @@ class Iterator():
 
         return accuracies
 
-    def err(self):
-        return [1 - accuracy for accuracy in self.acc()]
+    def test_error(self):
+        return [1 - accuracy for accuracy in self.test_accuracy()]
 
     def train(self, use_test_callback=False):
         self.is_training = True
