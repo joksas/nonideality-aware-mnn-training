@@ -31,9 +31,6 @@ class TestCallback(MemristiveCallback):
     def __init__(self, iterator):
         MemristiveCallback.__init__(self, iterator)
         self.iterator.is_training = False
-        self.reset_history()
-
-    def reset_history(self):
         self.history = [{
             "nonideality_label": inference.nonideality_label(),
             "epoch_no": [],
@@ -83,10 +80,7 @@ class MemristiveCheckpoint(MemristiveCallback):
     def __init__(self, iterator):
         MemristiveCallback.__init__(self, iterator)
         self.iterator.is_training = True
-        self.reset_history()
         self.best_median_val_accuracy = 0.0
-
-    def reset_history(self):
         self.history = {
                 "epoch_no": [],
                 "loss": [],

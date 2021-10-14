@@ -312,20 +312,16 @@ class Iterator():
 
     def train(self, use_test_callback=False):
         self.is_training = True
-        train_callbacks = []
-        if use_test_callback:
-            train_callbacks.append(callbacks.TestCallback(self))
-        if self.training.is_aware():
-            train_callbacks.append(callbacks.MemristiveCheckpoint(self))
-        else:
-            train_callbacks.append(callbacks.RegularCheckpoint(self))
 
         for _ in range(self.training.num_repeats):
-            for callback in train_callbacks:
-                try:
-                    callback.reset_history()
-                except AttributeError:
-                    pass
+            # New callbacks in each iteration because iterator changes.
+            train_callbacks = []
+            if use_test_callback:
+                train_callbacks.append(callbacks.TestCallback(self))
+            if self.training.is_aware():
+                train_callbacks.append(callbacks.MemristiveCheckpoint(self))
+            else:
+                train_callbacks.append(callbacks.RegularCheckpoint(self))
 
             network.train(self, callbacks=train_callbacks)
             self.training.repeat_idx += 1
