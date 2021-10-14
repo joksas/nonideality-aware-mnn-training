@@ -98,7 +98,7 @@ class Iterable:
 
 
 class Training(Nonideal, Iterable):
-    def __init__(self, batch_size: int = 1, validation_split: int = 20, num_epochs: int = 1, is_regularized: bool = False,
+    def __init__(self, batch_size: int = 1, validation_split: int = 0.2, num_epochs: int = 1, is_regularized: bool = False,
             num_repeats: int = 0, G_min: float = None, G_max: float = None, nonidealities={}) -> None:
         self.batch_size = batch_size
         self.num_epochs = num_epochs
@@ -146,16 +146,17 @@ class Iterator():
         self.__training_data = None
         self.__validation_data = None
         self.__testing_data = None
+        self.__train_split_boundary = int(100*(1 - self.training.validation_split))
 
     def data(self, subset):
         if subset == "training":
             if self.__training_data is not None:
                 return self.__training_data
-            split = f"train[:{100-self.training.validation_split}%]"
+            split = f"train[:{self.__train_split_boundary}%]"
         elif subset == "validation":
             if self.__validation_data is not None:
                 return self.__validation_data
-            split = f"train[:{self.training.validation_split}%]"
+            split = f"train[{self.__train_split_boundary}%:]"
         elif subset == "testing":
             if self.__testing_data is not None:
                 return self.__testing_data
