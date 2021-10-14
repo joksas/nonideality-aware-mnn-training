@@ -53,7 +53,7 @@ def infer(iterator):
 
     model = get_model(iterator)
 
-    score = model.evaluate(iterator.x_test, iterator.y_test, verbose=0, batch_size=10)
+    score = model.evaluate(iterator.data("testing"), verbose=0)
 
     print("Test loss: %0.4f\nTest accuracy: %0.4f"%(score[0], score[1]))
 
