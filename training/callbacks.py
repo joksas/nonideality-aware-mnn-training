@@ -7,7 +7,7 @@ from . import architecture
 
 class MemristiveCallback(tf.keras.callbacks.Callback):
     def __init__(self, iterator):
-        self.iterator = copy.deepcopy(iterator)
+        self.iterator = copy.copy(iterator)
         self.iterator.is_callback = True
         self.every = 20
         self.num_repeats = 20
