@@ -9,7 +9,6 @@ class MemristiveCallback(tf.keras.callbacks.Callback):
     def __init__(self, iterator):
         self.iterator = copy.deepcopy(iterator)
         self.iterator.is_callback = True
-        self.iterator.is_training = False
         self.every = 20
         self.num_repeats = 20
         self.history = None
@@ -31,6 +30,7 @@ class TestCallback(MemristiveCallback):
     """
     def __init__(self, iterator):
         MemristiveCallback.__init__(self, iterator)
+        self.iterator.is_training = False
         self.reset_history()
 
     def reset_history(self):
@@ -82,6 +82,7 @@ class MemristiveCheckpoint(MemristiveCallback):
     """
     def __init__(self, iterator):
         MemristiveCallback.__init__(self, iterator)
+        self.iterator.is_training = True
         self.reset_history()
         self.best_median_val_accuracy = 0.0
 
