@@ -3,7 +3,7 @@ import pickle
 import tensorflow as tf
 import tensorflow_datasets as tfds
 import numpy as np
-from . import network, utils
+from . import network, utils, callbacks
 
 
 class D2DLognormal:
@@ -309,16 +309,24 @@ class Iterator():
     def err(self):
         return [1 - accuracy for accuracy in self.acc()]
 
-    def train(self, callbacks=[]):
+    def train(self, use_test_callback=False):
         self.is_training = True
+        train_callbacks = []
+        if use_test_callback:
+            train_callbacks.append(callbacks.TestCallback(self))
+        if self.training.is_aware():
+            train_callbacks.append(callbacks.MemristiveCheckpoint(self))
+        else:
+            train_callbacks.append(callbacks.RegularCheckpoint(self))
+
         for _ in range(self.training.num_repeats):
-            for callback in callbacks:
+            for callback in train_callbacks:
                 try:
                     callback.reset_history()
                 except AttributeError:
                     pass
 
-            network.train(self, callbacks=callbacks)
+            network.train(self, callbacks=train_callbacks)
             self.training.repeat_idx += 1
 
         self.training.repeat_idx = 0
