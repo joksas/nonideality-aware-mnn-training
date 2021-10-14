@@ -169,19 +169,23 @@ class Iterator():
                 shuffle_files=True,
                 )
         size = ds.cardinality().numpy()
-        print(f"Loaded dataset \"{self.dataset}\" ({subset}): {size} examples.")
 
+        ds = ds.map(utils.normalize_img, num_parallel_calls=tf.data.AUTOTUNE)
         if subset == "testing":
-            ds = ds.map(utils.normalize_img, num_parallel_calls=tf.data.AUTOTUNE)
-            ds = ds.batch(100)
+            ds = ds.batch(100) # divisor of the size of the test set
             ds = ds.cache()
-            ds = ds.prefetch(tf.data.AUTOTUNE)
         else:
-            ds = ds.map(utils.normalize_img, num_parallel_calls=tf.data.AUTOTUNE)
             ds = ds.cache()
             ds = ds.shuffle(size)
             ds = ds.batch(self.training.batch_size)
-            ds = ds.prefetch(tf.data.AUTOTUNE)
+            if self.dataset == "cifar10" and subset == "training":
+                data_augmentation = tf.keras.Sequential([
+                  tf.keras.layers.RandomTranslation(0.1, 0.1),
+                  tf.keras.layers.RandomFlip("horizontal"),
+                ])
+                ds = ds.map(lambda x, y: (data_augmentation(x, training=True), y),
+                        num_parallel_calls=tf.data.AUTOTUNE)
+        ds = ds.prefetch(tf.data.AUTOTUNE)
 
         if subset == "training":
             self.__training_data = ds
@@ -189,6 +193,8 @@ class Iterator():
             self.__validation_data = ds
         elif subset == "testing":
             self.__testing_data = ds
+
+        print(f"Loaded dataset \"{self.dataset}\" ({subset}): {size} examples.")
 
         return ds
 

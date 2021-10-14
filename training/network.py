@@ -22,28 +22,13 @@ def train(iterator, callbacks=[]):
 
     model = get_model(iterator)
 
-    if iterator.dataset == "cifar10":
-        datagen = ImageDataGenerator(
-                width_shift_range=0.1,
-                height_shift_range=0.1,
-                horizontal_flip=True,
-                )
-
-        history = model.fit(
-                datagen.flow(iterator.data("training")),
-                validation_data=datagen.flow(validation_data),
-                epochs=iterator.training.num_epochs,
-                callbacks=callbacks,
-                verbose=2,
-                )
-    else:
-        history=model.fit(
-                iterator.data("training"),
-                validation_data=validation_data,
-                verbose=2,
-                epochs=iterator.training.num_epochs,
-                callbacks=callbacks,
-                )
+    history = model.fit(
+            iterator.data("training"),
+            validation_data=validation_data,
+            verbose=2,
+            epochs=iterator.training.num_epochs,
+            callbacks=callbacks,
+            )
 
     info = {
             "history": history.history,
