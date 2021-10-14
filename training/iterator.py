@@ -142,6 +142,7 @@ class Iterator():
         self.is_callback = False
         self.is_training = False
         self.inference_idx = None
+        self.test_batch_size = 100 # divisor of the size of the test set
         self.__training_data = None
         self.__validation_data = None
         self.__testing_data = None
@@ -172,7 +173,7 @@ class Iterator():
 
         ds = ds.map(utils.normalize_img, num_parallel_calls=tf.data.AUTOTUNE)
         if subset == "testing":
-            ds = ds.batch(100) # divisor of the size of the test set
+            ds = ds.batch(self.test_batch_size)
             ds = ds.cache()
         else:
             ds = ds.cache()

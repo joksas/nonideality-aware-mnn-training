@@ -1,4 +1,5 @@
 import copy
+import time
 import tensorflow as tf
 import numpy as np
 from . import architecture
@@ -47,22 +48,27 @@ class TestCallback(MemristiveCallback):
         model_weights = self.model.get_weights()
 
         for inference_idx, inference in enumerate(self.iterator.inferences):
+            start_time = time.time()
             self.iterator.inference_idx = inference_idx
             callback_model = architecture.get_model(self.iterator, custom_weights=model_weights)
             accuracy = []
             loss = []
+            data = self.iterator.data("testing")
             for _ in range(self.num_repeats):
-                score = callback_model.evaluate(self.iterator.data("testing"), verbose=0)
+                score = callback_model.evaluate(data, verbose=0)
                 loss.append(score[0])
                 accuracy.append(score[1])
             self.history[inference_idx]["loss"].append(loss)
             self.history[inference_idx]["accuracy"].append(accuracy)
             self.history[inference_idx]["epoch_no"].append(epoch+1)
-            print(
-                    inference.nonideality_label(),
-                    "median loss:", f"{np.median(loss):.4f}",
-                    "median accuracy:", f"{np.median(accuracy):.4f}",
-                    )
+            num_total_batches = data.cardinality().numpy() * self.num_repeats
+            end_time = time.time()
+            duration = int(end_time - start_time)
+            print(f"{num_total_batches}/{num_total_batches} - "\
+                    f"{duration}s - "\
+                    f"median_test_loss: {np.median(loss):.4f} - "\
+                    f"median_test_accuracy: {np.median(accuracy):.4f} "\
+                    f"[{inference.nonideality_label()}]")
 
         self.iterator.inference_idx = None
 
@@ -92,8 +98,10 @@ class MemristiveCheckpoint(MemristiveCallback):
 
         accuracy = []
         loss = []
+        start_time = time.time()
+        data = self.iterator.data("validation")
         for _ in range(self.num_repeats):
-            score = self.model.evaluate(self.iterator.data("validation"), verbose=0, batch_size=128)
+            score = self.model.evaluate(data, verbose=0)
             loss.append(score[0])
             accuracy.append(score[1])
         self.history["loss"].append(loss)
@@ -102,11 +110,16 @@ class MemristiveCheckpoint(MemristiveCallback):
 
         median_val_accuracy = np.median(accuracy)
         median_val_loss = np.median(loss)
-        print(
-                "median validation loss:", f"{median_val_loss:.4f}",
-                "median validation accuracy:", f"{median_val_accuracy:.4f}",
-                )
+        num_total_batches = data.cardinality().numpy() * self.num_repeats
+        end_time = time.time()
+        duration = int(end_time - start_time)
+        print(f"{num_total_batches}/{num_total_batches} - "\
+                f"{duration}s - "\
+                f"median_val_loss: {np.median(loss):.4f} - "\
+                f"median_val_accuracy: {np.median(accuracy):.4f}")
         if median_val_accuracy > self.best_median_val_accuracy:
+            print(f"median_val_accuracy ({median_val_accuracy:.4f}) improved over "\
+                    f"previous best result ({self.best_median_val_accuracy:.4f}). Saving weights...")
             self.best_median_val_accuracy = median_val_accuracy
             self.model.save_weights(self.iterator.weights_path())
 
