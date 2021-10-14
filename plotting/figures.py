@@ -99,7 +99,7 @@ def iv_nonlinearity_boxplots():
     iterators = simulations.iv_nonlinearity.get_iterators()
     iterators.insert(3, iterators[0])
     indices = [0, 0, 0, 1, 0, 0]
-    errors = [100*iterator.err()[idx].flatten() for idx, iterator in zip(indices, iterators)]
+    errors = [100*iterator.test_error()[idx].flatten() for idx, iterator in zip(indices, iterators)]
     powers = [iterator.avg_power()[idx].flatten() for idx, iterator in zip(indices, iterators)]
     colors = [utils.color_dict()[key] for key in ["vermilion", "blue", "bluish-green"]]
     labels = ["Standard", "Nonideality-aware", "Nonideality-aware (regularised)"]
