@@ -73,7 +73,7 @@ def iv_nonlinearity_error_curves():
             test_error_max = np.max(test_error, axis=1)
             axis.fill_between(test_epochs, test_error_min, test_error_max,
                     color=colors["reddish-purple"], alpha=0.25, linewidth=0)
-            axis.plot(test_epochs, test_error_median, color=colors["reddish-purple"], linewidth=LINEWIDTH)
+            axis.plot(test_epochs, test_error_median, color=colors["reddish-purple"], linewidth=LINEWIDTH/2)
 
             utils.add_subfigure_label(fig, axis, i*num_cols+j, SUBPLOT_LABEL_SIZE)
             plt.setp(axis.get_xticklabels(), fontsize=TICKS_FONT_SIZE)
