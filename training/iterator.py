@@ -99,12 +99,14 @@ class Iterable:
 
 class Training(Nonideal, Iterable):
     def __init__(self, batch_size: int = 1, validation_split: int = 0.2, num_epochs: int = 1, is_regularized: bool = False,
-            num_repeats: int = 0, G_min: float = None, G_max: float = None, nonidealities={}) -> None:
+            num_repeats: int = 0, G_min: float = None, G_max: float = None, nonidealities={},
+            force_regular_checkpoint=False) -> None:
         self.batch_size = batch_size
         self.num_epochs = num_epochs
         self.num_repeats = num_repeats
         self.is_regularized = is_regularized
         self.validation_split = validation_split
+        self.force_regular_checkpoint = force_regular_checkpoint
         Nonideal.__init__(self, G_min=G_min, G_max=G_max, **nonidealities)
         Iterable.__init__(self)
 
@@ -115,7 +117,11 @@ class Training(Nonideal, Iterable):
             return "nonreg"
 
     def label(self):
-        return f"{self.regularized_label()}__{self.batch_size}__{Nonideal.label(self)}"
+        l = f"{self.regularized_label()}__{self.batch_size}__{Nonideal.label(self)}"
+        if self.force_regular_checkpoint:
+            l += "__rc"
+        return l
+
 
     def is_aware(self) -> bool:
         return self.is_nonideal()
@@ -339,10 +345,10 @@ class Iterator():
             train_callbacks = []
             if use_test_callback:
                 train_callbacks.append(callbacks.TestCallback(self))
-            if self.training.is_aware():
-                train_callbacks.append(callbacks.MemristiveCheckpoint(self))
-            else:
+            if not self.training.is_aware() or self.training.force_regular_checkpoint:
                 train_callbacks.append(callbacks.RegularCheckpoint(self))
+            else:
+                train_callbacks.append(callbacks.MemristiveCheckpoint(self))
 
             network.train(self, callbacks=train_callbacks)
             self.training.repeat_idx += 1
