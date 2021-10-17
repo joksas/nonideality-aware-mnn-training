@@ -278,3 +278,27 @@ def d2d_error_curves():
             bbox_to_anchor=(0, 0, 0.9, 1.15), frameon=False)
 
     plt.savefig("plotting/d2d-error-curves.pdf", bbox_inches="tight")
+
+
+def checkpoint_comparison_boxplots():
+    fig, axes = plt.subplots(figsize=(9/2.54, 7.0/2.54))
+    fig.tight_layout()
+
+    iterators = [simulations.d2d_asymmetry_rc.get_iterators()[0], simulations.d2d_asymmetry.get_iterators()[1]]
+    errors = [100*iterator.test_error()[0].flatten() for iterator in iterators]
+    colors = [utils.color_dict()[key] for key in ["vermilion", "blue"]]
+
+    boxplots = []
+
+    for idx, (error, color) in enumerate(zip(errors, colors)):
+        bplot = plt.boxplot(error, positions=[idx], sym=color)
+        plt.setp(bplot["fliers"], marker="x", markersize=2, markeredgewidth=0.5)
+        for element in ["boxes", "whiskers", "fliers", "means", "medians", "caps"]:
+            plt.setp(bplot[element], color=color, linewidth=0.5)
+        plt.xticks([0, 1], ["Regular", "Memristive"], fontsize=TICKS_FONT_SIZE)
+    
+    axes.set_yscale("log")
+    plt.xlabel("Checkpoint", fontsize=AXIS_LABEL_FONT_SIZE)
+    plt.ylabel("Eror (%)", fontsize=AXIS_LABEL_FONT_SIZE)
+
+    plt.savefig("plotting/checkpoint-comparison-boxplots.pdf", bbox_inches="tight")
