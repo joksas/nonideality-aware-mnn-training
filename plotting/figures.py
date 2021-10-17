@@ -91,12 +91,6 @@ def iv_nonlinearity_error_curves():
     plt.figlegend(["Training", "Validation", "Test (nonideal)"], ncol=3,
             bbox_to_anchor=(0, 0, 0.8, 1.05), frameon=False)
 
-    leg = plt.legend()
-    
-    for line in leg.get_lines():
-        line.set_linewidth(4.0)
-
-
     plt.savefig("plotting/error-curves.pdf", bbox_inches="tight")
 
 
@@ -225,3 +219,62 @@ def d2d_boxplots():
     plt.ylabel("Eror (%)", fontsize=AXIS_LABEL_FONT_SIZE)
 
     plt.savefig("plotting/d2d-boxplots.pdf", bbox_inches="tight")
+
+
+def d2d_error_curves():
+    num_rows = 1
+    num_cols = 2
+    training_idx = 0
+    colors = utils.color_dict()
+    fig, axes = plt.subplots(num_rows, num_cols, sharex=True, sharey=True, figsize=(12/2.54, 4.5/2.54))
+
+    iterators = simulations.d2d_asymmetry.get_iterators()
+    test_histories = [iterator.train_test_histories()[0] for iterator in iterators]
+
+    for idx, (iterator, test_history, axis) in enumerate(zip(iterators, test_histories, axes)):
+        # Training curve.
+        train_epochs, train_accuracy  = iterator.train_epochs_and_accuracy()
+        train_error = 100*(1 - train_accuracy)
+        axis.plot(train_epochs, train_error, color=colors["orange"], linewidth=LINEWIDTH)
+
+        # Validation curve.
+        validation_epochs, validation_accuracy  = iterator.validation_epochs_and_accuracy()
+        validation_error = 100*(1 - validation_accuracy)
+        if len(validation_error.shape) > 1:
+            validation_error_median = np.median(validation_error, axis=1)
+            validation_error_min = np.min(validation_error, axis=1)
+            validation_error_max = np.max(validation_error, axis=1)
+            axis.fill_between(validation_epochs, validation_error_min, validation_error_max,
+                    color=colors["sky-blue"], alpha=0.25, linewidth=0)
+            axis.plot(validation_epochs, validation_error_median, color=colors["sky-blue"],
+                    linewidth=LINEWIDTH/2)
+        else:
+            axis.plot(validation_epochs, validation_error, color=colors["sky-blue"], linewidth=LINEWIDTH)
+
+        # Testing (during training) curve.
+        test_epochs = test_history["epoch_no"]
+        test_accuracy = np.array(test_history["accuracy"])
+        test_error = 100*(1 - test_accuracy)
+        test_error_median = np.median(test_error, axis=1)
+        test_error_min = np.min(test_error, axis=1)
+        test_error_max = np.max(test_error, axis=1)
+        axis.fill_between(test_epochs, test_error_min, test_error_max,
+                color=colors["reddish-purple"], alpha=0.25, linewidth=0)
+        axis.plot(test_epochs, test_error_median, color=colors["reddish-purple"], linewidth=LINEWIDTH/2)
+
+        utils.add_subfigure_label(fig, axis, idx, SUBPLOT_LABEL_SIZE)
+        plt.setp(axis.get_xticklabels(), fontsize=TICKS_FONT_SIZE)
+        plt.setp(axis.get_yticklabels(), fontsize=TICKS_FONT_SIZE)
+        axis.set_yscale("log")
+
+        axis.set_xlabel("Epoch (#)", fontsize=AXIS_LABEL_FONT_SIZE)
+
+        if idx == 0:
+            axis.set_ylabel("Error (%)", fontsize=AXIS_LABEL_FONT_SIZE)
+
+    plt.xlim([0, len(train_epochs)])
+
+    plt.figlegend(["Training", "Validation", "Test (nonideal)"], ncol=3,
+            bbox_to_anchor=(0, 0, 0.9, 1.15), frameon=False)
+
+    plt.savefig("plotting/d2d-error-curves.pdf", bbox_inches="tight")
