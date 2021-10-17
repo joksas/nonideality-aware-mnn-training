@@ -2,11 +2,11 @@ from training.iterator import Iterator, Training, IVNonlinearity, Inference, Stu
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
+import copy
 import simulations
 from . import utils
 from training import architecture
 import crossbar
-import tensorflow as tf
 
 AXIS_LABEL_FONT_SIZE = 12
 LEGEND_FONT_SIZE = 8
@@ -87,8 +87,15 @@ def iv_nonlinearity_error_curves():
                 axes[i, j].set_ylabel("Error (%)", fontsize=AXIS_LABEL_FONT_SIZE)
 
     plt.xlim([0, len(train_epochs)])
+
     plt.figlegend(["Training", "Validation", "Test (nonideal)"], ncol=3,
             bbox_to_anchor=(0, 0, 0.8, 1.05), frameon=False)
+
+    leg = plt.legend()
+    
+    for line in leg.get_lines():
+        line.set_linewidth(4.0)
+
 
     plt.savefig("plotting/error-curves.pdf", bbox_inches="tight")
 
@@ -182,12 +189,15 @@ def d2d_conductance_histograms():
     for idx, (axis, iterator, color) in enumerate(zip(axes, iterators, colors)):
         iterator.is_training = True
         model = architecture.get_model(iterator, custom_weights_path=iterator.weights_path())
-        weights = model.layers[0].combined_weights()
+        print(model.layers)
+        weights = model.layers[1].combined_weights()
         G, _ = crossbar.map.w_params_to_G(weights, iterator.training.G_min, iterator.training.G_max)
         G = 1000*G
         axis.hist(G.numpy().flatten(), bins=100, color=color)
         utils.add_subfigure_label(fig, axis, idx, SUBPLOT_LABEL_SIZE)
         axis.set_xlabel("Conductance (mS)", fontsize=AXIS_LABEL_FONT_SIZE)
+        plt.setp(axis.get_xticklabels(), fontsize=TICKS_FONT_SIZE)
+        plt.setp(axis.get_yticklabels(), fontsize=TICKS_FONT_SIZE)
 
     axes[0].set_ylabel("Count (#)", fontsize=AXIS_LABEL_FONT_SIZE)
 
@@ -198,7 +208,7 @@ def d2d_boxplots():
     fig, axes = plt.subplots(figsize=(9/2.54, 7.0/2.54))
     fig.tight_layout()
     iterators = simulations.d2d_asymmetry.get_iterators()
-    errors = [100*iterator.err()[0].flatten() for iterator in iterators]
+    errors = [100*iterator.test_error()[0].flatten() for iterator in iterators]
     colors = [utils.color_dict()[key] for key in ["vermilion", "blue"]]
 
     boxplots = []
