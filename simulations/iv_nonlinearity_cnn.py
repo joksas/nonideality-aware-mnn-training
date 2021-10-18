@@ -6,8 +6,8 @@ from . import devices
 DATASET = "cifar10"
 NUM_EPOCHS = 1000
 BATCH_SIZE = 64
-NUM_TRAINING_REPEATS = 1
-NUM_INFERENCE_REPEATS = 250
+NUM_TRAINING_REPEATS = 5
+NUM_INFERENCE_REPEATS = 25
 
 
 def custom_iterator(training_setup, inference_setups):
