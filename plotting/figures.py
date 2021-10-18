@@ -76,9 +76,8 @@ def iv_nonlinearity_error_curves():
             axis.plot(test_epochs, test_error_median, color=colors["reddish-purple"], linewidth=LINEWIDTH/2)
 
             utils.add_subfigure_label(fig, axis, i*num_cols+j, SUBPLOT_LABEL_SIZE)
-            plt.setp(axis.get_xticklabels(), fontsize=TICKS_FONT_SIZE)
-            plt.setp(axis.get_yticklabels(), fontsize=TICKS_FONT_SIZE)
             axis.set_yscale("log")
+            plt.tick_params(axis="both", which="both", labelsize=TICKS_FONT_SIZE)
 
             if i+1 == num_rows:
                 axes[i, j].set_xlabel("Epoch (#)", fontsize=AXIS_LABEL_FONT_SIZE)
@@ -121,8 +120,7 @@ def iv_nonlinearity_boxplots():
 
     axes.legend([boxplot["boxes"][0] for boxplot in boxplots[:3]], labels, fontsize=LEGEND_FONT_SIZE, frameon=False)
 
-    plt.xticks(fontsize=TICKS_FONT_SIZE)
-    plt.yticks(fontsize=TICKS_FONT_SIZE)
+    plt.tick_params(axis="both", which="both", labelsize=TICKS_FONT_SIZE)
     plt.xlabel("Ohmic power consumption (W)", fontsize=AXIS_LABEL_FONT_SIZE)
     plt.ylabel("Test error (%)", fontsize=AXIS_LABEL_FONT_SIZE)
     axes.set_xscale("log")
@@ -158,16 +156,14 @@ def cnn_results():
         plt.setp(bplot["fliers"], marker="x", markersize=1, markeredgewidth=0.2)
         for element in ["boxes", "whiskers", "fliers", "means", "medians", "caps"]:
             plt.setp(bplot[element], color=color, linewidth=0.2)
-        plt.xticks([0, 1], ["Standard", "Nonideality-aware"], fontsize=TICKS_FONT_SIZE)
+        plt.xticks([0, 1], ["Standard", "Nonideality-aware"])
         axis.set_xlabel("Training", fontsize=AXIS_LABEL_FONT_SIZE)
 
     # Common properties.
     for idx, axis in enumerate(axes):
         axis.set_yscale("log")
         utils.add_subfigure_label(fig, axis, idx, SUBPLOT_LABEL_SIZE)
-        plt.setp(axis.get_xticklabels(), fontsize=TICKS_FONT_SIZE)
-        # TODO: Why doesn't y tick label size change??
-        plt.setp(axis.get_yticklabels(), fontsize=TICKS_FONT_SIZE)
+        plt.tick_params(axis="both", which="both", labelsize=TICKS_FONT_SIZE)
 
     plt.figlegend(["Training", "Validation"], ncol=2, bbox_to_anchor=(0, 0, 0.55, 1.15), frameon=False)
 
@@ -189,8 +185,8 @@ def d2d_conductance_histograms():
         axis.hist(G.numpy().flatten(), bins=100, color=color)
         utils.add_subfigure_label(fig, axis, idx, SUBPLOT_LABEL_SIZE)
         axis.set_xlabel("Conductance (mS)", fontsize=AXIS_LABEL_FONT_SIZE)
-        plt.setp(axis.get_xticklabels(), fontsize=TICKS_FONT_SIZE)
-        plt.setp(axis.get_yticklabels(), fontsize=TICKS_FONT_SIZE)
+        plt.tick_params(axis="both", which="both", labelsize=TICKS_FONT_SIZE)
+
 
     axes[0].set_ylabel("Count (#)", fontsize=AXIS_LABEL_FONT_SIZE)
 
@@ -211,11 +207,12 @@ def d2d_boxplots():
         plt.setp(bplot["fliers"], marker="x", markersize=2, markeredgewidth=0.5)
         for element in ["boxes", "whiskers", "fliers", "means", "medians", "caps"]:
             plt.setp(bplot[element], color=color, linewidth=0.5)
-        plt.xticks([0, 1], ["Uniform", "Asymmetric"], fontsize=TICKS_FONT_SIZE)
+        plt.xticks([0, 1], ["Uniform", "Asymmetric"])
     
     axes.set_yscale("log")
     plt.xlabel("D2D variability", fontsize=AXIS_LABEL_FONT_SIZE)
     plt.ylabel("Eror (%)", fontsize=AXIS_LABEL_FONT_SIZE)
+    plt.tick_params(axis="both", which="both", labelsize=TICKS_FONT_SIZE)
 
     plt.savefig("plotting/d2d-boxplots.pdf", bbox_inches="tight")
 
@@ -262,8 +259,7 @@ def d2d_error_curves():
         axis.plot(test_epochs, test_error_median, color=colors["reddish-purple"], linewidth=LINEWIDTH/2)
 
         utils.add_subfigure_label(fig, axis, idx, SUBPLOT_LABEL_SIZE)
-        plt.setp(axis.get_xticklabels(), fontsize=TICKS_FONT_SIZE)
-        plt.setp(axis.get_yticklabels(), fontsize=TICKS_FONT_SIZE)
+        plt.tick_params(axis="both", which="both", labelsize=TICKS_FONT_SIZE)
         axis.set_yscale("log")
 
         axis.set_xlabel("Epoch (#)", fontsize=AXIS_LABEL_FONT_SIZE)
@@ -294,10 +290,12 @@ def checkpoint_comparison_boxplots():
         plt.setp(bplot["fliers"], marker="x", markersize=2, markeredgewidth=0.5)
         for element in ["boxes", "whiskers", "fliers", "means", "medians", "caps"]:
             plt.setp(bplot[element], color=color, linewidth=0.5)
-        plt.xticks([0, 1], ["Regular", "Memristive"], fontsize=TICKS_FONT_SIZE)
+        plt.xticks([0, 1], ["Regular", "Memristive"])
     
     axes.set_yscale("log")
     plt.xlabel("Checkpoint", fontsize=AXIS_LABEL_FONT_SIZE)
     plt.ylabel("Eror (%)", fontsize=AXIS_LABEL_FONT_SIZE)
+    plt.tick_params(axis="both", which="both", labelsize=TICKS_FONT_SIZE)
+
 
     plt.savefig("plotting/checkpoint-comparison-boxplots.pdf", bbox_inches="tight")
