@@ -119,8 +119,7 @@ def iv_nonlinearity_boxplots():
 
         boxplots.append(boxplot)
 
-    axes.legend([boxplot["boxes"][0] for boxplot in boxplots[:3]], [label for label in labels],
-            fontsize=LEGEND_FONT_SIZE, frameon=False)
+    axes.legend([boxplot["boxes"][0] for boxplot in boxplots[:3]], labels, fontsize=LEGEND_FONT_SIZE, frameon=False)
 
     plt.xticks(fontsize=TICKS_FONT_SIZE)
     plt.yticks(fontsize=TICKS_FONT_SIZE)
