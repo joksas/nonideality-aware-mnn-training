@@ -137,27 +137,50 @@ def cnn_results():
 
     # Error curves.
     for axis, iterator in zip(axes, iterators):
-        train_error = 100*(1 - np.array(iterator.info()["history"]["accuracy"]))
-        validation_error = 100*(1 - np.array(iterator.info()["history"]["val_accuracy"]))
-        num_epochs = len(train_error)
-        epochs = np.arange(1, num_epochs+1)
-        axis.plot(epochs, train_error, color=colors["orange"], linewidth=LINEWIDTH)
-        axis.plot(epochs, validation_error, color=colors["sky-blue"], linewidth=LINEWIDTH)
-        axis.set_xlim([0, num_epochs])
+        train_epochs, train_accuracy  = iterator.train_epochs_and_accuracy()
+        train_error = 100*(1 - train_accuracy)
+        axis.plot(train_epochs, train_error, color=colors["orange"], linewidth=LINEWIDTH)
+
+        validation_epochs, validation_accuracy  = iterator.validation_epochs_and_accuracy()
+        validation_error = 100*(1 - validation_accuracy)
+        if len(validation_error.shape) > 1:
+            validation_error_median = np.median(validation_error, axis=1)
+            validation_error_min = np.min(validation_error, axis=1)
+            validation_error_max = np.max(validation_error, axis=1)
+            axis.fill_between(validation_epochs, validation_error_min, validation_error_max,
+                    color=colors["sky-blue"], alpha=0.25, linewidth=0)
+            axis.plot(validation_epochs, validation_error_median, color=colors["sky-blue"],
+                    linewidth=LINEWIDTH/2)
+        else:
+            axis.plot(validation_epochs, validation_error, color=colors["sky-blue"], linewidth=LINEWIDTH)
+
+        test_history = iterator.train_test_histories()[0]
+        test_epochs = test_history["epoch_no"]
+        test_accuracy = np.array(test_history["accuracy"])
+        test_error = 100*(1 - test_accuracy)
+        test_error_median = np.median(test_error, axis=1)
+        test_error_min = np.min(test_error, axis=1)
+        test_error_max = np.max(test_error, axis=1)
+        axis.fill_between(test_epochs, test_error_min, test_error_max,
+                color=colors["reddish-purple"], alpha=0.25, linewidth=0)
+        axis.plot(test_epochs, test_error_median, color=colors["reddish-purple"], linewidth=LINEWIDTH/2)
+
+
+        axis.set_xlim([0, len(train_epochs)])
         axis.set_xlabel("Epoch (#)", fontsize=AXIS_LABEL_FONT_SIZE)
+        axis.tick_params(axis="both", which="both", labelsize=TICKS_FONT_SIZE)
 
     axes[0].set_ylabel("Error (%)", fontsize=AXIS_LABEL_FONT_SIZE)
 
     # Box plots.
-    axis = axes[2]
-    errors = [100*iterator.err()[0].flatten() for iterator in iterators]
+    errors = [100*iterator.test_error()[0].flatten() for iterator in iterators]
     for idx, (error, color) in enumerate(zip(errors, [colors["vermilion"], colors["blue"]])):
-        bplot = axis.boxplot(error, positions=[idx])
+        bplot = axes[2].boxplot(error, positions=[idx], sym=color)
         plt.setp(bplot["fliers"], marker="x", markersize=1, markeredgewidth=0.2)
         for element in ["boxes", "whiskers", "fliers", "means", "medians", "caps"]:
             plt.setp(bplot[element], color=color, linewidth=0.2)
         plt.xticks([0, 1], ["Standard", "Nonideality-aware"])
-        axis.set_xlabel("Training", fontsize=AXIS_LABEL_FONT_SIZE)
+        axes[2].set_xlabel("Training", fontsize=AXIS_LABEL_FONT_SIZE)
 
     # Common properties.
     for idx, axis in enumerate(axes):
@@ -165,7 +188,8 @@ def cnn_results():
         utils.add_subfigure_label(fig, axis, idx, SUBPLOT_LABEL_SIZE)
         plt.tick_params(axis="both", which="both", labelsize=TICKS_FONT_SIZE)
 
-    plt.figlegend(["Training", "Validation"], ncol=2, bbox_to_anchor=(0, 0, 0.55, 1.15), frameon=False)
+    plt.figlegend(["Training", "Validation", "Test (nonideal)"], ncol=3, bbox_to_anchor=(0, 0, 0.65,
+        1.15), frameon=False)
 
     plt.savefig("plotting/cnn-boxplots.pdf", bbox_inches="tight")
 
