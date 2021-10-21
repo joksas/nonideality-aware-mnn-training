@@ -93,6 +93,81 @@ def iv_nonlinearity_error_curves():
     plt.savefig("plotting/error-curves.pdf", bbox_inches="tight")
 
 
+def iv_nonlinearity_losses():
+    num_rows = 2
+    num_cols = 3
+    training_idx = 0
+    colors = utils.color_dict()
+    fig, axes = plt.subplots(num_rows, num_cols, sharex=True, sharey=True, figsize=(18/2.54, 9/2.54))
+
+    temp_iterators = simulations.iv_nonlinearity.get_iterators()
+    for i in range(len(temp_iterators)):
+        temp_iterators[i].training.repeat_idx = training_idx
+    iterators = np.array([[temp_iterators[idx] for idx in row] for row in 
+        [
+            [0, 1, 2],
+            [0, 3, 4],
+            ]
+            ])
+
+    test_histories = np.array([[iterators[i, j].train_test_histories()[idx] for j, idx in enumerate(row)]
+        for i, row in enumerate([
+                [0, 0, 0],
+                [1, 0, 0],
+                ])
+            ])
+
+    for i in range(num_rows):
+        for j in range(num_cols):
+            iterator = iterators[i, j]
+            test_history = test_histories[i, j]
+            axis = axes[i, j]
+
+            # Training curve.
+            train_epochs, train_loss  = iterator.train_epochs_and_loss()
+            axis.plot(train_epochs, train_loss, color=colors["orange"], linewidth=LINEWIDTH)
+
+            # Validation curve.
+            validation_epochs, validation_loss  = iterator.validation_epochs_and_loss()
+            if len(validation_loss.shape) > 1:
+                validation_loss_median = np.median(validation_loss, axis=1)
+                validation_loss_min = np.min(validation_loss, axis=1)
+                validation_loss_max = np.max(validation_loss, axis=1)
+                axis.fill_between(validation_epochs, validation_loss_min, validation_loss_max,
+                        color=colors["sky-blue"], alpha=0.25, linewidth=0)
+                axis.plot(validation_epochs, validation_loss_median, color=colors["sky-blue"],
+                        linewidth=LINEWIDTH/2)
+            else:
+                axis.plot(validation_epochs, validation_loss, color=colors["sky-blue"], linewidth=LINEWIDTH)
+
+            # Testing (during training) curve.
+            test_epochs = test_history["epoch_no"]
+            test_loss = np.array(test_history["loss"])
+            test_loss_median = np.median(test_loss, axis=1)
+            test_loss_min = np.min(test_loss, axis=1)
+            test_loss_max = np.max(test_loss, axis=1)
+            axis.fill_between(test_epochs, test_loss_min, test_loss_max,
+                    color=colors["reddish-purple"], alpha=0.25, linewidth=0)
+            axis.plot(test_epochs, test_loss_median, color=colors["reddish-purple"], linewidth=LINEWIDTH/2)
+
+            utils.add_subfigure_label(fig, axis, i*num_cols+j, SUBPLOT_LABEL_SIZE)
+            axis.set_yscale("log")
+            plt.tick_params(axis="both", which="both", labelsize=TICKS_FONT_SIZE)
+
+            if i+1 == num_rows:
+                axes[i, j].set_xlabel("Epoch (#)", fontsize=AXIS_LABEL_FONT_SIZE)
+
+            if j == 0:
+                axes[i, j].set_ylabel("Loss", fontsize=AXIS_LABEL_FONT_SIZE)
+
+    plt.xlim([0, len(train_epochs)])
+
+    plt.figlegend(["Training", "Validation", "Test (nonideal)"], ncol=3,
+            bbox_to_anchor=(0, 0, 0.8, 1.05), frameon=False)
+
+    plt.savefig("plotting/iv-nonlinearity-loss-curves.pdf", bbox_inches="tight")
+
+
 def iv_nonlinearity_boxplots():
     fig, axes = plt.subplots(figsize=(9/2.54, 7.0/2.54))
     fig.tight_layout()
@@ -192,6 +267,68 @@ def cnn_results():
         1.15), frameon=False)
 
     plt.savefig("plotting/cnn-boxplots.pdf", bbox_inches="tight")
+
+
+def cnn_results_loss():
+    fig, axes = plt.subplots(1, 3, sharey=True, figsize=(18/2.54, 5.0/2.54))
+    fig.tight_layout()
+    colors = utils.color_dict()
+    iterators = simulations.iv_nonlinearity_cnn.get_iterators()
+
+    # loss curves.
+    for axis, iterator in zip(axes, iterators):
+        train_epochs, train_loss  = iterator.train_epochs_and_loss()
+        axis.plot(train_epochs, train_loss, color=colors["orange"], linewidth=LINEWIDTH)
+
+        validation_epochs, validation_loss  = iterator.validation_epochs_and_loss()
+        if len(validation_loss.shape) > 1:
+            validation_loss_median = np.median(validation_loss, axis=1)
+            validation_loss_min = np.min(validation_loss, axis=1)
+            validation_loss_max = np.max(validation_loss, axis=1)
+            axis.fill_between(validation_epochs, validation_loss_min, validation_loss_max,
+                    color=colors["sky-blue"], alpha=0.25, linewidth=0)
+            axis.plot(validation_epochs, validation_loss_median, color=colors["sky-blue"],
+                    linewidth=LINEWIDTH/2)
+        else:
+            axis.plot(validation_epochs, validation_loss, color=colors["sky-blue"], linewidth=LINEWIDTH)
+
+        test_history = iterator.train_test_histories()[0]
+        test_epochs = test_history["epoch_no"]
+        test_loss = np.array(test_history["loss"])
+        test_loss_median = np.median(test_loss, axis=1)
+        test_loss_min = np.min(test_loss, axis=1)
+        test_loss_max = np.max(test_loss, axis=1)
+        axis.fill_between(test_epochs, test_loss_min, test_loss_max,
+                color=colors["reddish-purple"], alpha=0.25, linewidth=0)
+        axis.plot(test_epochs, test_loss_median, color=colors["reddish-purple"], linewidth=LINEWIDTH/2)
+
+
+        axis.set_xlim([0, len(train_epochs)])
+        axis.set_xlabel("Epoch (#)", fontsize=AXIS_LABEL_FONT_SIZE)
+        axis.tick_params(axis="both", which="both", labelsize=TICKS_FONT_SIZE)
+
+    axes[0].set_ylabel("Loss", fontsize=AXIS_LABEL_FONT_SIZE)
+
+    # Box plots.
+    losses = [iterator.test_loss()[0].flatten() for iterator in iterators]
+    for idx, (loss, color) in enumerate(zip(losses, [colors["vermilion"], colors["blue"]])):
+        bplot = axes[2].boxplot(loss, positions=[idx], sym=color)
+        plt.setp(bplot["fliers"], marker="x", markersize=1, markeredgewidth=0.2)
+        for element in ["boxes", "whiskers", "fliers", "means", "medians", "caps"]:
+            plt.setp(bplot[element], color=color, linewidth=0.2)
+        plt.xticks([0, 1], ["Standard", "Nonideality-aware"])
+        axes[2].set_xlabel("Training", fontsize=AXIS_LABEL_FONT_SIZE)
+
+    # Common properties.
+    for idx, axis in enumerate(axes):
+        axis.set_yscale("log")
+        utils.add_subfigure_label(fig, axis, idx, SUBPLOT_LABEL_SIZE)
+        plt.tick_params(axis="both", which="both", labelsize=TICKS_FONT_SIZE)
+
+    plt.figlegend(["Training", "Validation", "Test (nonideal)"], ncol=3, bbox_to_anchor=(0, 0, 0.65,
+        1.15), frameon=False)
+
+    plt.savefig("plotting/cnn-loss-results.pdf", bbox_inches="tight")
 
 def d2d_conductance_histograms():
     fig, axes = plt.subplots(1, 2, sharex=True, sharey=True, figsize=(18/2.54, 9/2.54))

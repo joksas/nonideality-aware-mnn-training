@@ -288,39 +288,54 @@ class Iterator():
 
         return average_powers
 
-    def train_epochs_and_accuracy(self):
-        accuracy = np.array(self.info()["history"]["accuracy"])
-        num_epochs = len(accuracy)
+    def train_epochs_and_metric(self, metric):
+        metric = np.array(self.info()["history"][metric])
+        num_epochs = len(metric)
         epochs = np.arange(1, num_epochs+1)
-        return epochs, accuracy
+        return epochs, metric 
 
-    def validation_epochs_and_accuracy(self):
+    def train_epochs_and_accuracy(self):
+        return self.train_epochs_and_metric("accuracy")
+
+    def train_epochs_and_loss(self):
+        return self.train_epochs_and_metric("loss")
+
+    def validation_epochs_and_metric(self, metric):
         try:
-            accuracy = self.info()["history"]["val_accuracy"]
-            num_epochs = len(accuracy)
+            metric = self.info()["history"]["val_" + metric]
+            num_epochs = len(metric)
             epochs = np.arange(1, num_epochs+1)
         except KeyError:
             epochs = self.info()["callback_infos"]["memristive_checkpoint"]["history"]["epoch_no"]
-            accuracy = self.info()["callback_infos"]["memristive_checkpoint"]["history"]["accuracy"]
+            metric = self.info()["callback_infos"]["memristive_checkpoint"]["history"][metric]
         epochs = np.array(epochs)
-        accuracy = np.array(accuracy)
-        return epochs, accuracy
+        metric = np.array(metric)
+        return epochs, metric
+
+    def validation_epochs_and_accuracy(self):
+        return self.validation_epochs_and_metric("accuracy")
+
+    def validation_epochs_and_loss(self):
+        return self.validation_epochs_and_metric("loss")
 
     def train_test_histories(self):
         return self.info()["callback_infos"]["memristive_test"]["history"]
 
-    def test_accuracy(self):
-        accuracies = []
+    def test_metric(self, metric_name):
+        metrics = []
         for inference_idx in range(len(self.inferences)):
             self.inference_idx = inference_idx
             inference = self.inferences[self.inference_idx]
-            accuracy = np.zeros((self.training.num_repeats, inference.num_repeats))
+            metric = np.zeros((self.training.num_repeats, inference.num_repeats))
 
             for i in range(self.training.num_repeats):
                 for j in range(inference.num_repeats):
-                    filename = self.accuracy_path()
+                    if metric_name == "accuracy":
+                        filename = self.accuracy_path()
+                    elif metric_name == "loss":
+                        filename = self.loss_path()
                     csv = np.genfromtxt(filename)
-                    accuracy[i, j] = csv
+                    metric[i, j] = csv
 
                     inference.repeat_idx += 1
 
@@ -328,11 +343,17 @@ class Iterator():
                 self.training.repeat_idx += 1
 
             self.training.repeat_idx = 0
-            accuracies.append(accuracy)
+            metrics.append(metric)
 
         self.inference_idx = None
 
-        return accuracies
+        return metrics 
+
+    def test_accuracy(self):
+        return self.test_metric("accuracy")
+
+    def test_loss(self):
+        return self.test_metric("loss")
 
     def test_error(self):
         return [1 - accuracy for accuracy in self.test_accuracy()]
