@@ -349,7 +349,6 @@ def d2d_conductance_histograms():
     for idx, (axis, iterator, color) in enumerate(zip(axes, iterators, colors)):
         iterator.is_training = True
         model = architecture.get_model(iterator, custom_weights_path=iterator.weights_path())
-        print(model.layers)
         weights = model.layers[1].combined_weights()
         G, _ = crossbar.map.w_params_to_G(weights, iterator.training.G_min, iterator.training.G_max)
         G = 1000*G
