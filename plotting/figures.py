@@ -91,7 +91,7 @@ def iv_nonlinearity_error_curves():
     for line in leg.get_lines():
         line.set_linewidth(1)
 
-    plt.savefig("plotting/iv-nonlinearity-error-curves.pdf", bbox_inches="tight")
+    plt.savefig("plotting/iv-nonlinearity-error-curves.pdf", bbox_inches="tight", transparent=True)
 
 
 def iv_nonlinearity_losses():
@@ -169,7 +169,7 @@ def iv_nonlinearity_losses():
         line.set_linewidth(1)
 
 
-    plt.savefig("plotting/iv-nonlinearity-loss-curves.pdf", bbox_inches="tight")
+    plt.savefig("plotting/iv-nonlinearity-loss-curves.pdf", bbox_inches="tight", transparent=True)
 
 
 def iv_nonlinearity_boxplots():
@@ -207,7 +207,7 @@ def iv_nonlinearity_boxplots():
     axes.set_xscale("log")
     axes.set_yscale("log")
 
-    plt.savefig("plotting/iv-nonlinearity-boxplots.pdf", bbox_inches="tight")
+    plt.savefig("plotting/iv-nonlinearity-boxplots.pdf", bbox_inches="tight", transparent=True)
 
 
 def cnn_results():
@@ -274,7 +274,7 @@ def cnn_results():
     for line in leg.get_lines():
         line.set_linewidth(1)
 
-    plt.savefig("plotting/cnn-error-results.pdf", bbox_inches="tight")
+    plt.savefig("plotting/cnn-error-results.pdf", bbox_inches="tight", transparent=True)
 
 
 def cnn_results_loss():
@@ -338,7 +338,7 @@ def cnn_results_loss():
     for line in leg.get_lines():
         line.set_linewidth(1)
 
-    plt.savefig("plotting/cnn-loss-results.pdf", bbox_inches="tight")
+    plt.savefig("plotting/cnn-loss-results.pdf", bbox_inches="tight", transparent=True)
 
 def d2d_conductance_histograms():
     fig, axes = plt.subplots(1, 2, sharex=True, sharey=True, figsize=(18/2.54, 9/2.54))
@@ -360,7 +360,7 @@ def d2d_conductance_histograms():
 
     axes[0].set_ylabel("Count (#)", fontsize=AXIS_LABEL_FONT_SIZE)
 
-    plt.savefig("plotting/d2d-G-histograms.pdf", bbox_inches="tight")
+    plt.savefig("plotting/d2d-G-histograms.pdf", bbox_inches="tight", transparent=True)
 
 
 def d2d_boxplots():
@@ -381,10 +381,10 @@ def d2d_boxplots():
     
     axes.set_yscale("log")
     plt.xlabel("D2D variability", fontsize=AXIS_LABEL_FONT_SIZE)
-    plt.ylabel("Eror (%)", fontsize=AXIS_LABEL_FONT_SIZE)
+    plt.ylabel("Error (%)", fontsize=AXIS_LABEL_FONT_SIZE)
     plt.tick_params(axis="both", which="both", labelsize=TICKS_FONT_SIZE)
 
-    plt.savefig("plotting/d2d-boxplots.pdf", bbox_inches="tight")
+    plt.savefig("plotting/d2d-boxplots.pdf", bbox_inches="tight", transparent=True)
 
 
 def d2d_error_curves():
@@ -444,7 +444,7 @@ def d2d_error_curves():
     for line in leg.get_lines():
         line.set_linewidth(1)
 
-    plt.savefig("plotting/d2d-error-curves.pdf", bbox_inches="tight")
+    plt.savefig("plotting/d2d-error-curves.pdf", bbox_inches="tight", transparent=True)
 
 
 def checkpoint_comparison_boxplots():
@@ -466,8 +466,8 @@ def checkpoint_comparison_boxplots():
     
     axes.set_yscale("log")
     plt.xlabel("Checkpoint", fontsize=AXIS_LABEL_FONT_SIZE)
-    plt.ylabel("Eror (%)", fontsize=AXIS_LABEL_FONT_SIZE)
+    plt.ylabel("Error (%)", fontsize=AXIS_LABEL_FONT_SIZE)
     plt.tick_params(axis="both", which="both", labelsize=TICKS_FONT_SIZE)
 
 
-    plt.savefig("plotting/checkpoint-comparison-boxplots.pdf", bbox_inches="tight")
+    plt.savefig("plotting/checkpoint-comparison-boxplots.pdf", bbox_inches="tight", transparent=True)
