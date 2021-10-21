@@ -3,7 +3,7 @@ from . import utils
 import math
 
 
-def compute_I_all(V, G, V_ref, n_avg, n_std=tf.constant(0.0)):
+def compute_I_all(V, G, V_ref, n_avg, n_std=0.0):
     """Computes output currents of a crossbar consisting of devices suffering
     from I/V non-linearities.
 
@@ -35,7 +35,7 @@ def compute_I_all(V, G, V_ref, n_avg, n_std=tf.constant(0.0)):
     return I, I_ind
 
 
-def compute_currents(n_avg, V_ref, G, V, n_std=tf.constant(0.0)):
+def compute_currents(n_avg, V_ref, G, V, n_std=0.0):
     """Compute current values by modelling I-V behaviour using nonlinearity
     parameter.
 
