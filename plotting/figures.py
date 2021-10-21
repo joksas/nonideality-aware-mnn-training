@@ -90,7 +90,7 @@ def iv_nonlinearity_error_curves():
     plt.figlegend(["Training", "Validation", "Test (nonideal)"], ncol=3,
             bbox_to_anchor=(0, 0, 0.8, 1.05), frameon=False)
 
-    plt.savefig("plotting/error-curves.pdf", bbox_inches="tight")
+    plt.savefig("plotting/iv-nonlinearity-error-curves.pdf", bbox_inches="tight")
 
 
 def iv_nonlinearity_losses():
@@ -266,7 +266,7 @@ def cnn_results():
     plt.figlegend(["Training", "Validation", "Test (nonideal)"], ncol=3, bbox_to_anchor=(0, 0, 0.65,
         1.15), frameon=False)
 
-    plt.savefig("plotting/cnn-boxplots.pdf", bbox_inches="tight")
+    plt.savefig("plotting/cnn-error-results.pdf", bbox_inches="tight")
 
 
 def cnn_results_loss():
@@ -351,7 +351,7 @@ def d2d_conductance_histograms():
 
     axes[0].set_ylabel("Count (#)", fontsize=AXIS_LABEL_FONT_SIZE)
 
-    plt.savefig("plotting/d2d-G-histogram.pdf", bbox_inches="tight")
+    plt.savefig("plotting/d2d-G-histograms.pdf", bbox_inches="tight")
 
 
 def d2d_boxplots():
