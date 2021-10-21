@@ -10,17 +10,18 @@ NUM_TRAINING_REPEATS = 5
 NUM_INFERENCE_REPEATS = 25
 
 
-def custom_iterator(training_setup, inference_setups):
+def custom_iterator(training_setup, inference_setups, force_regular):
     inferences = [Inference(num_repeats=NUM_INFERENCE_REPEATS, **setup) for setup in inference_setups]
     training = Training(num_repeats=NUM_TRAINING_REPEATS, num_epochs=NUM_EPOCHS,
-            batch_size=BATCH_SIZE, is_regularized=False, force_regular_checkpoint=True, **training_setup)
+            batch_size=BATCH_SIZE, is_regularized=False, force_regular_checkpoint=force_regular, **training_setup)
 
     return Iterator(DATASET, training, inferences)
 
 
 def get_iterators():
     iterators = [
-            custom_iterator(devices.asymmetric_d2d(), [devices.asymmetric_d2d()]),
+            custom_iterator(devices.symmetric_high_d2d(), [devices.symmetric_high_d2d()], True),
+            custom_iterator(devices.symmetric_high_d2d(), [devices.symmetric_high_d2d()], False),
             ]
 
     return iterators

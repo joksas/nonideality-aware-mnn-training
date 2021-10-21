@@ -48,3 +48,9 @@ def asymmetric_d2d():
             **low_R_conductance(),
             "nonidealities": {"d2d_lognormal": D2DLognormal(0.05, 0.5)}
             }
+
+def symmetric_high_d2d():
+    return {
+            **low_R_conductance(),
+            "nonidealities": {"d2d_lognormal": D2DLognormal(0.5, 0.5)}
+            }

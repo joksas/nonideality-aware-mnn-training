@@ -303,7 +303,7 @@ def checkpoint_comparison_boxplots():
     fig, axes = plt.subplots(figsize=(9/2.54, 7.0/2.54))
     fig.tight_layout()
 
-    iterators = [simulations.d2d_asymmetry_rc.get_iterators()[0], simulations.d2d_asymmetry.get_iterators()[1]]
+    iterators = simulations.checkpoint_comparison.get_iterators()
     errors = [100*iterator.test_error()[0].flatten() for iterator in iterators]
     colors = [utils.color_dict()[key] for key in ["vermilion", "blue"]]
 
