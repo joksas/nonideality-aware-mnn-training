@@ -87,8 +87,9 @@ def iv_nonlinearity_error_curves():
 
     plt.xlim([0, len(train_epochs)])
 
-    plt.figlegend(["Training", "Validation", "Test (nonideal)"], ncol=3,
-            bbox_to_anchor=(0, 0, 0.8, 1.05), frameon=False)
+    leg = plt.figlegend(["Training", "Validation", "Test (nonideal)"], ncol=3, bbox_to_anchor=(0, 0, 0.8, 1.05), frameon=False)
+    for line in leg.get_lines():
+        line.set_linewidth(1)
 
     plt.savefig("plotting/iv-nonlinearity-error-curves.pdf", bbox_inches="tight")
 
@@ -162,8 +163,11 @@ def iv_nonlinearity_losses():
 
     plt.xlim([0, len(train_epochs)])
 
-    plt.figlegend(["Training", "Validation", "Test (nonideal)"], ncol=3,
+    leg = plt.figlegend(["Training", "Validation", "Test (nonideal)"], ncol=3,
             bbox_to_anchor=(0, 0, 0.8, 1.05), frameon=False)
+    for line in leg.get_lines():
+        line.set_linewidth(1)
+
 
     plt.savefig("plotting/iv-nonlinearity-loss-curves.pdf", bbox_inches="tight")
 
@@ -193,7 +197,9 @@ def iv_nonlinearity_boxplots():
 
         boxplots.append(boxplot)
 
-    axes.legend([boxplot["boxes"][0] for boxplot in boxplots[:3]], labels, fontsize=LEGEND_FONT_SIZE, frameon=False)
+    leg = axes.legend([boxplot["boxes"][0] for boxplot in boxplots[:3]], labels, fontsize=LEGEND_FONT_SIZE, frameon=False)
+    for line in leg.get_lines():
+        line.set_linewidth(1)
 
     plt.tick_params(axis="both", which="both", labelsize=TICKS_FONT_SIZE)
     plt.xlabel("Ohmic power consumption (W)", fontsize=AXIS_LABEL_FONT_SIZE)
@@ -263,8 +269,10 @@ def cnn_results():
         utils.add_subfigure_label(fig, axis, idx, SUBPLOT_LABEL_SIZE)
         plt.tick_params(axis="both", which="both", labelsize=TICKS_FONT_SIZE)
 
-    plt.figlegend(["Training", "Validation", "Test (nonideal)"], ncol=3, bbox_to_anchor=(0, 0, 0.65,
+    leg = plt.figlegend(["Training", "Validation", "Test (nonideal)"], ncol=3, bbox_to_anchor=(0, 0, 0.65,
         1.15), frameon=False)
+    for line in leg.get_lines():
+        line.set_linewidth(1)
 
     plt.savefig("plotting/cnn-error-results.pdf", bbox_inches="tight")
 
@@ -325,8 +333,10 @@ def cnn_results_loss():
         utils.add_subfigure_label(fig, axis, idx, SUBPLOT_LABEL_SIZE)
         plt.tick_params(axis="both", which="both", labelsize=TICKS_FONT_SIZE)
 
-    plt.figlegend(["Training", "Validation", "Test (nonideal)"], ncol=3, bbox_to_anchor=(0, 0, 0.65,
+    leg = plt.figlegend(["Training", "Validation", "Test (nonideal)"], ncol=3, bbox_to_anchor=(0, 0, 0.65,
         1.15), frameon=False)
+    for line in leg.get_lines():
+        line.set_linewidth(1)
 
     plt.savefig("plotting/cnn-loss-results.pdf", bbox_inches="tight")
 
@@ -430,8 +440,10 @@ def d2d_error_curves():
 
     plt.xlim([0, len(train_epochs)])
 
-    plt.figlegend(["Training", "Validation", "Test (nonideal)"], ncol=3,
+    leg = plt.figlegend(["Training", "Validation", "Test (nonideal)"], ncol=3,
             bbox_to_anchor=(0, 0, 0.9, 1.15), frameon=False)
+    for line in leg.get_lines():
+        line.set_linewidth(1)
 
     plt.savefig("plotting/d2d-error-curves.pdf", bbox_inches="tight")
 
