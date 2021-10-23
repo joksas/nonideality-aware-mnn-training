@@ -14,8 +14,6 @@ def get_model(iterator, custom_weights=None, custom_weights_path=None):
         model.add(layers.Activation("sigmoid"))
         model.add(MemristorDense(num_hidden_neurons, 10, iterator))
         model.add(layers.Activation("softmax"))
-
-        opt = tf.keras.optimizers.SGD()
     elif iterator.dataset == "cifar10":
         model = models.Sequential()
 
@@ -32,8 +30,6 @@ def get_model(iterator, custom_weights=None, custom_weights_path=None):
         model.add(layers.Activation("sigmoid"))
         model.add(MemristorDense(num_hidden_neurons, 10, iterator))
         model.add(layers.Activation("softmax"))
-
-        opt = tf.keras.optimizers.Adam()
     else:
         raise ValueError(f"Dataset {iterator.dataset} is not recognised!")
 
@@ -44,29 +40,35 @@ def get_model(iterator, custom_weights=None, custom_weights_path=None):
     elif not iterator.is_training:
         model.load_weights(iterator.weights_path())
 
-    model.compile(optimizer=opt, loss=tf.keras.losses.SparseCategoricalCrossentropy(), metrics=["accuracy"])
+    model.compile(
+        optimizer=tf.keras.optimizers.SGD(),
+        loss=tf.keras.losses.SparseCategoricalCrossentropy(),
+        metrics=["accuracy"],
+    )
     return model
 
 
 class MemristorDense(layers.Layer):
     def __init__(self, n_in, n_out, iterator, **kwargs):
-        self.n_in=n_in
-        self.n_out=n_out
+        self.n_in = n_in
+        self.n_out = n_out
         self.iterator = iterator
         super(MemristorDense, self).__init__(**kwargs)
 
     # Adding this function removes an issue with custom layer checkpoint
     def get_config(self):
         config = super().get_config().copy()
-        config.update({
-            "n_in": self.n_in,
-            "n_out": self.n_out,
-            })
+        config.update(
+            {
+                "n_in": self.n_in,
+                "n_out": self.n_out,
+            }
+        )
         return config
 
     # Create trainable weights and biases
     def build(self, input_shape):
-        stdv=1/np.sqrt(self.n_in)
+        stdv = 1 / np.sqrt(self.n_in)
 
         kwargs = {}
         if self.iterator.training.is_regularized:
@@ -75,52 +77,52 @@ class MemristorDense(layers.Layer):
 
         if self.iterator.training.is_aware():
             self.w_pos = self.add_weight(
-                    shape=(self.n_in,self.n_out),
-                    initializer=tf.keras.initializers.RandomNormal(mean=0.5, stddev=stdv),
-                    name="weights_pos",
-                    trainable=True,
-                    **kwargs
-                    )
+                shape=(self.n_in, self.n_out),
+                initializer=tf.keras.initializers.RandomNormal(mean=0.5, stddev=stdv),
+                name="weights_pos",
+                trainable=True,
+                **kwargs,
+            )
 
             self.w_neg = self.add_weight(
-                    shape=(self.n_in,self.n_out),
-                    initializer=tf.keras.initializers.RandomNormal(mean=0.5, stddev=stdv),
-                    name="weights_neg",
-                    trainable=True,
-                    **kwargs
-                    )
+                shape=(self.n_in, self.n_out),
+                initializer=tf.keras.initializers.RandomNormal(mean=0.5, stddev=stdv),
+                name="weights_neg",
+                trainable=True,
+                **kwargs,
+            )
 
             self.b_pos = self.add_weight(
-                    shape=(self.n_out,),
-                    initializer=tf.keras.initializers.Constant(value=0.5),
-                    name="biases_pos",
-                    trainable=True,
-                    **kwargs
-                    )
+                shape=(self.n_out,),
+                initializer=tf.keras.initializers.Constant(value=0.5),
+                name="biases_pos",
+                trainable=True,
+                **kwargs,
+            )
 
             self.b_neg = self.add_weight(
-                    shape=(self.n_out,),
-                    initializer=tf.keras.initializers.Constant(value=0.5),
-                    name="biases_neg",
-                    trainable=True,
-                    **kwargs
-                    )
+                shape=(self.n_out,),
+                initializer=tf.keras.initializers.Constant(value=0.5),
+                name="biases_neg",
+                trainable=True,
+                **kwargs,
+            )
         else:
             self.w = self.add_weight(
-                    shape=(self.n_in,self.n_out),
-                    initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=stdv),
-                    name="weights",
-                    trainable=True,
-                    **kwargs
-                    )
+                shape=(self.n_in, self.n_out),
+                initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=stdv),
+                name="weights",
+                trainable=True,
+                **kwargs,
+            )
 
             self.b = self.add_weight(
-                    shape=(self.n_out,),
-                    initializer=tf.keras.initializers.Constant(value=0.0),
-                    name="biases",
-                    trainable=True,
-                    **kwargs
-                    )
+                shape=(self.n_out,),
+                initializer=tf.keras.initializers.Constant(value=0.0),
+                name="biases",
+                trainable=True,
+                **kwargs,
+            )
 
     def combined_weights(self):
         if self.iterator.training.is_aware():
@@ -131,12 +133,15 @@ class MemristorDense(layers.Layer):
 
             # Interleave positive and negative weights
             combined_weights = tf.reshape(
-                    tf.concat([
+                tf.concat(
+                    [
                         combined_weights_pos[..., tf.newaxis],
-                        combined_weights_neg[..., tf.newaxis]
-                        ], axis=-1),
-                    [tf.shape(combined_weights_pos)[0], -1]
-                    )
+                        combined_weights_neg[..., tf.newaxis],
+                    ],
+                    axis=-1,
+                ),
+                [tf.shape(combined_weights_pos)[0], -1],
+            )
         else:
             bias = tf.expand_dims(self.b, axis=0)
             combined_weights = tf.concat([self.w, bias], 0)
@@ -157,7 +162,7 @@ class MemristorDense(layers.Layer):
     def memristive_outputs(self, x, weights):
         # Mapping inputs onto voltages.
         V_ref = tf.constant(0.25)
-        k_V = 2*V_ref
+        k_V = 2 * V_ref
         V = crossbar.map.x_to_V(x, k_V)
 
         current_stage = self.iterator.current_stage()
@@ -170,19 +175,28 @@ class MemristorDense(layers.Layer):
         else:
             G, max_weight = crossbar.map.w_to_G(weights, G_min, G_max)
 
-
         # Linearity-preserving nonidealities
-        if current_stage.stuck_at_G_min is not None or current_stage.stuck_at_G_max is not None or current_stage.d2d_lognormal is not None:
+        if (
+            current_stage.stuck_at_G_min is not None
+            or current_stage.stuck_at_G_max is not None
+            or current_stage.d2d_lognormal is not None
+        ):
             if current_stage.stuck_at_G_min is not None:
                 G = crossbar.faulty_devices.random_devices_stuck(
-                        G, G_min, current_stage.stuck_at_G_min.p)
+                    G, G_min, current_stage.stuck_at_G_min.p
+                )
             elif current_stage.stuck_at_G_max is not None:
                 G = crossbar.faulty_devices.random_devices_stuck(
-                        G, G_max, current_stage.stuck_at_G_max.p)
+                    G, G_max, current_stage.stuck_at_G_max.p
+                )
             elif current_stage.d2d_lognormal is not None:
                 G = crossbar.d2d.lognormal(
-                        G, G_min, G_max,
-                        current_stage.d2d_lognormal.R_min_std, current_stage.d2d_lognormal.R_max_std)
+                    G,
+                    G_min,
+                    G_max,
+                    current_stage.d2d_lognormal.R_min_std,
+                    current_stage.d2d_lognormal.R_max_std,
+                )
 
         # Other nonidealities
         if current_stage.iv_nonlinearity is not None:
@@ -190,7 +204,8 @@ class MemristorDense(layers.Layer):
             n_std = tf.constant(current_stage.iv_nonlinearity.n_std)
             # Computing currents
             I, I_ind = crossbar.nonlinear_IV.compute_I_all(
-                    V, G, V_ref, n_avg, n_std=n_std)
+                V, G, V_ref, n_avg, n_std=n_std
+            )
         else:
             # Ideal case for computing output currents.
             if self.iterator.is_training:
@@ -207,14 +222,12 @@ class MemristorDense(layers.Layer):
         # Converting to outputs.
         y_disturbed = crossbar.map.I_to_y(I, k_V, max_weight, G_max, G_min)
 
-        tf.debugging.assert_all_finite(
-                y_disturbed, "nan in outputs", name=None
-                )
+        tf.debugging.assert_all_finite(y_disturbed, "nan in outputs", name=None)
 
         return y_disturbed
 
-    def get_output_shape_for(self,input_shape):
+    def get_output_shape_for(self, input_shape):
         return (input_shape[0], self.n_out)
 
-    def compute_output_shape(self,input_shape):
+    def compute_output_shape(self, input_shape):
         return (input_shape[0], self.n_out)
