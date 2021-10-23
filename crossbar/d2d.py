@@ -20,9 +20,9 @@ def lognormal(G, G_min, G_max, R_min_std, R_max_std):
         Standard deviation of the (lognormal distribution's) underlying normal distribution
         associated with R_max (i.e. 1/G_min).
     """
-    R = 1/G
-    R_min = 1/G_max
-    R_max = 1/G_min
+    R = 1 / G
+    R_min = 1 / G_max
+    R_max = 1 / G_min
 
     # Piece-wise linear interpolation
     std_ref = [R_min_std, R_max_std]
@@ -31,9 +31,9 @@ def lognormal(G, G_min, G_max, R_min_std, R_max_std):
     # Lognormal modelling
     R2 = tf.math.pow(R, 2)
     R_std2 = tf.math.pow(R_std, 2)
-    R_mu = tf.math.log(R2/tf.math.sqrt(R2 + R_std2))
+    R_mu = tf.math.log(R2 / tf.math.sqrt(R2 + R_std2))
     R = tfp.distributions.LogNormal(R_mu, R_std, validate_args=True).sample()
 
-    G = 1/R
+    G = 1 / R
 
     return G

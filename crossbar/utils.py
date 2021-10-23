@@ -12,7 +12,7 @@ def tf_log2(x):
     """
     numerator = tf.math.log(x)
     denominator = tf.math.log(tf.constant(2, dtype=numerator.dtype))
-    return numerator/denominator
+    return numerator / denominator
 
 
 def add_I_BL(I_ind):

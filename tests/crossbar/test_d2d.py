@@ -10,39 +10,47 @@ from tests import utils
 
 # Only special case, i.e. when std = 0.0 for all entries.
 lognormal_testdata = [
-        (
-            {
-                "G": tf.constant([
+    (
+        {
+            "G": tf.constant(
+                [
                     [1.0, 2.0, 3.0],
                     [4.0, 5.0, 6.0],
-                    ]),
-                "G_min": 0.5,
-                "G_max": 6.0,
-                "R_min_std": 0.0,
-                "R_max_std": 0.0,
-                },
-                tf.constant([
-                    [1.0, 2.0, 3.0],
-                    [4.0, 5.0, 6.0],
-                    ]),
+                ]
             ),
-        (
-            {
-                "G": tf.constant([
+            "G_min": 0.5,
+            "G_max": 6.0,
+            "R_min_std": 0.0,
+            "R_max_std": 0.0,
+        },
+        tf.constant(
+            [
+                [1.0, 2.0, 3.0],
+                [4.0, 5.0, 6.0],
+            ]
+        ),
+    ),
+    (
+        {
+            "G": tf.constant(
+                [
                     [1.0, 1.0, 1.0],
                     [1.0, 1.0, 1.0],
-                    ]),
-                "G_min": 1.0,
-                "G_max": 6.0,
-                "R_min_std": 1.0,
-                "R_max_std": 0.0,
-                },
-                tf.constant([
-                    [1.0, 1.0, 1.0],
-                    [1.0, 1.0, 1.0],
-                    ]),
+                ]
             ),
-        ]
+            "G_min": 1.0,
+            "G_max": 6.0,
+            "R_min_std": 1.0,
+            "R_max_std": 0.0,
+        },
+        tf.constant(
+            [
+                [1.0, 1.0, 1.0],
+                [1.0, 1.0, 1.0],
+            ]
+        ),
+    ),
+]
 
 
 @pytest.mark.parametrize("args,expected", lognormal_testdata)

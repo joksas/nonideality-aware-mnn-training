@@ -46,14 +46,15 @@ class StuckAtGMax(Stuck):
 
 
 class Nonideal:
-    def __init__(self,
-            G_min: float = None,
-            G_max: float = None,
-            iv_nonlinearity: IVNonlinearity = None,
-            stuck_at_G_min: StuckAtGMin = None,
-            stuck_at_G_max: StuckAtGMax  = None,
-            d2d_lognormal: D2DLognormal  = None,
-            ) -> None:
+    def __init__(
+        self,
+        G_min: float = None,
+        G_max: float = None,
+        iv_nonlinearity: IVNonlinearity = None,
+        stuck_at_G_min: StuckAtGMin = None,
+        stuck_at_G_max: StuckAtGMax = None,
+        d2d_lognormal: D2DLognormal = None,
+    ) -> None:
         self.G_min = G_min
         self.G_max = G_max
         self.iv_nonlinearity = iv_nonlinearity
@@ -63,7 +64,12 @@ class Nonideal:
 
     def nonideality_list(self):
         nonidealities = []
-        for nonideality in [self.iv_nonlinearity, self.stuck_at_G_min, self.stuck_at_G_max, self.d2d_lognormal]:
+        for nonideality in [
+            self.iv_nonlinearity,
+            self.stuck_at_G_min,
+            self.stuck_at_G_max,
+            self.d2d_lognormal,
+        ]:
             if nonideality is not None:
                 nonidealities.append(nonideality)
 
@@ -88,7 +94,7 @@ class Nonideal:
     def is_nonideal(self) -> bool:
         if len(self.nonideality_list()) == 0:
             return False
-        
+
         return True
 
 
@@ -98,9 +104,18 @@ class Iterable:
 
 
 class Training(Nonideal, Iterable):
-    def __init__(self, batch_size: int = 1, validation_split: int = 0.2, num_epochs: int = 1, is_regularized: bool = False,
-            num_repeats: int = 0, G_min: float = None, G_max: float = None, nonidealities={},
-            force_regular_checkpoint=False) -> None:
+    def __init__(
+        self,
+        batch_size: int = 1,
+        validation_split: int = 0.2,
+        num_epochs: int = 1,
+        is_regularized: bool = False,
+        num_repeats: int = 0,
+        G_min: float = None,
+        G_max: float = None,
+        nonidealities={},
+        force_regular_checkpoint=False,
+    ) -> None:
         self.batch_size = batch_size
         self.num_epochs = num_epochs
         self.num_repeats = num_repeats
@@ -122,7 +137,6 @@ class Training(Nonideal, Iterable):
             l += "__rc"
         return l
 
-
     def is_aware(self) -> bool:
         return self.is_nonideal()
 
@@ -131,7 +145,13 @@ class Training(Nonideal, Iterable):
 
 
 class Inference(Nonideal, Iterable):
-    def __init__(self, num_repeats: int = 0, G_min: float = None, G_max: float = None, nonidealities={}) -> None:
+    def __init__(
+        self,
+        num_repeats: int = 0,
+        G_min: float = None,
+        G_max: float = None,
+        nonidealities={},
+    ) -> None:
         self.num_repeats = num_repeats
         Nonideal.__init__(self, G_min=G_min, G_max=G_max, **nonidealities)
         Iterable.__init__(self)
@@ -140,19 +160,21 @@ class Inference(Nonideal, Iterable):
         return "repeat-{}".format(self.repeat_idx)
 
 
-class Iterator():
-    def __init__(self, dataset: str, training: Training, inferences: list[Inference]) -> None:
+class Iterator:
+    def __init__(
+        self, dataset: str, training: Training, inferences: list[Inference]
+    ) -> None:
         self.dataset = dataset
         self.training = training
         self.inferences = inferences
         self.is_callback = False
         self.is_training = False
         self.inference_idx = None
-        self.test_batch_size = 100 # divisor of the size of the test set
+        self.test_batch_size = 100  # divisor of the size of the test set
         self.__training_data = None
         self.__validation_data = None
         self.__testing_data = None
-        self.__train_split_boundary = int(100*(1 - self.training.validation_split))
+        self.__train_split_boundary = int(100 * (1 - self.training.validation_split))
 
     def data(self, subset):
         if subset == "training":
@@ -168,14 +190,14 @@ class Iterator():
                 return self.__testing_data
             split = "test"
         else:
-            raise ValueError(f"Subset \"{subset}\" is not recognised!")
+            raise ValueError(f'Subset "{subset}" is not recognised!')
 
         ds = tfds.load(
-                self.dataset,
-                split=split,
-                as_supervised=True,
-                shuffle_files=True,
-                )
+            self.dataset,
+            split=split,
+            as_supervised=True,
+            shuffle_files=True,
+        )
         size = ds.cardinality().numpy()
 
         ds = ds.map(utils.normalize_img, num_parallel_calls=tf.data.AUTOTUNE)
@@ -187,12 +209,16 @@ class Iterator():
             ds = ds.shuffle(size)
             ds = ds.batch(self.training.batch_size)
             if self.dataset == "cifar10" and subset == "training":
-                data_augmentation = tf.keras.Sequential([
-                  tf.keras.layers.RandomTranslation(0.1, 0.1),
-                  tf.keras.layers.RandomFlip("horizontal"),
-                ])
-                ds = ds.map(lambda x, y: (data_augmentation(x, training=True), y),
-                        num_parallel_calls=tf.data.AUTOTUNE)
+                data_augmentation = tf.keras.Sequential(
+                    [
+                        tf.keras.layers.RandomTranslation(0.1, 0.1),
+                        tf.keras.layers.RandomFlip("horizontal"),
+                    ]
+                )
+                ds = ds.map(
+                    lambda x, y: (data_augmentation(x, training=True), y),
+                    num_parallel_calls=tf.data.AUTOTUNE,
+                )
         ds = ds.prefetch(tf.data.AUTOTUNE)
 
         if subset == "training":
@@ -202,53 +228,41 @@ class Iterator():
         elif subset == "testing":
             self.__testing_data = ds
 
-        print(f"Loaded dataset \"{self.dataset}\" ({subset}): {size} examples.")
+        print(f'Loaded dataset "{self.dataset}" ({subset}): {size} examples.')
 
         return ds
 
     def training_dir(self):
-        return os.path.join(
-                os.getcwd(), "models", self.dataset, self.training.label()
-                )
+        return os.path.join(os.getcwd(), "models", self.dataset, self.training.label())
 
     def network_dir(self):
-        return os.path.join(
-                self.training_dir(), self.training.network_label()
-                )
+        return os.path.join(self.training_dir(), self.training.network_label())
 
     def weights_path(self):
-        return os.path.join(
-                self.network_dir(), "model.h5"
-                )
+        return os.path.join(self.network_dir(), "model.h5")
 
     def info_path(self):
-        return os.path.join(
-                self.network_dir(), "info.pkl"
-                )
+        return os.path.join(self.network_dir(), "info.pkl")
 
     def inference_nonideality_dir(self):
         return os.path.join(
-                self.network_dir(), self.inferences[self.inference_idx].label()
-                )
+            self.network_dir(), self.inferences[self.inference_idx].label()
+        )
 
     def inference_repeat_dir(self):
         return os.path.join(
-                self.inference_nonideality_dir(), self.inferences[self.inference_idx].repeat_label()
-                )
+            self.inference_nonideality_dir(),
+            self.inferences[self.inference_idx].repeat_label(),
+        )
 
     def power_path(self):
-        return os.path.join(
-                self.inference_repeat_dir(), "power.csv"
-                )
+        return os.path.join(self.inference_repeat_dir(), "power.csv")
 
     def loss_path(self):
-        return os.path.join(
-                self.inference_repeat_dir(), "loss.csv"
-                )
+        return os.path.join(self.inference_repeat_dir(), "loss.csv")
+
     def accuracy_path(self):
-        return os.path.join(
-                self.inference_repeat_dir(), "accuracy.csv"
-                )
+        return os.path.join(self.inference_repeat_dir(), "accuracy.csv")
 
     def info(self):
         with open(self.info_path(), "rb") as pickle_file:
@@ -273,7 +287,7 @@ class Iterator():
                     csv = np.genfromtxt(filename)
                     power = np.mean(csv)
                     # Two synaptic layers.
-                    power = 2*power
+                    power = 2 * power
                     average_power[i, j] = power
 
                     inference.repeat_idx += 1
@@ -291,8 +305,8 @@ class Iterator():
     def train_epochs_and_metric(self, metric):
         metric = np.array(self.info()["history"][metric])
         num_epochs = len(metric)
-        epochs = np.arange(1, num_epochs+1)
-        return epochs, metric 
+        epochs = np.arange(1, num_epochs + 1)
+        return epochs, metric
 
     def train_epochs_and_accuracy(self):
         return self.train_epochs_and_metric("accuracy")
@@ -304,10 +318,14 @@ class Iterator():
         try:
             metric = self.info()["history"]["val_" + metric]
             num_epochs = len(metric)
-            epochs = np.arange(1, num_epochs+1)
+            epochs = np.arange(1, num_epochs + 1)
         except KeyError:
-            epochs = self.info()["callback_infos"]["memristive_checkpoint"]["history"]["epoch_no"]
-            metric = self.info()["callback_infos"]["memristive_checkpoint"]["history"][metric]
+            epochs = self.info()["callback_infos"]["memristive_checkpoint"]["history"][
+                "epoch_no"
+            ]
+            metric = self.info()["callback_infos"]["memristive_checkpoint"]["history"][
+                metric
+            ]
         epochs = np.array(epochs)
         metric = np.array(metric)
         return epochs, metric
@@ -347,7 +365,7 @@ class Iterator():
 
         self.inference_idx = None
 
-        return metrics 
+        return metrics
 
     def test_accuracy(self):
         return self.test_metric("accuracy")

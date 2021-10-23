@@ -11,27 +11,36 @@ NUM_INFERENCE_REPEATS = 25
 
 
 def custom_iterator(training_setup, inference_setups, is_regularized):
-    inferences = [Inference(num_repeats=NUM_INFERENCE_REPEATS, **setup) for setup in inference_setups]
-    training = Training(num_repeats=NUM_TRAINING_REPEATS, num_epochs=NUM_EPOCHS,
-            batch_size=BATCH_SIZE, is_regularized=is_regularized, **training_setup)
+    inferences = [
+        Inference(num_repeats=NUM_INFERENCE_REPEATS, **setup)
+        for setup in inference_setups
+    ]
+    training = Training(
+        num_repeats=NUM_TRAINING_REPEATS,
+        num_epochs=NUM_EPOCHS,
+        batch_size=BATCH_SIZE,
+        is_regularized=is_regularized,
+        **training_setup
+    )
 
     return Iterator(DATASET, training, inferences)
 
 
 def get_iterators():
     iterators = [
-            custom_iterator(
-                devices.ideal(),
-                [
-                    devices.low_R(),
-                    devices.high_R(),
-                    devices.high_R_and_stuck(),
-                    devices.symmetric_d2d(),
-                    devices.asymmetric_d2d(),
-                    devices.symmetric_high_d2d(),
-                    ],
-                False),
-            ]
+        custom_iterator(
+            devices.ideal(),
+            [
+                devices.low_R(),
+                devices.high_R(),
+                devices.high_R_and_stuck(),
+                devices.symmetric_d2d(),
+                devices.asymmetric_d2d(),
+                devices.symmetric_high_d2d(),
+            ],
+            False,
+        ),
+    ]
 
     return iterators
 

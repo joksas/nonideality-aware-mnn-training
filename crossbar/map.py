@@ -53,7 +53,7 @@ def I_total_to_y(I_total, k_V, max_weight, G_max, G_min):
     """
     k_G = compute_k_G(max_weight, G_max, G_min)
     k_I = compute_k_I(k_V, k_G)
-    y = I_total/k_I
+    y = I_total / k_I
     return y
 
 
@@ -94,7 +94,7 @@ def compute_k_G(max_weight, G_max, G_min):
     float
         Conductance scaling factor.
     """
-    k_G = (G_max-G_min)/max_weight
+    k_G = (G_max - G_min) / max_weight
 
     return k_G
 
@@ -114,7 +114,7 @@ def compute_k_I(k_V, k_G):
     float
         Current scaling factor.
     """
-    return k_V*k_G
+    return k_V * k_G
 
 
 def x_to_V(x, k_V):
@@ -132,7 +132,7 @@ def x_to_V(x, k_V):
     ndarray
         Voltages.
     """
-    return k_V*x
+    return k_V * x
 
 
 def w_params_to_G(weight_params, G_min, G_max):
@@ -161,7 +161,7 @@ def w_params_to_G(weight_params, G_min, G_max):
     weight_params = clip_weights(weight_params, max_weight)
 
     k_G = compute_k_G(max_weight, G_max, G_min)
-    G = k_G*weight_params + G_min
+    G = k_G * weight_params + G_min
 
     return G, max_weight
 
@@ -188,7 +188,7 @@ def w_to_G(weights, G_min, G_max):
     max_weight = tf.math.reduce_max(tf.math.abs(weights))
 
     k_G = compute_k_G(max_weight, G_max, G_min)
-    G_eff = k_G*weights
+    G_eff = k_G * weights
 
     # We implement the pairs by choosing the lowest possible conductances.
     G_pos = tf.math.maximum(G_eff, 0.0) + G_min
@@ -197,8 +197,8 @@ def w_to_G(weights, G_min, G_max):
     # Odd columns dedicated to positive weights.
     # Even columns dedicated to negative weights.
     G = tf.reshape(
-            tf.concat([G_pos[..., tf.newaxis], G_neg[..., tf.newaxis]], axis=-1),
-            [tf.shape(G_pos)[0], -1]
-            )
+        tf.concat([G_pos[..., tf.newaxis], G_neg[..., tf.newaxis]], axis=-1),
+        [tf.shape(G_pos)[0], -1],
+    )
 
     return G, max_weight
