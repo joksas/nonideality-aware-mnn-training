@@ -1,4 +1,4 @@
-from training.iterator import IVNonlinearity, D2DLognormal
+from training.iterator import IVNonlinearity, D2DLognormal, StuckAtGMax
 
 
 def ideal():
@@ -20,6 +20,15 @@ def high_R():
     return {
             **high_R_conductance(),
             "nonidealities": {"iv_nonlinearity": IVNonlinearity(2.989, 0.369)}
+            }
+
+def high_R_and_stuck():
+    return {
+            **high_R_conductance(),
+            "nonidealities": {
+                "iv_nonlinearity": IVNonlinearity(2.989, 0.369),
+                "stuck_at_G_max": StuckAtGMax(0.05),
+                }
             }
 
 
