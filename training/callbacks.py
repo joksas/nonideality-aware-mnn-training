@@ -12,6 +12,8 @@ class MemristiveCallback(tf.keras.callbacks.Callback):
         self.iterator = copy.copy(iterator)
         self.iterator.is_callback = True
         self.validation_freq = 20
+        if iterator.training.memristive_validation_freq is not None:
+            self.validation_freq = iterator.training.memristive_validation_freq
         self.testing_freq = 20
         self.num_repeats = 20
         self.history = None

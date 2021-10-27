@@ -117,6 +117,7 @@ class Training(Nonideal, Iterable):
         G_max: float = None,
         nonidealities={},
         force_regular_checkpoint=False,
+        memristive_validation_freq: int = None,
     ) -> None:
         self.batch_size = batch_size
         self.num_epochs = num_epochs
@@ -124,6 +125,7 @@ class Training(Nonideal, Iterable):
         self.is_regularized = is_regularized
         self.validation_split = validation_split
         self.force_regular_checkpoint = force_regular_checkpoint
+        self.memristive_validation_freq = memristive_validation_freq
         Nonideal.__init__(self, G_min=G_min, G_max=G_max, **nonidealities)
         Iterable.__init__(self)
 
@@ -137,6 +139,8 @@ class Training(Nonideal, Iterable):
         l = f"{self.regularized_label()}__{self.batch_size}__{Nonideal.label(self)}"
         if self.force_regular_checkpoint:
             l += "__rc"
+        if self.memristive_validation_freq is not None:
+            l += f"__val_freq_{self.memristive_validation_freq}"
         return l
 
     def is_aware(self) -> bool:

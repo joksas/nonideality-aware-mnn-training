@@ -5,4 +5,5 @@ from . import (
     checkpoint_comparison,
     iv_nonlinearity_and_stuck,
     ideal,
+    iv_nonlinearity_cnn_more_frequent_validation,
 )
