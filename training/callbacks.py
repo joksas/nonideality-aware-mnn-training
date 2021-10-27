@@ -11,13 +11,17 @@ class MemristiveCallback(tf.keras.callbacks.Callback):
     def __init__(self, iterator):
         self.iterator = copy.copy(iterator)
         self.iterator.is_callback = True
-        self.every = 20
+        self.validation_freq = 20
+        self.testing_freq = 20
         self.num_repeats = 20
         self.history = None
 
-    def should_skip_epoch(self, epoch):
-        # Will evaluate on first epoch and then every `self.every` epochs.
-        if epoch != 0 and (epoch + 1) % self.every != 0:
+    def should_skip_epoch(self, epoch, is_validation=False):
+        freq = self.testing_freq
+        if is_validation:
+            freq = self.validation_freq
+        # Will evaluate on first epoch and then every `freq` epochs.
+        if epoch != 0 and (epoch + 1) % freq != 0:
             return True
 
     def info(self):
@@ -43,7 +47,7 @@ class TestCallback(MemristiveCallback):
         ]
 
     def on_epoch_end(self, epoch, logs=None):
-        if self.should_skip_epoch(epoch):
+        if self.should_skip_epoch(epoch, is_validation=False):
             return
 
         model_weights = self.model.get_weights()
@@ -93,7 +97,7 @@ class MemristiveCheckpoint(MemristiveCallback):
         self.history = {"epoch_no": [], "loss": [], "accuracy": []}
 
     def on_epoch_end(self, epoch, logs=None):
-        if self.should_skip_epoch(epoch):
+        if self.should_skip_epoch(epoch, is_validation=True):
             return
 
         accuracy = []
