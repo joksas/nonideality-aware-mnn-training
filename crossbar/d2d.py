@@ -2,7 +2,9 @@ import tensorflow as tf
 import tensorflow_probability as tfp
 
 
-def lognormal(G, G_min, G_max, R_min_std, R_max_std):
+def lognormal(
+    G: tf.constant, G_min: float, G_max: float, R_min_std: float, R_max_std: float
+):
     """Disturbs conductances lognormally.
 
     Parameters

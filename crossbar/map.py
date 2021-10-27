@@ -1,7 +1,7 @@
 import tensorflow as tf
 
 
-def I_to_y(I, k_V, max_weight, G_max, G_min):
+def I_to_y(I: tf.constant, k_V: float, max_weight: float, G_max: float, G_min: float):
     """Converts output currents of a dot-product engine onto synaptic layer inputs.
 
     Parameters
@@ -28,7 +28,9 @@ def I_to_y(I, k_V, max_weight, G_max, G_min):
     return y
 
 
-def I_total_to_y(I_total, k_V, max_weight, G_max, G_min):
+def I_total_to_y(
+    I_total: tf.constant, k_V: float, max_weight: float, G_max: float, G_min: float
+):
     """Converts total output currents of a dot-product engine onto synaptic layer
     inputs.
 
@@ -57,7 +59,7 @@ def I_total_to_y(I_total, k_V, max_weight, G_max, G_min):
     return y
 
 
-def clip_weights(weights, max_weight):
+def clip_weights(weights: tf.constant, max_weight: float):
     """Clips weights below 0 and above max_weight.
 
     Parameters
@@ -77,7 +79,7 @@ def clip_weights(weights, max_weight):
     return weights
 
 
-def compute_k_G(max_weight, G_max, G_min):
+def compute_k_G(max_weight: float, G_max: float, G_min: float):
     """Computes conductance scaling factor.
 
     Parameters
@@ -99,7 +101,7 @@ def compute_k_G(max_weight, G_max, G_min):
     return k_G
 
 
-def compute_k_I(k_V, k_G):
+def compute_k_I(k_V: float, k_G: float):
     """Computes current scaling factor.
 
     Parameters
@@ -117,7 +119,7 @@ def compute_k_I(k_V, k_G):
     return k_V * k_G
 
 
-def x_to_V(x, k_V):
+def x_to_V(x: tf.constant, k_V: float):
     """Maps inputs (to a synaptic layer) onto voltages.
 
     Parameters
@@ -135,7 +137,7 @@ def x_to_V(x, k_V):
     return k_V * x
 
 
-def w_params_to_G(weight_params, G_min, G_max):
+def w_params_to_G(weight_params: tf.constant, G_min: float, G_max: float):
     """Maps weight parameters onto conductances.
 
     Parameters
@@ -166,7 +168,7 @@ def w_params_to_G(weight_params, G_min, G_max):
     return G, max_weight
 
 
-def w_to_G(weights, G_min, G_max):
+def w_to_G(weights: tf.constant, G_min: float, G_max: float):
     """Maps weights onto conductances.
 
     Parameters

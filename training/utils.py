@@ -6,7 +6,7 @@ import tensorflow as tf
 from tensorflow.keras.datasets import cifar10, mnist
 
 
-def compute_device_power(V, I_ind):
+def compute_device_power(V: tf.constant, I_ind: tf.constant):
     """Computes power dissipated by individual devices in a crossbar.
 
     Parameters
@@ -30,7 +30,7 @@ def compute_device_power(V, I_ind):
     return P_ind
 
 
-def compute_avg_crossbar_power(V, I_ind):
+def compute_avg_crossbar_power(V: tf.constant, I_ind: tf.constant):
     """Computes average power dissipated by a crossbar.
 
     Parameters
@@ -57,7 +57,7 @@ def compute_avg_crossbar_power(V, I_ind):
 
 
 # learning rate schedule
-def step_decay(epoch):
+def step_decay(epoch: int):
     initial_lrate = 0.025
     drop = 0.5
     epochs_drop = 50.0
@@ -65,6 +65,6 @@ def step_decay(epoch):
     return lrate
 
 
-def normalize_img(image, label):
+def normalize_img(image: tf.constant, label: str):
     """Normalizes images: `uint8` -> `float32`."""
     return tf.cast(image, tf.float32) / 255.0, label

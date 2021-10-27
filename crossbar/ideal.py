@@ -1,8 +1,9 @@
 import tensorflow as tf
+
 from . import utils
 
 
-def compute_I_all(V, G):
+def compute_I_all(V: tf.constant, G: tf.constant):
     """Computes output and device currents of an ideal crossbar.
 
     Parameters
@@ -25,7 +26,7 @@ def compute_I_all(V, G):
     return I, I_ind
 
 
-def compute_I(V, G):
+def compute_I(V: tf.constant, G: tf.constant):
     """Computes output currents of an ideal crossbar.
 
     Parameters

@@ -1,9 +1,13 @@
-import tensorflow as tf
-from . import utils
 import math
 
+import tensorflow as tf
 
-def compute_I_all(V, G, V_ref, n_avg, n_std=0.0):
+from . import utils
+
+
+def compute_I_all(
+    V: tf.constant, G: tf.constant, V_ref: float, n_avg: float, n_std: float = 0.0
+):
     """Computes output currents of a crossbar consisting of devices suffering
     from I/V non-linearities.
 
@@ -35,7 +39,9 @@ def compute_I_all(V, G, V_ref, n_avg, n_std=0.0):
     return I, I_ind
 
 
-def compute_currents(n_avg, V_ref, G, V, n_std=0.0):
+def compute_currents(
+    n_avg: float, V_ref: float, G: tf.constant, V: tf.constant, n_std: float = 0.0
+):
     """Compute current values by modelling I-V behaviour using nonlinearity
     parameter.
 

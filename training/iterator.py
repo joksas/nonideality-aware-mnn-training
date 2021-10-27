@@ -1,5 +1,6 @@
 import os
 import pickle
+from typing import Union
 
 import numpy as np
 import tensorflow as tf
@@ -109,14 +110,16 @@ class Training(Nonideal, Iterable):
     def __init__(
         self,
         batch_size: int = 1,
-        validation_split: int = 0.2,
+        validation_split: float = 0.2,
         num_epochs: int = 1,
         is_regularized: bool = False,
         num_repeats: int = 0,
         G_min: float = None,
         G_max: float = None,
-        nonidealities={},
-        force_regular_checkpoint=False,
+        nonidealities: dict[
+            str, Union[D2DLognormal, IVNonlinearity, StuckAtGMin, StuckAtGMax]
+        ] = {},
+        force_regular_checkpoint: bool = False,
         memristive_validation_freq: int = None,
     ) -> None:
         self.batch_size = batch_size
@@ -182,7 +185,7 @@ class Iterator:
         self.__testing_data = None
         self.__train_split_boundary = int(100 * (1 - self.training.validation_split))
 
-    def data(self, subset):
+    def data(self, subset: str):
         if subset == "training":
             if self.__training_data is not None:
                 return self.__training_data
@@ -274,7 +277,7 @@ class Iterator:
         with open(self.info_path(), "rb") as pickle_file:
             return pickle.load(pickle_file)
 
-    def current_stage(self) -> bool:
+    def current_stage(self) -> Union[Training, Inference]:
         if self.is_training:
             return self.training
         else:
@@ -308,7 +311,7 @@ class Iterator:
 
         return average_powers
 
-    def train_epochs_and_metric(self, metric):
+    def train_epochs_and_metric(self, metric: str):
         metric = np.array(self.info()["history"][metric])
         num_epochs = len(metric)
         epochs = np.arange(1, num_epochs + 1)
@@ -320,7 +323,7 @@ class Iterator:
     def train_epochs_and_loss(self):
         return self.train_epochs_and_metric("loss")
 
-    def validation_epochs_and_metric(self, metric):
+    def validation_epochs_and_metric(self, metric: str):
         try:
             metric = self.info()["history"]["val_" + metric]
             num_epochs = len(metric)
@@ -345,7 +348,7 @@ class Iterator:
     def train_test_histories(self):
         return self.info()["callback_infos"]["memristive_test"]["history"]
 
-    def test_metric(self, metric_name):
+    def test_metric(self, metric_name: str):
         metrics = []
         for inference_idx in range(len(self.inferences)):
             self.inference_idx = inference_idx
@@ -382,7 +385,7 @@ class Iterator:
     def test_error(self):
         return [1 - accuracy for accuracy in self.test_accuracy()]
 
-    def train(self, use_test_callback=False):
+    def train(self, use_test_callback: bool = False):
         self.is_training = True
 
         for _ in range(self.training.num_repeats):
