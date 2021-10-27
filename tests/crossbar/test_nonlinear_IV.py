@@ -1,12 +1,12 @@
 """
 Tests of functions of crossbar.nonlinear_IV
 """
+import pytest
 # pylint: disable=missing-function-docstring
 import tensorflow as tf
-import pytest
-from crossbar import nonlinear_IV
 from tests import utils
 
+from crossbar import nonlinear_IV
 
 # I feel it is appropriate to use multiplication for expected tensors because
 # it is not the underlying operation that we are testing. Writing it out

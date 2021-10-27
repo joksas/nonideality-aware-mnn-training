@@ -1,19 +1,15 @@
-from training.iterator import (
-    Iterator,
-    Training,
-    IVNonlinearity,
-    Inference,
-    StuckAtGMin,
-    D2DLognormal,
-)
-import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib
 import copy
-import simulations
-from . import utils
-from training import architecture
+
 import crossbar
+import matplotlib
+import matplotlib.pyplot as plt
+import numpy as np
+import simulations
+from training import architecture
+from training.iterator import (D2DLognormal, Inference, Iterator,
+                               IVNonlinearity, StuckAtGMin, Training)
+
+from . import utils
 
 AXIS_LABEL_FONT_SIZE = 12
 LEGEND_FONT_SIZE = 8

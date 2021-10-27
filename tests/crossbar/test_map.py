@@ -1,12 +1,12 @@
 """
 Tests of functions of crossbar.nonlinear_IV
 """
+import pytest
 # pylint: disable=missing-function-docstring
 import tensorflow as tf
-import pytest
-import crossbar
 from tests import utils
 
+import crossbar
 
 w_params_to_G_testdata = [
     (

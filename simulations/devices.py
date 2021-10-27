@@ -1,4 +1,4 @@
-from training.iterator import IVNonlinearity, D2DLognormal, StuckAtGMax
+from training.iterator import D2DLognormal, IVNonlinearity, StuckAtGMax
 
 
 def ideal():

@@ -1,11 +1,13 @@
-import sys
+import copy
 import os
 import pickle
-import copy
-from .architecture import get_model
+import sys
+
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
+
+from .architecture import get_model
 
 sys.path.insert(0, "..")
 

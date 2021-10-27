@@ -1,12 +1,12 @@
 """
 Tests of functions of crossbar.d2d
 """
+import pytest
 # pylint: disable=missing-function-docstring
 import tensorflow as tf
-import pytest
-from crossbar import d2d
 from tests import utils
 
+from crossbar import d2d
 
 # Only special case, i.e. when std = 0.0 for all entries.
 lognormal_testdata = [

@@ -3,8 +3,8 @@ Tests of functions of training.iterator
 """
 # pylint: disable=missing-function-docstring
 import pytest
-from training import iterator
 
+from training import iterator
 
 nonideality_label_testdata = [
     (

@@ -1,7 +1,8 @@
+import crossbar
+import numpy as np
 import tensorflow as tf
 from tensorflow.keras import layers, models
-import numpy as np
-import crossbar
+
 from . import utils
 
 

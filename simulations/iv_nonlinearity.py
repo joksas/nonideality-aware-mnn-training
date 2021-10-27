@@ -1,7 +1,7 @@
-from training.iterator import Iterator, Training, Inference
 from training import callbacks
-from . import devices
+from training.iterator import Inference, Iterator, Training
 
+from . import devices
 
 DATASET = "mnist"
 NUM_EPOCHS = 1000

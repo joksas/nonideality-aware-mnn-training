@@ -1,12 +1,12 @@
 """
 Tests of functions of crossbar.faulty_devices
 """
+import pytest
 # pylint: disable=missing-function-docstring
 import tensorflow as tf
-import pytest
-from crossbar import faulty_devices
 from tests import utils
 
+from crossbar import faulty_devices
 
 random_bool_tensor_testdata = [
     (

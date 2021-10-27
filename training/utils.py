@@ -1,8 +1,9 @@
+import math
+
+import numpy as np
+import scipy.io as sio
 import tensorflow as tf
 from tensorflow.keras.datasets import cifar10, mnist
-import scipy.io as sio
-import math
-import numpy as np
 
 
 def compute_device_power(V, I_ind):
