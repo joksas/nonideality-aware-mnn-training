@@ -6,12 +6,12 @@ from . import devices, utils
 DATASET = "mnist"
 
 
-def custom_iterator(training_setup, inference_setups):
+def custom_iterator(training_setup, inference_setups, is_regularized=False):
     inferences = [
         Inference(**utils.get_inference_params(), **setup) for setup in inference_setups
     ]
     training = Training(
-        **utils.get_training_params(), is_regularized=False, **training_setup
+        **utils.get_training_params(), is_regularized=is_regularized, **training_setup
     )
 
     return Iterator(DATASET, training, inferences)
@@ -21,6 +21,9 @@ def get_nonideal_iterators():
     return [
         custom_iterator(devices.symmetric_d2d(), [devices.symmetric_d2d()]),
         custom_iterator(devices.asymmetric_d2d(), [devices.asymmetric_d2d()]),
+        custom_iterator(
+            devices.asymmetric_d2d(), [devices.asymmetric_d2d()], is_regularized=True
+        ),
     ]
 
 
