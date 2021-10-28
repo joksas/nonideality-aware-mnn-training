@@ -1,24 +1,17 @@
 from training import callbacks
 from training.iterator import Inference, Iterator, Training
 
-from . import devices
+from . import devices, utils
 
 DATASET = "mnist"
-NUM_EPOCHS = 1000
-BATCH_SIZE = 64
-NUM_TRAINING_REPEATS = 5
-NUM_INFERENCE_REPEATS = 25
 
 
 def custom_iterator(training_setup, inference_setups, force_regular):
     inferences = [
-        Inference(num_repeats=NUM_INFERENCE_REPEATS, **setup)
-        for setup in inference_setups
+        Inference(**utils.get_inference_params(), **setup) for setup in inference_setups
     ]
     training = Training(
-        num_repeats=NUM_TRAINING_REPEATS,
-        num_epochs=NUM_EPOCHS,
-        batch_size=BATCH_SIZE,
+        **utils.get_training_params(),
         is_regularized=False,
         force_regular_checkpoint=force_regular,
         **training_setup
@@ -27,8 +20,8 @@ def custom_iterator(training_setup, inference_setups, force_regular):
     return Iterator(DATASET, training, inferences)
 
 
-def get_iterators():
-    iterators = [
+def get_nonideal_iterators():
+    return [
         custom_iterator(
             devices.symmetric_high_d2d(), [devices.symmetric_high_d2d()], True
         ),
@@ -37,10 +30,12 @@ def get_iterators():
         ),
     ]
 
-    return iterators
+
+def get_iterators():
+    return get_nonideal_iterators()
 
 
 def main():
-    for iterator in get_iterators():
+    for iterator in get_nonideal_iterators():
         iterator.train(use_test_callback=True)
         iterator.infer()

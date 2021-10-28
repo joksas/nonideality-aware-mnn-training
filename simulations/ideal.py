@@ -1,48 +1,52 @@
 from training import callbacks
 from training.iterator import Inference, Iterator, Training
 
-from . import devices
-
-DATASET = "mnist"
-NUM_EPOCHS = 1000
-BATCH_SIZE = 64
-NUM_TRAINING_REPEATS = 5
-NUM_INFERENCE_REPEATS = 25
+from . import (checkpoint_comparison, d2d_asymmetry, devices, iv_nonlinearity,
+               iv_nonlinearity_and_stuck, iv_nonlinearity_cnn,
+               iv_nonlinearity_cnn_checkpoint_frequency, utils)
 
 
-def custom_iterator(training_setup, inference_setups, is_regularized):
+def custom_iterator(training_setup, inference_setups, dataset):
     inferences = [
-        Inference(num_repeats=NUM_INFERENCE_REPEATS, **setup)
-        for setup in inference_setups
+        Inference(utils.get_inference_params(), **setup) for setup in inference_setups
     ]
     training = Training(
-        num_repeats=NUM_TRAINING_REPEATS,
-        num_epochs=NUM_EPOCHS,
-        batch_size=BATCH_SIZE,
-        is_regularized=is_regularized,
-        **training_setup
+        utils.get_training_params(), is_regularized=False, **training_setup
     )
 
-    return Iterator(DATASET, training, inferences)
+    return Iterator(dataset, training, inferences)
+
+
+def get_mnist_iterator():
+    iterators = [
+        iv_nonlinearity.get_ideal_iterator(),
+        iv_nonlinearity_and_stuck.get_ideal_iterator(),
+    ]
+
+    return custom_iterator(
+        iterators[0].training,
+        [inference for inference in iterator.inferences for iterator in iterators],
+        "mnist",
+    )
+
+
+def get_cifar10_iterator():
+    iterators = [
+        iv_nonlinearity_cnn.get_ideal_iterator(),
+    ]
+
+    return custom_iterator(
+        iterators[0].training,
+        [inference for inference in iterator.inferences for iterator in iterators],
+        "cifar10",
+    )
 
 
 def get_iterators():
-    iterators = [
-        custom_iterator(
-            devices.ideal(),
-            [
-                devices.low_R(),
-                devices.high_R(),
-                devices.high_R_and_stuck(),
-                devices.symmetric_d2d(),
-                devices.asymmetric_d2d(),
-                devices.symmetric_high_d2d(),
-            ],
-            False,
-        ),
+    return [
+        get_mnist_iterator(),
+        get_cifar10_iterator(),
     ]
-
-    return iterators
 
 
 def main():

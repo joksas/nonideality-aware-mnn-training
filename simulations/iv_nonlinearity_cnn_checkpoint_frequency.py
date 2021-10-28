@@ -1,37 +1,36 @@
 from training import callbacks
 from training.iterator import Inference, Iterator, Training
 
-from . import devices, utils
+from . import devices, iv_nonlinearity_cnn, utils
 
-DATASET = "mnist"
+DATASET = "cifar10"
 
 
-def custom_iterator(training_setup, inference_setups):
+def custom_iterator(training_setup, inference_setups, memristive_validation_freq=None):
     inferences = [
         Inference(**utils.get_inference_params(), **setup) for setup in inference_setups
     ]
     training = Training(
-        **utils.get_training_params(), is_regularized=False, **training_setup
+        **utils.get_training_params(),
+        is_regularized=False,
+        memristive_validation_freq=memristive_validation_freq,
+        **training_setup
     )
 
     return Iterator(DATASET, training, inferences)
 
 
-def get_ideal_iterator():
-    return custom_iterator(devices.ideal(), [devices.high_R_and_stuck()])
-
-
 def get_nonideal_iterators():
-    iterators = [
-        custom_iterator(devices.high_R_and_stuck(), [devices.high_R_and_stuck()]),
+    return [
+        custom_iterator(
+            devices.high_R(), [devices.high_R()], memristive_validation_freq=5
+        )
     ]
-
-    return iterators
 
 
 def get_iterators():
     return [
-        get_ideal_iterator(),
+        iv_nonlinearity_cnn.get_ideal_iterator(),
         *get_nonideal_iterators(),
     ]
 

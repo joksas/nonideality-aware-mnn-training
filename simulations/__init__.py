@@ -1,9 +1,3 @@
-from . import (
-    iv_nonlinearity,
-    iv_nonlinearity_cnn,
-    d2d_asymmetry,
-    checkpoint_comparison,
-    iv_nonlinearity_and_stuck,
-    ideal,
-    iv_nonlinearity_cnn_more_frequent_validation,
-)
+from . import (checkpoint_comparison, d2d_asymmetry, ideal, iv_nonlinearity,
+               iv_nonlinearity_and_stuck, iv_nonlinearity_cnn,
+               iv_nonlinearity_cnn_checkpoint_frequency)
