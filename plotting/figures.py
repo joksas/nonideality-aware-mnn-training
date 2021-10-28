@@ -571,6 +571,56 @@ def d2d_conductance_histograms():
     plt.savefig("plotting/d2d-G-histograms.pdf", bbox_inches="tight", transparent=True)
 
 
+def d2d_conductance_pos_neg_histograms():
+    fig, axes = plt.subplots(
+        2,
+        1,
+        sharex=True,
+        sharey=True,
+        figsize=(ONE_COLUMN_WIDTH, 1.5 * ONE_COLUMN_WIDTH),
+    )
+
+    iterators = simulations.d2d_asymmetry.get_iterators()
+
+    for idx, (axis, iterator) in enumerate(zip(axes, iterators)):
+        iterator.is_training = True
+        model = architecture.get_model(
+            iterator, custom_weights_path=iterator.weights_path()
+        )
+        weights = model.layers[1].combined_weights()
+        G, _ = crossbar.map.w_params_to_G(
+            weights, iterator.training.G_min, iterator.training.G_max
+        )
+        G = 1000 * G
+        axis.hist(
+            G.numpy()[:, ::2].flatten(),
+            bins=100,
+            color=utils.color_dict()["bluish-green"],
+            alpha=0.5,
+        )
+        axis.hist(
+            G.numpy()[:, 1::2].flatten(),
+            bins=100,
+            color=utils.color_dict()["reddish-purple"],
+            alpha=0.5,
+        )
+        utils.add_subfigure_label(fig, axis, idx, SUBPLOT_LABEL_SIZE)
+        axis.tick_params(axis="both", which="both", labelsize=TICKS_FONT_SIZE)
+        axis.set_ylabel("Count (#)", fontsize=AXIS_LABEL_FONT_SIZE)
+
+    axes[1].set_xlabel("Conductance (mS)", fontsize=AXIS_LABEL_FONT_SIZE)
+    leg = plt.figlegend(
+        [r"$G_+$", r"$G_-$"],
+        ncol=2,
+        bbox_to_anchor=(0, 0, 0.75, 0.95),
+        frameon=False,
+    )
+
+    plt.savefig(
+        "plotting/d2d-G-pos-neg-histograms.pdf", bbox_inches="tight", transparent=True
+    )
+
+
 def d2d_boxplots():
     fig, axes = plt.subplots(figsize=(ONE_COLUMN_WIDTH, 0.8 * ONE_COLUMN_WIDTH))
     fig.tight_layout()
