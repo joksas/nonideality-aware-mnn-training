@@ -6,7 +6,7 @@ from . import utils
 
 
 def compute_I_all(
-    V: tf.constant, G: tf.constant, V_ref: float, n_avg: float, n_std: float = 0.0
+    V: tf.Tensor, G: tf.Tensor, V_ref: float, n_avg: float, n_std: float = 0.0
 ):
     """Computes output currents of a crossbar consisting of devices suffering
     from I/V non-linearities.
@@ -20,9 +20,9 @@ def compute_I_all(
     V_ref :
         Reference voltage values of length r (in increasing order) or voltage
         at which the devices behave Ohmically.
-    n_avg : tf.constant
+    n_avg : tf.Tensor
         Average value of non-linearity parameter.
-    n_std: tf.constant, optional
+    n_std: tf.Tensor, optional
         Standard deviation of non-linearity parameter.
 
     Returns
@@ -40,7 +40,7 @@ def compute_I_all(
 
 
 def compute_currents(
-    n_avg: float, V_ref: float, G: tf.constant, V: tf.constant, n_std: float = 0.0
+    n_avg: float, V_ref: float, G: tf.Tensor, V: tf.Tensor, n_std: float = 0.0
 ):
     """Compute current values by modelling I-V behaviour using nonlinearity
     parameter.
@@ -52,7 +52,7 @@ def compute_currents(
 
     Parameters
     ----------
-    n_avg : tf.constant
+    n_avg : tf.Tensor
         Average value of non-linearity parameter.
     V_ref : float
         Voltage at which the devices behave Ohmically.
@@ -60,7 +60,7 @@ def compute_currents(
         Conductances of shape `m x n`.
     V : ndarray
         Voltages of shape `p x m`.
-    n_std: tf.constant, optional
+    n_std: tf.Tensor, optional
         Standard deviation of non-linearity parameter.
 
     Returns

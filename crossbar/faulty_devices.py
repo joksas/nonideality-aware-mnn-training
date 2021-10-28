@@ -1,7 +1,7 @@
 import tensorflow as tf
 
 
-def random_devices_stuck(G: tf.constant, val: float, prob: float):
+def random_devices_stuck(G: tf.Tensor, val: float, prob: float):
     """Sets random elements of G to val.
 
     Parameters
