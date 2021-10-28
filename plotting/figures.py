@@ -16,6 +16,9 @@ LEGEND_FONT_SIZE = 8
 TICKS_FONT_SIZE = 8
 SUBPLOT_LABEL_SIZE = 12
 LINEWIDTH = 0.75
+# Advanced Science
+ONE_COLUMN_WIDTH = 8.5 / 2.54
+TWO_COLUMNS_WIDTH = 17.8 / 2.54
 
 
 def iv_nonlinearity_error_curves():
@@ -24,7 +27,11 @@ def iv_nonlinearity_error_curves():
     training_idx = 0
     colors = utils.color_dict()
     fig, axes = plt.subplots(
-        num_rows, num_cols, sharex=True, sharey=True, figsize=(18 / 2.54, 9 / 2.54)
+        num_rows,
+        num_cols,
+        sharex=True,
+        sharey=True,
+        figsize=(TWO_COLUMNS_WIDTH, TWO_COLUMNS_WIDTH / 2),
     )
 
     temp_iterators = simulations.iv_nonlinearity.get_iterators()
@@ -153,7 +160,11 @@ def iv_nonlinearity_losses():
     training_idx = 0
     colors = utils.color_dict()
     fig, axes = plt.subplots(
-        num_rows, num_cols, sharex=True, sharey=True, figsize=(18 / 2.54, 9 / 2.54)
+        num_rows,
+        num_cols,
+        sharex=True,
+        sharey=True,
+        figsize=(TWO_COLUMNS_WIDTH, TWO_COLUMNS_WIDTH / 2),
     )
 
     temp_iterators = simulations.iv_nonlinearity.get_iterators()
@@ -271,7 +282,7 @@ def iv_nonlinearity_losses():
 
 
 def iv_nonlinearity_boxplots():
-    fig, axes = plt.subplots(figsize=(9 / 2.54, 7.0 / 2.54))
+    fig, axes = plt.subplots(figsize=(ONE_COLUMN_WIDTH, 0.8 * ONE_COLUMN_WIDTH))
     fig.tight_layout()
     iterators = simulations.iv_nonlinearity.get_iterators()
     iterators.insert(3, iterators[0])
@@ -327,7 +338,9 @@ def iv_nonlinearity_boxplots():
 
 
 def cnn_results():
-    fig, axes = plt.subplots(1, 3, sharey=True, figsize=(18 / 2.54, 5.0 / 2.54))
+    fig, axes = plt.subplots(
+        1, 3, sharey=True, figsize=(TWO_COLUMNS_WIDTH, TWO_COLUMNS_WIDTH / 3)
+    )
     fig.tight_layout()
     colors = utils.color_dict()
     iterators = simulations.iv_nonlinearity_cnn.get_iterators()
@@ -430,7 +443,9 @@ def cnn_results():
 
 
 def cnn_results_loss():
-    fig, axes = plt.subplots(1, 3, sharey=True, figsize=(18 / 2.54, 5.0 / 2.54))
+    fig, axes = plt.subplots(
+        1, 3, sharey=True, figsize=(TWO_COLUMNS_WIDTH, TWO_COLUMNS_WIDTH / 3)
+    )
     fig.tight_layout()
     colors = utils.color_dict()
     iterators = simulations.iv_nonlinearity_cnn.get_iterators()
@@ -526,7 +541,11 @@ def cnn_results_loss():
 
 def d2d_conductance_histograms():
     fig, axes = plt.subplots(
-        2, 1, sharex=True, sharey=True, figsize=(9 / 2.54, 15 / 2.54)
+        2,
+        1,
+        sharex=True,
+        sharey=True,
+        figsize=(ONE_COLUMN_WIDTH, 1.5 * ONE_COLUMN_WIDTH),
     )
 
     iterators = simulations.d2d_asymmetry.get_iterators()
@@ -553,7 +572,7 @@ def d2d_conductance_histograms():
 
 
 def d2d_boxplots():
-    fig, axes = plt.subplots(figsize=(9 / 2.54, 7.0 / 2.54))
+    fig, axes = plt.subplots(figsize=(ONE_COLUMN_WIDTH, 0.8 * ONE_COLUMN_WIDTH))
     fig.tight_layout()
     iterators = simulations.d2d_asymmetry.get_iterators()
     errors = [100 * iterator.test_error()[0].flatten() for iterator in iterators]
@@ -683,7 +702,7 @@ def iv_nonlinearity_and_stuck_error_curves():
 
 
 def iv_nonlinearity_and_stuck_boxplots():
-    fig, axes = plt.subplots(figsize=(9 / 2.54, 7.0 / 2.54))
+    fig, axes = plt.subplots(figsize=(ONE_COLUMN_WIDTH, 0.8 * ONE_COLUMN_WIDTH))
     fig.tight_layout()
     iterators = simulations.iv_nonlinearity_and_stuck.get_iterators()
     errors = [100 * iterator.test_error()[0].flatten() for iterator in iterators]
@@ -810,7 +829,7 @@ def d2d_error_curves():
 
 
 def checkpoint_comparison_boxplots():
-    fig, axes = plt.subplots(figsize=(9 / 2.54, 7.0 / 2.54))
+    fig, axes = plt.subplots(figsize=(ONE_COLUMN_WIDTH, 0.8 * ONE_COLUMN_WIDTH))
     fig.tight_layout()
 
     iterators = simulations.checkpoint_comparison.get_iterators()
