@@ -539,7 +539,7 @@ def cnn_results_loss():
     plt.savefig("plotting/cnn-loss-results.pdf", bbox_inches="tight", transparent=True)
 
 
-def d2d_conductance_histograms():
+def d2d_conductance_histograms(is_effective=False):
     fig, axes = plt.subplots(
         2,
         1,
@@ -561,14 +561,27 @@ def d2d_conductance_histograms():
             weights, iterator.training.G_min, iterator.training.G_max
         )
         G = 1000 * G
-        axis.hist(G.numpy().flatten(), bins=100, color=color)
+        if is_effective:
+            axis.hist(
+                G.numpy()[:, ::2].flatten() - G.numpy()[:, 1::2].flatten(),
+                bins=100,
+                color=color,
+            )
+        else:
+            axis.hist(G.numpy().flatten(), bins=100, color=color)
         utils.add_subfigure_label(fig, axis, idx, SUBPLOT_LABEL_SIZE)
         axis.tick_params(axis="both", which="both", labelsize=TICKS_FONT_SIZE)
         axis.set_ylabel("Count (#)", fontsize=AXIS_LABEL_FONT_SIZE)
 
-    axes[1].set_xlabel("Conductance (mS)", fontsize=AXIS_LABEL_FONT_SIZE)
+    if is_effective:
+        label = "Effective conductance (mS)"
+        filename = "d2d-G-eff-histograms"
+    else:
+        label = "Conductance (mS)"
+        filename = "d2d-G-histograms"
+    axes[1].set_xlabel(label, fontsize=AXIS_LABEL_FONT_SIZE)
 
-    plt.savefig("plotting/d2d-G-histograms.pdf", bbox_inches="tight", transparent=True)
+    plt.savefig(f"plotting/{filename}.pdf", bbox_inches="tight", transparent=True)
 
 
 def d2d_conductance_pos_neg_histograms():
