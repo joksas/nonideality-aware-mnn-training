@@ -49,7 +49,8 @@ def iv_nonlinearity_error_curves():
 
     test_histories = np.array(
         [
-            [iterators[i, j].train_test_histories()[idx] for j, idx in enumerate(row)]
+            [iterators[i, j].train_test_histories()[idx]
+             for j, idx in enumerate(row)]
             for i, row in enumerate(
                 [
                     [0, 0, 0],
@@ -126,15 +127,19 @@ def iv_nonlinearity_error_curves():
                 linewidth=LINEWIDTH / 2,
             )
 
-            utils.add_subfigure_label(fig, axis, i * num_cols + j, SUBPLOT_LABEL_SIZE)
+            utils.add_subfigure_label(
+                fig, axis, i * num_cols + j, SUBPLOT_LABEL_SIZE)
             axis.set_yscale("log")
-            plt.tick_params(axis="both", which="both", labelsize=TICKS_FONT_SIZE)
+            plt.tick_params(axis="both", which="both",
+                            labelsize=TICKS_FONT_SIZE)
 
             if i + 1 == num_rows:
-                axes[i, j].set_xlabel("Epoch (#)", fontsize=AXIS_LABEL_FONT_SIZE)
+                axes[i, j].set_xlabel(
+                    "Epoch (#)", fontsize=AXIS_LABEL_FONT_SIZE)
 
             if j == 0:
-                axes[i, j].set_ylabel("Error (%)", fontsize=AXIS_LABEL_FONT_SIZE)
+                axes[i, j].set_ylabel(
+                    "Error (%)", fontsize=AXIS_LABEL_FONT_SIZE)
 
     plt.xlim([0, len(train_epochs)])
 
@@ -182,7 +187,8 @@ def iv_nonlinearity_losses():
 
     test_histories = np.array(
         [
-            [iterators[i, j].train_test_histories()[idx] for j, idx in enumerate(row)]
+            [iterators[i, j].train_test_histories()[idx]
+             for j, idx in enumerate(row)]
             for i, row in enumerate(
                 [
                     [0, 0, 0],
@@ -253,12 +259,15 @@ def iv_nonlinearity_losses():
                 linewidth=LINEWIDTH / 2,
             )
 
-            utils.add_subfigure_label(fig, axis, i * num_cols + j, SUBPLOT_LABEL_SIZE)
+            utils.add_subfigure_label(
+                fig, axis, i * num_cols + j, SUBPLOT_LABEL_SIZE)
             axis.set_yscale("log")
-            plt.tick_params(axis="both", which="both", labelsize=TICKS_FONT_SIZE)
+            plt.tick_params(axis="both", which="both",
+                            labelsize=TICKS_FONT_SIZE)
 
             if i + 1 == num_rows:
-                axes[i, j].set_xlabel("Epoch (#)", fontsize=AXIS_LABEL_FONT_SIZE)
+                axes[i, j].set_xlabel(
+                    "Epoch (#)", fontsize=AXIS_LABEL_FONT_SIZE)
 
             if j == 0:
                 axes[i, j].set_ylabel("Loss", fontsize=AXIS_LABEL_FONT_SIZE)
@@ -282,7 +291,8 @@ def iv_nonlinearity_losses():
 
 
 def iv_nonlinearity_boxplots():
-    fig, axes = plt.subplots(figsize=(ONE_COLUMN_WIDTH, 0.8 * ONE_COLUMN_WIDTH))
+    fig, axes = plt.subplots(
+        figsize=(ONE_COLUMN_WIDTH, 0.8 * ONE_COLUMN_WIDTH))
     fig.tight_layout()
     iterators = simulations.iv_nonlinearity.get_iterators()
     iterators.insert(3, iterators[0])
@@ -294,8 +304,10 @@ def iv_nonlinearity_boxplots():
     powers = [
         iterator.avg_power()[idx].flatten() for idx, iterator in zip(indices, iterators)
     ]
-    colors = [utils.color_dict()[key] for key in ["vermilion", "blue", "bluish-green"]]
-    labels = ["Standard", "Nonideality-aware", "Nonideality-aware (regularised)"]
+    colors = [utils.color_dict()[key]
+              for key in ["vermilion", "blue", "bluish-green"]]
+    labels = ["Standard", "Nonideality-aware",
+              "Nonideality-aware (regularised)"]
 
     boxplots = []
 
@@ -307,11 +319,13 @@ def iv_nonlinearity_boxplots():
             error,
             positions=[x_pos],
             widths=[
-                10 ** (np.log10(x_pos) + w / 2.0) - 10 ** (np.log10(x_pos) - w / 2.0)
+                10 ** (np.log10(x_pos) + w / 2.0) -
+                10 ** (np.log10(x_pos) - w / 2.0)
             ],
             sym=color,
         )
-        plt.setp(boxplot["fliers"], marker="x", markersize=1, markeredgewidth=0.5)
+        plt.setp(boxplot["fliers"], marker="x",
+                 markersize=1, markeredgewidth=0.5)
         for element in ["boxes", "whiskers", "fliers", "means", "medians", "caps"]:
             plt.setp(boxplot[element], color=color, linewidth=0.5)
 
@@ -413,12 +427,14 @@ def cnn_results():
     axes[0].set_ylabel("Error (%)", fontsize=AXIS_LABEL_FONT_SIZE)
 
     # Box plots.
-    errors = [100 * iterator.test_error()[0].flatten() for iterator in iterators]
+    errors = [100 * iterator.test_error()[0].flatten()
+              for iterator in iterators]
     for idx, (error, color) in enumerate(
         zip(errors, [colors["vermilion"], colors["blue"]])
     ):
         bplot = axes[2].boxplot(error, positions=[idx], sym=color)
-        plt.setp(bplot["fliers"], marker="x", markersize=1, markeredgewidth=0.2)
+        plt.setp(bplot["fliers"], marker="x",
+                 markersize=1, markeredgewidth=0.2)
         for element in ["boxes", "whiskers", "fliers", "means", "medians", "caps"]:
             plt.setp(bplot[element], color=color, linewidth=0.2)
         plt.xticks([0, 1], ["Standard", "Nonideality-aware"])
@@ -439,7 +455,8 @@ def cnn_results():
     for line in leg.get_lines():
         line.set_linewidth(1)
 
-    plt.savefig("plotting/cnn-error-results.pdf", bbox_inches="tight", transparent=True)
+    plt.savefig("plotting/cnn-error-results.pdf",
+                bbox_inches="tight", transparent=True)
 
 
 def cnn_results_loss():
@@ -453,7 +470,8 @@ def cnn_results_loss():
     # loss curves.
     for axis, iterator in zip(axes, iterators):
         train_epochs, train_loss = iterator.train_epochs_and_loss()
-        axis.plot(train_epochs, train_loss, color=colors["orange"], linewidth=LINEWIDTH)
+        axis.plot(train_epochs, train_loss,
+                  color=colors["orange"], linewidth=LINEWIDTH)
 
         validation_epochs, validation_loss = iterator.validation_epochs_and_loss()
         if len(validation_loss.shape) > 1:
@@ -515,7 +533,8 @@ def cnn_results_loss():
         zip(losses, [colors["vermilion"], colors["blue"]])
     ):
         bplot = axes[2].boxplot(loss, positions=[idx], sym=color)
-        plt.setp(bplot["fliers"], marker="x", markersize=1, markeredgewidth=0.2)
+        plt.setp(bplot["fliers"], marker="x",
+                 markersize=1, markeredgewidth=0.2)
         for element in ["boxes", "whiskers", "fliers", "means", "medians", "caps"]:
             plt.setp(bplot[element], color=color, linewidth=0.2)
         plt.xticks([0, 1], ["Standard", "Nonideality-aware"])
@@ -536,20 +555,28 @@ def cnn_results_loss():
     for line in leg.get_lines():
         line.set_linewidth(1)
 
-    plt.savefig("plotting/cnn-loss-results.pdf", bbox_inches="tight", transparent=True)
+    plt.savefig("plotting/cnn-loss-results.pdf",
+                bbox_inches="tight", transparent=True)
 
 
-def d2d_conductance_histograms(is_effective=False):
+def d2d_conductance_histograms(is_effective=False, include_regularised=False):
+    num_rows = 2
+    if include_regularised:
+        num_rows = 3
+
     fig, axes = plt.subplots(
-        2,
+        num_rows,
         1,
         sharex=True,
         sharey=True,
-        figsize=(ONE_COLUMN_WIDTH, 1.5 * ONE_COLUMN_WIDTH),
+        figsize=(ONE_COLUMN_WIDTH, num_rows * 0.75 * ONE_COLUMN_WIDTH),
     )
 
     iterators = simulations.d2d_asymmetry.get_iterators()
-    colors = [utils.color_dict()[key] for key in ["vermilion", "blue"]]
+    if not include_regularised:
+        iterators = iterators[:2]
+    colors = [utils.color_dict()[key]
+              for key in ["vermilion", "blue", "bluish-green"]]
 
     for idx, (axis, iterator, color) in enumerate(zip(axes, iterators, colors)):
         iterator.is_training = True
@@ -579,9 +606,12 @@ def d2d_conductance_histograms(is_effective=False):
     else:
         label = "Conductance (mS)"
         filename = "d2d-G-histograms"
-    axes[1].set_xlabel(label, fontsize=AXIS_LABEL_FONT_SIZE)
+    if include_regularised:
+        filename += "-regularised"
+    axes[-1].set_xlabel(label, fontsize=AXIS_LABEL_FONT_SIZE)
 
-    plt.savefig(f"plotting/{filename}.pdf", bbox_inches="tight", transparent=True)
+    plt.savefig(f"plotting/{filename}.pdf",
+                bbox_inches="tight", transparent=True)
 
 
 def d2d_conductance_pos_neg_histograms():
@@ -635,17 +665,20 @@ def d2d_conductance_pos_neg_histograms():
 
 
 def d2d_boxplots():
-    fig, axes = plt.subplots(figsize=(ONE_COLUMN_WIDTH, 0.8 * ONE_COLUMN_WIDTH))
+    fig, axes = plt.subplots(
+        figsize=(ONE_COLUMN_WIDTH, 0.8 * ONE_COLUMN_WIDTH))
     fig.tight_layout()
     iterators = simulations.d2d_asymmetry.get_iterators()
-    errors = [100 * iterator.test_error()[0].flatten() for iterator in iterators]
+    errors = [100 * iterator.test_error()[0].flatten()
+              for iterator in iterators]
     colors = [utils.color_dict()[key] for key in ["vermilion", "blue"]]
 
     boxplots = []
 
     for idx, (error, color) in enumerate(zip(errors, colors)):
         bplot = plt.boxplot(error, positions=[idx], sym=color)
-        plt.setp(bplot["fliers"], marker="x", markersize=2, markeredgewidth=0.5)
+        plt.setp(bplot["fliers"], marker="x",
+                 markersize=2, markeredgewidth=0.5)
         for element in ["boxes", "whiskers", "fliers", "means", "medians", "caps"]:
             plt.setp(bplot[element], color=color, linewidth=0.5)
         plt.xticks([0, 1], ["Uniform", "Asymmetric"])
@@ -655,7 +688,8 @@ def d2d_boxplots():
     plt.ylabel("Error (%)", fontsize=AXIS_LABEL_FONT_SIZE)
     plt.tick_params(axis="both", which="both", labelsize=TICKS_FONT_SIZE)
 
-    plt.savefig("plotting/d2d-boxplots.pdf", bbox_inches="tight", transparent=True)
+    plt.savefig("plotting/d2d-boxplots.pdf",
+                bbox_inches="tight", transparent=True)
 
 
 def iv_nonlinearity_and_stuck_error_curves():
@@ -765,17 +799,20 @@ def iv_nonlinearity_and_stuck_error_curves():
 
 
 def iv_nonlinearity_and_stuck_boxplots():
-    fig, axes = plt.subplots(figsize=(ONE_COLUMN_WIDTH, 0.8 * ONE_COLUMN_WIDTH))
+    fig, axes = plt.subplots(
+        figsize=(ONE_COLUMN_WIDTH, 0.8 * ONE_COLUMN_WIDTH))
     fig.tight_layout()
     iterators = simulations.iv_nonlinearity_and_stuck.get_iterators()
-    errors = [100 * iterator.test_error()[0].flatten() for iterator in iterators]
+    errors = [100 * iterator.test_error()[0].flatten()
+              for iterator in iterators]
     colors = [utils.color_dict()[key] for key in ["vermilion", "blue"]]
 
     boxplots = []
 
     for idx, (error, color) in enumerate(zip(errors, colors)):
         bplot = plt.boxplot(error, positions=[idx], sym=color)
-        plt.setp(bplot["fliers"], marker="x", markersize=2, markeredgewidth=0.5)
+        plt.setp(bplot["fliers"], marker="x",
+                 markersize=2, markeredgewidth=0.5)
         for element in ["boxes", "whiskers", "fliers", "means", "medians", "caps"]:
             plt.setp(bplot[element], color=color, linewidth=0.5)
     plt.xticks([0, 1], ["Standard", "Nonideality-aware"])
@@ -802,7 +839,8 @@ def d2d_error_curves():
     )
 
     iterators = simulations.d2d_asymmetry.get_iterators()
-    test_histories = [iterator.train_test_histories()[0] for iterator in iterators]
+    test_histories = [iterator.train_test_histories()[0]
+                      for iterator in iterators]
 
     for idx, (iterator, test_history, axis) in enumerate(
         zip(iterators, test_histories, axes)
@@ -888,22 +926,26 @@ def d2d_error_curves():
     for line in leg.get_lines():
         line.set_linewidth(1)
 
-    plt.savefig("plotting/d2d-error-curves.pdf", bbox_inches="tight", transparent=True)
+    plt.savefig("plotting/d2d-error-curves.pdf",
+                bbox_inches="tight", transparent=True)
 
 
 def checkpoint_comparison_boxplots():
-    fig, axes = plt.subplots(figsize=(ONE_COLUMN_WIDTH, 0.8 * ONE_COLUMN_WIDTH))
+    fig, axes = plt.subplots(
+        figsize=(ONE_COLUMN_WIDTH, 0.8 * ONE_COLUMN_WIDTH))
     fig.tight_layout()
 
     iterators = simulations.checkpoint_comparison.get_iterators()
-    errors = [100 * iterator.test_error()[0].flatten() for iterator in iterators]
+    errors = [100 * iterator.test_error()[0].flatten()
+              for iterator in iterators]
     colors = [utils.color_dict()[key] for key in ["vermilion", "blue"]]
 
     boxplots = []
 
     for idx, (error, color) in enumerate(zip(errors, colors)):
         bplot = plt.boxplot(error, positions=[idx], sym=color)
-        plt.setp(bplot["fliers"], marker="x", markersize=2, markeredgewidth=0.5)
+        plt.setp(bplot["fliers"], marker="x",
+                 markersize=2, markeredgewidth=0.5)
         for element in ["boxes", "whiskers", "fliers", "means", "medians", "caps"]:
             plt.setp(bplot[element], color=color, linewidth=0.5)
         plt.xticks([0, 1], ["Standard", "Memristive"])
