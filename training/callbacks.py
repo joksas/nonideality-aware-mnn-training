@@ -33,7 +33,7 @@ class MemristiveCallback(tf.keras.callbacks.Callback):
 
 
 class TestCallback(MemristiveCallback):
-    """Computes test accuracy for all inference setups during training."""
+    """Compute test accuracy for all inference setups during training."""
 
     def __init__(self, iterator):
         MemristiveCallback.__init__(self, iterator)
@@ -88,7 +88,7 @@ class TestCallback(MemristiveCallback):
 
 
 class MemristiveCheckpoint(MemristiveCallback):
-    """Evaluates accuracy on validation set multiple times to provide a more reliable measure of
+    """Evaluate accuracy on validation set multiple times to provide a more reliable measure of
     learning progress.
     """
 

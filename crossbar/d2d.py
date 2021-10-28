@@ -5,22 +5,16 @@ import tensorflow_probability as tfp
 def lognormal(
     G: tf.Tensor, G_min: float, G_max: float, R_min_std: float, R_max_std: float
 ) -> tf.Tensor:
-    """Disturbs conductances lognormally.
+    """Disturb conductances lognormally.
 
-    Parameters
-    ----------
-    G : tf.Tensor
-        Conductances.
-    G_min : float
-        Conductance associated with the OFF state.
-    G_max : float
-        Conductance associated with the ON state.
-    R_min_std : float
-        Standard deviation of the (lognormal distribution's) underlying normal distribution
-        associated with R_min (i.e. 1/G_max).
-    R_max_std : float
-        Standard deviation of the (lognormal distribution's) underlying normal distribution
-        associated with R_max (i.e. 1/G_min).
+    Args:
+        G: Conductances.
+        G_min: Conductance associated with the OFF state.
+        G_max: Conductance associated with the ON state.
+        R_min_std: Standard deviation of the (lognormal distribution's) underlying normal
+            distribution associated with R_min (i.e. 1/G_max).
+        R_max_std: Standard deviation of the (lognormal distribution's) underlying normal
+            distribution associated with R_max (i.e. 1/G_min).
     """
     R = 1 / G
     R_min = 1 / G_max

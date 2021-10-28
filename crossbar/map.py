@@ -4,26 +4,17 @@ import tensorflow as tf
 def I_to_y(
     I: tf.Tensor, k_V: float, max_weight: float, G_max: float, G_min: float
 ) -> tf.Tensor:
-    """Converts output currents of a dot-product engine onto synaptic layer inputs.
+    """Convert output currents of a dot-product engine onto synaptic layer inputs.
 
-    Parameters
-    ----------
-    I : ndarray
-        Output currents of shape `p x 2n`
-    k_V : float
-        Voltage scaling factor.
-    max_weight : float
-        Assumed maximum weight.
-    G_max : float
-        Maximum conductance of electroformed memristors.
-    G_min : float
-        Minimum conductance of electroformed memristors.
+    Args:
+        I: Output currents of shape `p x 2n`
+        k_V: Voltage scaling factor.
+        max_weight: Assumed maximum weight.
+        G_max: Maximum conductance of electroformed memristors.
+        G_min: Minimum conductance of electroformed memristors.
 
-    Returns
-    ----------
-    y : ndarray
-        Outputs of shape `p x n` of a synaptic layer implemented using
-        memristive crossbars.
+    Returns:
+        Outputs of shape `p x n` of a synaptic layer implemented using memristive crossbars.
     """
     I_total = I[:, 0::2] - I[:, 1::2]
     y = I_total_to_y(I_total, k_V, max_weight, G_max, G_min)
@@ -33,27 +24,17 @@ def I_to_y(
 def I_total_to_y(
     I_total: tf.Tensor, k_V: float, max_weight: float, G_max: float, G_min: float
 ) -> tf.Tensor:
-    """Converts total output currents of a dot-product engine onto synaptic layer
-    inputs.
+    """Convert total output currents of a dot-product engine onto synaptic layer inputs.
 
-    Parameters
-    ----------
-    I_total : ndarray
-        Total output currents of shape `p x n`
-    k_V : float
-        Voltage scaling factor.
-    max_weight : float
-        Assumed maximum weight.
-    G_max : float
-        Maximum conductance of electroformed memristors.
-    G_min : float, optional
-        Minimum conductance of electroformed memristors.
+    Args:
+        I_total: Total output currents of shape `p x n`
+        k_V: Voltage scaling factor.
+        max_weight: Assumed maximum weight.
+        G_max: Maximum conductance of electroformed memristors.
+        G_min: Minimum conductance of electroformed memristors.
 
-    Returns
-    ----------
-    y : ndarray
-        Outputs of shape `p x n` of a synaptic layer implemented using
-        memristive crossbars.
+    Returns:
+        Outputs of shape `p x n` of a synaptic layer implemented using memristive crossbars.
     """
     k_G = compute_k_G(max_weight, G_max, G_min)
     k_I = compute_k_I(k_V, k_G)
@@ -62,18 +43,13 @@ def I_total_to_y(
 
 
 def clip_weights(weights: tf.Tensor, max_weight: float) -> tf.Tensor:
-    """Clips weights below 0 and above max_weight.
+    """Clip weights below 0 and above `max_weight`.
 
-    Parameters
-    ----------
-    weights : ndarray
-        Synaptic weights.
-    max_weight : float
-        Assumed maximum weight.
+    Args:
+        weights: Synaptic weights.
+        max_weight: Assumed maximum weight.
 
-    Returns
-    ----------
-    new_weights : ndarray
+    Returns:
         Clipped weights.
     """
     weights = tf.clip_by_value(weights, 0.0, max_weight)
@@ -82,20 +58,14 @@ def clip_weights(weights: tf.Tensor, max_weight: float) -> tf.Tensor:
 
 
 def compute_k_G(max_weight: float, G_max: float, G_min: float) -> float:
-    """Computes conductance scaling factor.
+    """Compute conductance scaling factor.
 
-    Parameters
-    ----------
-    max_weight : float
-        Assumed maximum weight.
-    G_max : float
-        Maximum conductance of electroformed memristors.
-    G_min : float, optional
-        Minimum conductance of electroformed memristors.
+    Args:
+        max_weight: Assumed maximum weight.
+        G_max: Maximum conductance of electroformed memristors.
+        G_min: Minimum conductance of electroformed memristors.
 
-    Returns
-    ----------
-    float
+    Returns:
         Conductance scaling factor.
     """
     k_G = (G_max - G_min) / max_weight
@@ -104,61 +74,43 @@ def compute_k_G(max_weight: float, G_max: float, G_min: float) -> float:
 
 
 def compute_k_I(k_V: float, k_G: float) -> float:
-    """Computes current scaling factor.
+    """Compute current scaling factor.
 
-    Parameters
-    ----------
-    k_V : float
-        Voltage scaling factor.
-    k_G : float
-        Conductance scaling factor.
+    Args:
+        k_V: Voltage scaling factor.
+        k_G: Conductance scaling factor.
 
-    Returns
-    ----------
-    float
+    Returns:
         Current scaling factor.
     """
     return k_V * k_G
 
 
 def x_to_V(x: tf.Tensor, k_V: float) -> tf.Tensor:
-    """Maps inputs (to a synaptic layer) onto voltages.
+    """Map inputs (to a synaptic layer) onto voltages.
 
-    Parameters
-    ----------
-    x : ndarray
-        Synaptic inputs.
-    k_V : float
-        Voltage scaling factor.
+    Args:
+        x: Synaptic inputs.
+        k_V: Voltage scaling factor.
 
-    Returns
-    ----------
-    ndarray
+    Returns:
         Voltages.
     """
     return k_V * x
 
 
 def w_params_to_G(weight_params: tf.Tensor, G_min: float, G_max: float) -> tf.Tensor:
-    """Maps weight parameters onto conductances.
+    """Map weight parameters onto conductances.
 
-    Parameters
-    ----------
-    weight_params : ndarray
-        Weight parameters of shape `m x 2n`. These are used to
-        train each conductance (instead of pair of conductances)
-        directly.
-    G_min : float
-        Minimum conductance of electroformed memristors.
-    G_max : float
-        Maximum conductance of electroformed memristors.
+    Args:
+        weight_params: Weight parameters of shape `m x 2n`. These are used to train each conductance
+            (instead of pair of conductances) directly.
+        G_min: Minimum conductance of electroformed memristors.
+        G_max: Maximum conductance of electroformed memristors.
 
-    Returns
-    ----------
-    G : ndarray
-        Conductances of shape `m x 2n`.
-    max_weight : float
-        Assumed maximum weight.
+    Returns:
+        G: Conductances of shape `m x 2n`.
+        max_weight: Assumed maximum weight.
     """
     max_weight = tf.math.reduce_max(weight_params)
 
@@ -171,23 +123,16 @@ def w_params_to_G(weight_params: tf.Tensor, G_min: float, G_max: float) -> tf.Te
 
 
 def w_to_G(weights: tf.Tensor, G_min: float, G_max: float) -> tf.Tensor:
-    """Maps weights onto conductances.
+    """Map weights onto conductances.
 
-    Parameters
-    ----------
-    weight : ndarray
-        Weights of shape `m x n`.
-    G_min : float
-        Minimum conductance of electroformed memristors.
-    G_max : float
-        Maximum conductance of electroformed memristors.
+    Args:
+        weights: Weights of shape `m x n`.
+        G_min: Minimum conductance of electroformed memristors.
+        G_max: Maximum conductance of electroformed memristors.
 
-    Returns
-    ----------
-    G : ndarray
-        Conductances of shape `m x n`.
-    max_weight : float
-        Assumed maximum weight.
+    Returns:
+        G: Conductances of shape `m x n`.
+        max_weight: Assumed maximum weight.
     """
     max_weight = tf.math.reduce_max(tf.math.abs(weights))
 
