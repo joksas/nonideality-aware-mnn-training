@@ -1,5 +1,3 @@
-import math
-
 import numpy as np
 import scipy.io as sio
 import tensorflow as tf
@@ -41,16 +39,6 @@ def compute_avg_crossbar_power(V: tf.constant, I_ind: tf.constant) -> float:
     P_avg = P_sum / tf.cast(tf.shape(V)[0], tf.float32)
 
     return P_avg
-
-
-# learning rate schedule
-def step_decay(epoch: int):
-    initial_lrate = 0.025
-    drop = 0.5
-    epochs_drop = 50.0
-    lrate = initial_lrate * \
-        math.pow(drop, math.floor((1 + epoch) / epochs_drop))
-    return lrate
 
 
 def normalize_img(image: tf.constant, label: str):
