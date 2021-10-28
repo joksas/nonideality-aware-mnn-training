@@ -526,7 +526,7 @@ def cnn_results_loss():
 
 def d2d_conductance_histograms():
     fig, axes = plt.subplots(
-        1, 2, sharex=True, sharey=True, figsize=(18 / 2.54, 9 / 2.54)
+        2, 1, sharex=True, sharey=True, figsize=(9 / 2.54, 15 / 2.54)
     )
 
     iterators = simulations.d2d_asymmetry.get_iterators()
@@ -544,10 +544,10 @@ def d2d_conductance_histograms():
         G = 1000 * G
         axis.hist(G.numpy().flatten(), bins=100, color=color)
         utils.add_subfigure_label(fig, axis, idx, SUBPLOT_LABEL_SIZE)
-        axis.set_xlabel("Conductance (mS)", fontsize=AXIS_LABEL_FONT_SIZE)
-        plt.tick_params(axis="both", which="both", labelsize=TICKS_FONT_SIZE)
+        axis.tick_params(axis="both", which="both", labelsize=TICKS_FONT_SIZE)
+        axis.set_ylabel("Count (#)", fontsize=AXIS_LABEL_FONT_SIZE)
 
-    axes[0].set_ylabel("Count (#)", fontsize=AXIS_LABEL_FONT_SIZE)
+    axes[1].set_xlabel("Conductance (mS)", fontsize=AXIS_LABEL_FONT_SIZE)
 
     plt.savefig("plotting/d2d-G-histograms.pdf", bbox_inches="tight", transparent=True)
 
