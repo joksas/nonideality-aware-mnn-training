@@ -3,7 +3,6 @@ import pickle
 from typing import Any, Union
 
 import numpy as np
-import numpy.typing as npt
 import tensorflow as tf
 import tensorflow_datasets as tfds
 
@@ -186,7 +185,8 @@ class Iterator:
         self.__training_data = None
         self.__validation_data = None
         self.__testing_data = None
-        self.__train_split_boundary = int(100 * (1 - self.training.validation_split))
+        self.__train_split_boundary = int(
+            100 * (1 - self.training.validation_split))
 
     def data(self, subset: str) -> tf.data.Dataset:
         if subset == "training":
@@ -286,12 +286,13 @@ class Iterator:
         else:
             return self.inferences[self.inference_idx]
 
-    def avg_power(self) -> list[npt.NDArray]:
+    def avg_power(self) -> list[np.ndarray]:
         average_powers = []
         for inference_idx in range(len(self.inferences)):
             self.inference_idx = inference_idx
             inference = self.inferences[self.inference_idx]
-            average_power = np.zeros((self.training.num_repeats, inference.num_repeats))
+            average_power = np.zeros(
+                (self.training.num_repeats, inference.num_repeats))
 
             for i in range(self.training.num_repeats):
                 for j in range(inference.num_repeats):
@@ -314,21 +315,21 @@ class Iterator:
 
         return average_powers
 
-    def train_epochs_and_metric(self, metric: str) -> tuple[npt.NDArray, npt.NDArray]:
+    def train_epochs_and_metric(self, metric: str) -> tuple[np.ndarray, np.ndarray]:
         metric = np.array(self.info()["history"][metric])
         num_epochs = len(metric)
         epochs = np.arange(1, num_epochs + 1)
         return epochs, metric
 
-    def train_epochs_and_accuracy(self) -> tuple[npt.NDArray, npt.NDArray]:
+    def train_epochs_and_accuracy(self) -> tuple[np.ndarray, np.ndarray]:
         return self.train_epochs_and_metric("accuracy")
 
-    def train_epochs_and_loss(self) -> tuple[npt.NDArray, npt.NDArray]:
+    def train_epochs_and_loss(self) -> tuple[np.ndarray, np.ndarray]:
         return self.train_epochs_and_metric("loss")
 
     def validation_epochs_and_metric(
         self, metric: str
-    ) -> tuple[npt.NDArray, npt.NDArray]:
+    ) -> tuple[np.ndarray, np.ndarray]:
         try:
             metric = self.info()["history"]["val_" + metric]
             num_epochs = len(metric)
@@ -344,21 +345,22 @@ class Iterator:
         metric = np.array(metric)
         return epochs, metric
 
-    def validation_epochs_and_accuracy(self) -> tuple[npt.NDArray, npt.NDArray]:
+    def validation_epochs_and_accuracy(self) -> tuple[np.ndarray, np.ndarray]:
         return self.validation_epochs_and_metric("accuracy")
 
-    def validation_epochs_and_loss(self) -> tuple[npt.NDArray, npt.NDArray]:
+    def validation_epochs_and_loss(self) -> tuple[np.ndarray, np.ndarray]:
         return self.validation_epochs_and_metric("loss")
 
     def train_test_histories(self) -> dict[str, Any]:
         return self.info()["callback_infos"]["memristive_test"]["history"]
 
-    def test_metric(self, metric_name: str) -> list[npt.NDAarray]:
+    def test_metric(self, metric_name: str) -> list[np.ndarray]:
         metrics = []
         for inference_idx in range(len(self.inferences)):
             self.inference_idx = inference_idx
             inference = self.inferences[self.inference_idx]
-            metric = np.zeros((self.training.num_repeats, inference.num_repeats))
+            metric = np.zeros(
+                (self.training.num_repeats, inference.num_repeats))
 
             for i in range(self.training.num_repeats):
                 for j in range(inference.num_repeats):
@@ -381,13 +383,13 @@ class Iterator:
 
         return metrics
 
-    def test_accuracy(self) -> list[npt.NDArray]:
+    def test_accuracy(self) -> list[np.ndarray]:
         return self.test_metric("accuracy")
 
-    def test_loss(self) -> list[npt.NDArray]:
+    def test_loss(self) -> list[np.ndarray]:
         return self.test_metric("loss")
 
-    def test_error(self) -> list[npt.NDArray]:
+    def test_error(self) -> list[np.ndarray]:
         return [1 - accuracy for accuracy in self.test_accuracy()]
 
     def train(self, use_test_callback: bool = False) -> None:
