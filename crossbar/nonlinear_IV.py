@@ -7,7 +7,7 @@ from . import utils
 
 def compute_I_all(
     V: tf.Tensor, G: tf.Tensor, V_ref: float, n_avg: float, n_std: float = 0.0
-):
+) -> tuple[tf.Tensor, tf.Tensor]:
     """Computes output currents of a crossbar consisting of devices suffering
     from I/V non-linearities.
 
@@ -41,7 +41,7 @@ def compute_I_all(
 
 def compute_currents(
     n_avg: float, V_ref: float, G: tf.Tensor, V: tf.Tensor, n_std: float = 0.0
-):
+) -> tf.Tensor:
     """Compute current values by modelling I-V behaviour using nonlinearity
     parameter.
 

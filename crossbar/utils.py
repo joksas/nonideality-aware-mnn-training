@@ -1,7 +1,7 @@
 import tensorflow as tf
 
 
-def tf_log2(x: tf.Tensor):
+def tf_log2(x: tf.Tensor) -> tf.Tensor:
     """Computes logarithm of base 2 of x.
 
     x : tf. constant
@@ -15,7 +15,7 @@ def tf_log2(x: tf.Tensor):
     return numerator / denominator
 
 
-def add_I_BL(I_ind: tf.Tensor):
+def add_I_BL(I_ind: tf.Tensor) -> tf.Tensor:
     """Adds currents along the bit lines.
 
     Parameters

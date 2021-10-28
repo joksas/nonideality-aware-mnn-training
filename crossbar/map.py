@@ -1,7 +1,9 @@
 import tensorflow as tf
 
 
-def I_to_y(I: tf.Tensor, k_V: float, max_weight: float, G_max: float, G_min: float):
+def I_to_y(
+    I: tf.Tensor, k_V: float, max_weight: float, G_max: float, G_min: float
+) -> tf.Tensor:
     """Converts output currents of a dot-product engine onto synaptic layer inputs.
 
     Parameters
@@ -30,7 +32,7 @@ def I_to_y(I: tf.Tensor, k_V: float, max_weight: float, G_max: float, G_min: flo
 
 def I_total_to_y(
     I_total: tf.Tensor, k_V: float, max_weight: float, G_max: float, G_min: float
-):
+) -> tf.Tensor:
     """Converts total output currents of a dot-product engine onto synaptic layer
     inputs.
 
@@ -59,7 +61,7 @@ def I_total_to_y(
     return y
 
 
-def clip_weights(weights: tf.Tensor, max_weight: float):
+def clip_weights(weights: tf.Tensor, max_weight: float) -> tf.Tensor:
     """Clips weights below 0 and above max_weight.
 
     Parameters
@@ -79,7 +81,7 @@ def clip_weights(weights: tf.Tensor, max_weight: float):
     return weights
 
 
-def compute_k_G(max_weight: float, G_max: float, G_min: float):
+def compute_k_G(max_weight: float, G_max: float, G_min: float) -> float:
     """Computes conductance scaling factor.
 
     Parameters
@@ -101,7 +103,7 @@ def compute_k_G(max_weight: float, G_max: float, G_min: float):
     return k_G
 
 
-def compute_k_I(k_V: float, k_G: float):
+def compute_k_I(k_V: float, k_G: float) -> float:
     """Computes current scaling factor.
 
     Parameters
@@ -119,7 +121,7 @@ def compute_k_I(k_V: float, k_G: float):
     return k_V * k_G
 
 
-def x_to_V(x: tf.Tensor, k_V: float):
+def x_to_V(x: tf.Tensor, k_V: float) -> tf.Tensor:
     """Maps inputs (to a synaptic layer) onto voltages.
 
     Parameters
@@ -137,7 +139,7 @@ def x_to_V(x: tf.Tensor, k_V: float):
     return k_V * x
 
 
-def w_params_to_G(weight_params: tf.Tensor, G_min: float, G_max: float):
+def w_params_to_G(weight_params: tf.Tensor, G_min: float, G_max: float) -> tf.Tensor:
     """Maps weight parameters onto conductances.
 
     Parameters
@@ -168,7 +170,7 @@ def w_params_to_G(weight_params: tf.Tensor, G_min: float, G_max: float):
     return G, max_weight
 
 
-def w_to_G(weights: tf.Tensor, G_min: float, G_max: float):
+def w_to_G(weights: tf.Tensor, G_min: float, G_max: float) -> tf.Tensor:
     """Maps weights onto conductances.
 
     Parameters

@@ -1,7 +1,7 @@
 import tensorflow as tf
 
 
-def random_devices_stuck(G: tf.Tensor, val: float, prob: float):
+def random_devices_stuck(G: tf.Tensor, val: float, prob: float) -> tf.Tensor:
     """Sets random elements of G to val.
 
     Parameters
@@ -19,7 +19,7 @@ def random_devices_stuck(G: tf.Tensor, val: float, prob: float):
     return G
 
 
-def random_bool_tensor(shape: list[int], prob_true: float):
+def random_bool_tensor(shape: list[int], prob_true: float) -> tf.Tensor:
     """Returns random boolean tensor.
 
     Parameters

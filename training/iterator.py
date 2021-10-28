@@ -1,8 +1,9 @@
 import os
 import pickle
-from typing import Union
+from typing import Any, Union
 
 import numpy as np
+import numpy.typing as npt
 import tensorflow as tf
 import tensorflow_datasets as tfds
 
@@ -10,30 +11,30 @@ from . import callbacks, network, utils
 
 
 class D2DLognormal:
-    def __init__(self, R_min_std: float, R_max_std: float):
+    def __init__(self, R_min_std: float, R_max_std: float) -> None:
         self.R_min_std = R_min_std
         self.R_max_std = R_max_std
 
-    def label(self):
+    def label(self) -> str:
         return f"D2DLN:{self.R_min_std:.3g}_{self.R_max_std:.3g}"
 
 
 class IVNonlinearity:
-    def __init__(self, n_avg: float, n_std: float):
+    def __init__(self, n_avg: float, n_std: float) -> None:
         self.n_avg = n_avg
         self.n_std = n_std
 
-    def label(self):
+    def label(self) -> str:
         return f"IVNL:{self.n_avg:.3g}_{self.n_std:.3g}"
 
 
 class Stuck:
-    def __init__(self, p: float):
+    def __init__(self, p: float) -> None:
         self.p = p
 
 
 class StuckAtGMin(Stuck):
-    def __init__(self, p: float):
+    def __init__(self, p: float) -> None:
         Stuck.__init__(self, p)
 
     def label(self) -> str:
@@ -41,7 +42,7 @@ class StuckAtGMin(Stuck):
 
 
 class StuckAtGMax(Stuck):
-    def __init__(self, p: float):
+    def __init__(self, p: float) -> None:
         Stuck.__init__(self, p)
 
     def label(self) -> str:
@@ -65,7 +66,9 @@ class Nonideal:
         self.stuck_at_G_max = stuck_at_G_max
         self.d2d_lognormal = d2d_lognormal
 
-    def nonideality_list(self):
+    def nonideality_list(
+        self,
+    ) -> list[Union[D2DLognormal, IVNonlinearity, StuckAtGMin, StuckAtGMax]]:
         nonidealities = []
         for nonideality in [
             self.iv_nonlinearity,
@@ -78,7 +81,7 @@ class Nonideal:
 
         return nonidealities
 
-    def conductance_label(self):
+    def conductance_label(self) -> str:
         if self.G_min is None and self.G_max is None:
             return "none_none"
 
@@ -91,7 +94,7 @@ class Nonideal:
 
         return "+".join(nonideality.label() for nonideality in nonidealities)
 
-    def label(self):
+    def label(self) -> str:
         return f"{self.conductance_label()}__{self.nonideality_label()}"
 
     def is_nonideal(self) -> bool:
@@ -102,7 +105,7 @@ class Nonideal:
 
 
 class Iterable:
-    def __init__(self):
+    def __init__(self) -> None:
         self.repeat_idx = 0
 
 
@@ -138,7 +141,7 @@ class Training(Nonideal, Iterable):
         else:
             return "nonreg"
 
-    def label(self):
+    def label(self) -> str:
         l = f"{self.regularized_label()}__{self.batch_size}__{Nonideal.label(self)}"
         if self.force_regular_checkpoint:
             l += "__rc"
@@ -149,7 +152,7 @@ class Training(Nonideal, Iterable):
     def is_aware(self) -> bool:
         return self.is_nonideal()
 
-    def network_label(self):
+    def network_label(self) -> str:
         return "network-{}".format(self.repeat_idx)
 
 
@@ -165,7 +168,7 @@ class Inference(Nonideal, Iterable):
         Nonideal.__init__(self, G_min=G_min, G_max=G_max, **nonidealities)
         Iterable.__init__(self)
 
-    def repeat_label(self):
+    def repeat_label(self) -> str:
         return "repeat-{}".format(self.repeat_idx)
 
 
@@ -185,7 +188,7 @@ class Iterator:
         self.__testing_data = None
         self.__train_split_boundary = int(100 * (1 - self.training.validation_split))
 
-    def data(self, subset: str):
+    def data(self, subset: str) -> tf.data.Dataset:
         if subset == "training":
             if self.__training_data is not None:
                 return self.__training_data
@@ -241,39 +244,39 @@ class Iterator:
 
         return ds
 
-    def training_dir(self):
+    def training_dir(self) -> str:
         return os.path.join(os.getcwd(), "models", self.dataset, self.training.label())
 
-    def network_dir(self):
+    def network_dir(self) -> str:
         return os.path.join(self.training_dir(), self.training.network_label())
 
-    def weights_path(self):
+    def weights_path(self) -> str:
         return os.path.join(self.network_dir(), "model.h5")
 
-    def info_path(self):
+    def info_path(self) -> str:
         return os.path.join(self.network_dir(), "info.pkl")
 
-    def inference_nonideality_dir(self):
+    def inference_nonideality_dir(self) -> str:
         return os.path.join(
             self.network_dir(), self.inferences[self.inference_idx].label()
         )
 
-    def inference_repeat_dir(self):
+    def inference_repeat_dir(self) -> str:
         return os.path.join(
             self.inference_nonideality_dir(),
             self.inferences[self.inference_idx].repeat_label(),
         )
 
-    def power_path(self):
+    def power_path(self) -> str:
         return os.path.join(self.inference_repeat_dir(), "power.csv")
 
-    def loss_path(self):
+    def loss_path(self) -> str:
         return os.path.join(self.inference_repeat_dir(), "loss.csv")
 
-    def accuracy_path(self):
+    def accuracy_path(self) -> str:
         return os.path.join(self.inference_repeat_dir(), "accuracy.csv")
 
-    def info(self):
+    def info(self) -> dict[str, Any]:
         with open(self.info_path(), "rb") as pickle_file:
             return pickle.load(pickle_file)
 
@@ -283,7 +286,7 @@ class Iterator:
         else:
             return self.inferences[self.inference_idx]
 
-    def avg_power(self):
+    def avg_power(self) -> list[npt.NDArray]:
         average_powers = []
         for inference_idx in range(len(self.inferences)):
             self.inference_idx = inference_idx
@@ -311,19 +314,21 @@ class Iterator:
 
         return average_powers
 
-    def train_epochs_and_metric(self, metric: str):
+    def train_epochs_and_metric(self, metric: str) -> tuple[npt.NDArray, npt.NDArray]:
         metric = np.array(self.info()["history"][metric])
         num_epochs = len(metric)
         epochs = np.arange(1, num_epochs + 1)
         return epochs, metric
 
-    def train_epochs_and_accuracy(self):
+    def train_epochs_and_accuracy(self) -> tuple[npt.NDArray, npt.NDArray]:
         return self.train_epochs_and_metric("accuracy")
 
-    def train_epochs_and_loss(self):
+    def train_epochs_and_loss(self) -> tuple[npt.NDArray, npt.NDArray]:
         return self.train_epochs_and_metric("loss")
 
-    def validation_epochs_and_metric(self, metric: str):
+    def validation_epochs_and_metric(
+        self, metric: str
+    ) -> tuple[npt.NDArray, npt.NDArray]:
         try:
             metric = self.info()["history"]["val_" + metric]
             num_epochs = len(metric)
@@ -339,16 +344,16 @@ class Iterator:
         metric = np.array(metric)
         return epochs, metric
 
-    def validation_epochs_and_accuracy(self):
+    def validation_epochs_and_accuracy(self) -> tuple[npt.NDArray, npt.NDArray]:
         return self.validation_epochs_and_metric("accuracy")
 
-    def validation_epochs_and_loss(self):
+    def validation_epochs_and_loss(self) -> tuple[npt.NDArray, npt.NDArray]:
         return self.validation_epochs_and_metric("loss")
 
-    def train_test_histories(self):
+    def train_test_histories(self) -> dict[str, Any]:
         return self.info()["callback_infos"]["memristive_test"]["history"]
 
-    def test_metric(self, metric_name: str):
+    def test_metric(self, metric_name: str) -> list[npt.NDAarray]:
         metrics = []
         for inference_idx in range(len(self.inferences)):
             self.inference_idx = inference_idx
@@ -376,16 +381,16 @@ class Iterator:
 
         return metrics
 
-    def test_accuracy(self):
+    def test_accuracy(self) -> list[npt.NDArray]:
         return self.test_metric("accuracy")
 
-    def test_loss(self):
+    def test_loss(self) -> list[npt.NDArray]:
         return self.test_metric("loss")
 
-    def test_error(self):
+    def test_error(self) -> list[npt.NDArray]:
         return [1 - accuracy for accuracy in self.test_accuracy()]
 
-    def train(self, use_test_callback: bool = False):
+    def train(self, use_test_callback: bool = False) -> None:
         self.is_training = True
 
         for _ in range(self.training.num_repeats):
@@ -403,7 +408,7 @@ class Iterator:
 
         self.training.repeat_idx = 0
 
-    def infer(self):
+    def infer(self) -> None:
         self.is_training = False
         for idx in range(len(self.inferences)):
             self.inference_idx = idx
