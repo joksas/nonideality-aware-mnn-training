@@ -396,6 +396,11 @@ class Iterator:
         self.is_training = True
 
         for _ in range(self.training.num_repeats):
+            if os.path.isdir(self.network_dir()):
+                warnings.warn(
+                    f'Training directory "{self.network_dir()}" already exists. Skipping...'
+                )
+                continue
             # New callbacks in each iteration because iterator changes.
             train_callbacks = []
             if use_test_callback:
@@ -414,6 +419,11 @@ class Iterator:
         self.is_training = False
         for idx in range(len(self.inferences)):
             self.inference_idx = idx
+            if os.path.isdir(self.inference_nonideality_dir()):
+                warnings.warn(
+                    f'Inference directory "{self.inference_nonideality_dir()}" already exists. Skipping...'
+                )
+                continue
             inference = self.inferences[self.inference_idx]
             for _ in range(self.training.num_repeats):
                 for _ in range(inference.num_repeats):
