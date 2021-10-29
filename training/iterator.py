@@ -384,6 +384,10 @@ class Iterator:
     def train_test_histories(self) -> dict[str, Any]:
         return self.info()["callback_infos"]["memristive_test"]["history"]
 
+    def train_test_epochs_and_accuracy(self, inference_idx):
+        history = self.train_test_histories()[inference_idx]
+        return np.array(history["epoch_no"]), np.array(history["accuracy"])
+
     def test_metric(self, metric_name: str) -> list[np.ndarray]:
         metrics = []
         for inference_idx in range(len(self.inferences)):

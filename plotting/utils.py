@@ -1,12 +1,38 @@
+import os
+from pathlib import Path
+from typing import Union
+
 import matplotlib.transforms as mtransforms
+import numpy as np
 
 
-def color_list():
-    """Okabe-Ito colorblind-friendly palette.
+class Config:
+    AXIS_LABEL_FONT_SIZE: float = 12
+    LEGEND_FONT_SIZE: float = 8
+    TICKS_FONT_SIZE: float = 8
+    SUBPLOT_LABEL_SIZE: float = 12
+    LINEWIDTH: float = 0.75
+    # Advanced Science
+    _ONE_COLUMN_WIDTH: float = 8.5  # cm
+    _TWO_COLUMNS_WIDTH: float = 17.8  # cm
 
-    Returns
-    ----------
-    list of string
+    @property
+    def ONE_COLUMN_WIDTH(self):
+        return self._cm_to_in(self._ONE_COLUMN_WIDTH)
+
+    @property
+    def TWO_COLUMNS_WIDTH(self):
+        return self._cm_to_in(self._TWO_COLUMNS_WIDTH)
+
+    @staticmethod
+    def _cm_to_in(length):
+        return length / 2.54
+
+
+def color_list() -> list[str]:
+    """Return colors of Okabe-Ito colorblind-friendly palette.
+
+    Returns:
         HEX color codes.
     """
     colors = [
@@ -22,14 +48,8 @@ def color_list():
     return colors
 
 
-def color_dict():
-    """Same as `colors_list()` but dict.
-
-    Returns
-    ----------
-    dict of string
-        HEX color codes.
-    """
+def color_dict() -> dict[str, str]:
+    """Return same as `colors_list()` but dict."""
     color_names = [
         "orange",
         "sky-blue",
@@ -54,3 +74,53 @@ def add_subfigure_label(fig, axis, letter_idx, fontsize):
         fontweight="bold",
         fontsize=fontsize,
     )
+
+
+def plot_training_error_curves(fig, axis, iterator, subfigure_idx, inference_idx=0):
+    colors = color_dict()
+
+    # Training curve.
+    train_epochs, train_accuracy = iterator.train_epochs_and_accuracy()
+    train_error = 100 * (1 - train_accuracy)
+    plot_curve(axis, train_epochs, train_error, colors["orange"])
+
+    # Validation curve.
+    validation_epochs, validation_accuracy = iterator.validation_epochs_and_accuracy()
+    validation_error = 100 * (1 - validation_accuracy)
+    plot_curve(axis, validation_epochs, validation_error, colors["sky-blue"])
+
+    # Testing (during training) curve.
+    train_test_epochs, train_test_accuracy = iterator.train_test_epochs_and_accuracy(inference_idx)
+    train_test_error = 100 * (1 - train_test_accuracy)
+    plot_curve(axis, train_test_epochs, train_test_error, colors["reddish-purple"])
+
+    axis.set_yscale("log")
+    axis.tick_params(axis="both", which="both", labelsize=Config.TICKS_FONT_SIZE)
+    axis.set_xlim([0, len(train_epochs)])
+
+    if subfigure_idx is not None:
+        add_subfigure_label(fig, axis, subfigure_idx, Config.SUBPLOT_LABEL_SIZE)
+
+
+def plot_curve(axis, x, y, color):
+    if len(y.shape) > 1:
+        y_min = np.min(y, axis=1)
+        y_max = np.max(y, axis=1)
+        y_median = np.median(y, axis=1)
+        axis.fill_between(x, y_min, y_max, color=color, alpha=0.25, linewidth=0)
+        axis.plot(x, y_median, color=color, linewidth=Config.LINEWIDTH / 2)
+    else:
+        axis.plot(x, y, color=color, linewidth=Config.LINEWIDTH)
+
+
+def add_legend(
+    fig, labels, ncol=1, loc="center", bbox_to_anchor=(0.5, 1.0), linewidth=1.0, frameon=False
+):
+    leg = fig.legend(labels, ncol=ncol, loc=loc, bbox_to_anchor=bbox_to_anchor, frameon=frameon)
+    for line in leg.get_lines():
+        line.set_linewidth(1)
+
+
+def save_fig(fig, name: str):
+    path = os.path.join(Path(__file__).parent, f"{name}.pdf")
+    fig.savefig(path, bbox_inches="tight", transparent=True)
