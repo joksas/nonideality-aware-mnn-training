@@ -6,27 +6,16 @@ from . import (checkpoint_comparison, d2d_asymmetry, devices, iv_nonlinearity,
                iv_nonlinearity_cnn_checkpoint_frequency, utils)
 
 
-def custom_iterator(training_setup, inference_setups, dataset):
-    inferences = [
-        Inference(utils.get_inference_params(), **setup) for setup in inference_setups
-    ]
-    training = Training(
-        utils.get_training_params(), is_regularized=False, **training_setup
-    )
-
-    return Iterator(dataset, training, inferences)
-
-
 def get_mnist_iterator():
     iterators = [
         iv_nonlinearity.get_ideal_iterator(),
         iv_nonlinearity_and_stuck.get_ideal_iterator(),
     ]
 
-    return custom_iterator(
-        iterators[0].training,
-        [inference for inference in iterator.inferences for iterator in iterators],
+    return Iterator(
         "mnist",
+        iterators[0].training,
+        [inference for iterator in iterators for inference in iterator.inferences],
     )
 
 
@@ -35,10 +24,10 @@ def get_cifar10_iterator():
         iv_nonlinearity_cnn.get_ideal_iterator(),
     ]
 
-    return custom_iterator(
-        iterators[0].training,
-        [inference for inference in iterator.inferences for iterator in iterators],
+    return Iterator(
         "cifar10",
+        iterators[0].training,
+        [inference for iterator in iterators for inference in iterator.inferences],
     )
 
 
