@@ -1,5 +1,6 @@
 import os
 import pickle
+import warnings
 from typing import Any, Union
 
 import numpy as np
@@ -17,6 +18,13 @@ class D2DLognormal:
     def label(self) -> str:
         return f"D2DLN:{self.R_min_std:.3g}_{self.R_max_std:.3g}"
 
+    def __eq__(self, other):
+        if self is None or other is None:
+            if self is None and other is None:
+                return True
+            return False
+        return self.R_min_std == other.R_min_std and self.R_max_std == other.R_max_std
+
 
 class IVNonlinearity:
     def __init__(self, n_avg: float, n_std: float) -> None:
@@ -26,10 +34,24 @@ class IVNonlinearity:
     def label(self) -> str:
         return f"IVNL:{self.n_avg:.3g}_{self.n_std:.3g}"
 
+    def __eq__(self, other):
+        if self is None or other is None:
+            if self is None and other is None:
+                return True
+            return False
+        return self.n_avg == other.n_avg and self.n_std == other.n_std
+
 
 class Stuck:
     def __init__(self, p: float) -> None:
         self.p = p
+
+    def __eq__(self, other):
+        if self is None or other is None:
+            if self is None and other is None:
+                return True
+            return False
+        return self.p == other.p
 
 
 class StuckAtGMin(Stuck):
@@ -64,6 +86,16 @@ class Nonideal:
         self.stuck_at_G_min = stuck_at_G_min
         self.stuck_at_G_max = stuck_at_G_max
         self.d2d_lognormal = d2d_lognormal
+
+    def __eq__(self, other):
+        return (
+            self.G_min == other.G_min
+            and self.G_max == other.G_max
+            and self.iv_nonlinearity == other.iv_nonlinearity
+            and self.stuck_at_G_min == other.stuck_at_G_min
+            and self.stuck_at_G_max == other.stuck_at_G_max
+            and self.d2d_lognormal == other.d2d_lognormal
+        )
 
     def nonideality_list(
         self,
@@ -102,10 +134,16 @@ class Nonideal:
 
         return True
 
+    def is_aware(self) -> bool:
+        return self.is_nonideal()
+
 
 class Iterable:
     def __init__(self) -> None:
         self.repeat_idx = 0
+
+    def __eq__(self, other):
+        return self.repeat_idx == other.repeat_idx
 
 
 class Training(Nonideal, Iterable):
@@ -148,9 +186,6 @@ class Training(Nonideal, Iterable):
             l += f"__val_freq_{self.memristive_validation_freq}"
         return l
 
-    def is_aware(self) -> bool:
-        return self.is_nonideal()
-
     def network_label(self) -> str:
         return "network-{}".format(self.repeat_idx)
 
@@ -169,6 +204,13 @@ class Inference(Nonideal, Iterable):
 
     def repeat_label(self) -> str:
         return "repeat-{}".format(self.repeat_idx)
+
+    def __eq__(self, other):
+        return (
+            self.num_repeats == other.num_repeats
+            and Nonideal.__eq__(self, other)
+            and Iterable.__eq__(self, other)
+        )
 
 
 class Iterator:
