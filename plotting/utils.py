@@ -6,6 +6,10 @@ import matplotlib.transforms as mtransforms
 import numpy as np
 
 
+def _cm_to_in(length) -> float:
+    return length / 2.54
+
+
 class Config:
     AXIS_LABEL_FONT_SIZE: float = 12
     LEGEND_FONT_SIZE: float = 8
@@ -13,20 +17,8 @@ class Config:
     SUBPLOT_LABEL_SIZE: float = 12
     LINEWIDTH: float = 0.75
     # Advanced Science
-    _ONE_COLUMN_WIDTH: float = 8.5  # cm
-    _TWO_COLUMNS_WIDTH: float = 17.8  # cm
-
-    @property
-    def ONE_COLUMN_WIDTH(self):
-        return self._cm_to_in(self._ONE_COLUMN_WIDTH)
-
-    @property
-    def TWO_COLUMNS_WIDTH(self):
-        return self._cm_to_in(self._TWO_COLUMNS_WIDTH)
-
-    @staticmethod
-    def _cm_to_in(length):
-        return length / 2.54
+    ONE_COLUMN_WIDTH: float = _cm_to_in(8.5)
+    TWO_COLUMNS_WIDTH: float = _cm_to_in(17.8)
 
 
 def color_list() -> list[str]:
@@ -76,7 +68,7 @@ def add_subfigure_label(fig, axis, letter_idx, fontsize):
     )
 
 
-def plot_training_curves(fig, axis, iterator, subfigure_idx, metric="error", inference_idx=0):
+def plot_training_curves(fig, axis, iterator, subfigure_idx=None, metric="error", inference_idx=0):
     colors = color_dict()
 
     # Training curve.
@@ -119,7 +111,7 @@ def add_legend(
 ):
     leg = fig.legend(labels, ncol=ncol, loc=loc, bbox_to_anchor=bbox_to_anchor, frameon=frameon)
     for line in leg.get_lines():
-        line.set_linewidth(1)
+        line.set_linewidth(linewidth)
 
 
 def save_fig(fig, name: str):
@@ -136,8 +128,10 @@ def axis_label(var_name: str, prepend: str = None) -> str:
         label = "loss"
     elif var_name == "epoch":
         label = "epoch (#)"
+    elif var_name == "training":
+        label = "training"
     else:
-        raise ValueError(f"Unrecognised variable name {var_name}.")
+        raise ValueError(f'Unrecognised variable name "{var_name}".')
 
     if prepend is not None:
         label = f"{prepend} {label}"
