@@ -22,7 +22,7 @@ ONE_COLUMN_WIDTH = 8.5 / 2.54
 TWO_COLUMNS_WIDTH = 17.8 / 2.54
 
 
-def iv_nonlinearity_error_curves(training_idx=0):
+def iv_nonlinearity_training_curves(metric="error", training_idx=0):
     fig_shape = (2, 3)
 
     fig, axes = plt.subplots(
@@ -42,140 +42,17 @@ def iv_nonlinearity_error_curves(training_idx=0):
     for idx, (iterator, inference_idx) in enumerate(zip(iterators, inference_idxs)):
         i, j = np.unravel_index(idx, fig_shape)
         axis = axes[i, j]
-        utils.plot_training_error_curves(fig, axis, iterator, idx, inference_idx=inference_idx)
+        utils.plot_training_curves(
+            fig, axis, iterator, idx, metric=metric, inference_idx=inference_idx
+        )
         if i + 1 == fig_shape[0]:
-            axis.set_xlabel("Epoch (#)", fontsize=utils.Config.AXIS_LABEL_FONT_SIZE)
+            axis.set_xlabel(utils.axis_label("epoch"), fontsize=utils.Config.AXIS_LABEL_FONT_SIZE)
         if j == 0:
-            axis.set_ylabel("Error (%)", fontsize=utils.Config.AXIS_LABEL_FONT_SIZE)
+            axis.set_ylabel(utils.axis_label(metric), fontsize=utils.Config.AXIS_LABEL_FONT_SIZE)
 
     utils.add_legend(fig, ["Training", "Validation", "Test (nonideal)"], ncol=fig_shape[1])
 
-    utils.save_fig(fig, "iv-nonlinearity-training-error")
-
-
-def iv_nonlinearity_losses():
-    num_rows = 2
-    num_cols = 3
-    training_idx = 0
-    colors = utils.color_dict()
-    fig, axes = plt.subplots(
-        num_rows,
-        num_cols,
-        sharex=True,
-        sharey=True,
-        figsize=(TWO_COLUMNS_WIDTH, TWO_COLUMNS_WIDTH / 2),
-    )
-
-    temp_iterators = simulations.iv_nonlinearity.get_iterators()
-    for i in range(len(temp_iterators)):
-        temp_iterators[i].training.repeat_idx = training_idx
-    iterators = np.array(
-        [
-            [temp_iterators[idx] for idx in row]
-            for row in [
-                [0, 1, 2],
-                [0, 3, 4],
-            ]
-        ]
-    )
-
-    test_histories = np.array(
-        [
-            [iterators[i, j].train_test_histories()[idx] for j, idx in enumerate(row)]
-            for i, row in enumerate(
-                [
-                    [0, 0, 0],
-                    [1, 0, 0],
-                ]
-            )
-        ]
-    )
-
-    for i in range(num_rows):
-        for j in range(num_cols):
-            iterator = iterators[i, j]
-            test_history = test_histories[i, j]
-            axis = axes[i, j]
-
-            # Training curve.
-            train_epochs, train_loss = iterator.train_epochs_and_loss()
-            axis.plot(train_epochs, train_loss, color=colors["orange"], linewidth=LINEWIDTH)
-
-            # Validation curve.
-            validation_epochs, validation_loss = iterator.validation_epochs_and_loss()
-            if len(validation_loss.shape) > 1:
-                validation_loss_median = np.median(validation_loss, axis=1)
-                validation_loss_min = np.min(validation_loss, axis=1)
-                validation_loss_max = np.max(validation_loss, axis=1)
-                axis.fill_between(
-                    validation_epochs,
-                    validation_loss_min,
-                    validation_loss_max,
-                    color=colors["sky-blue"],
-                    alpha=0.25,
-                    linewidth=0,
-                )
-                axis.plot(
-                    validation_epochs,
-                    validation_loss_median,
-                    color=colors["sky-blue"],
-                    linewidth=LINEWIDTH / 2,
-                )
-            else:
-                axis.plot(
-                    validation_epochs,
-                    validation_loss,
-                    color=colors["sky-blue"],
-                    linewidth=LINEWIDTH,
-                )
-
-            # Testing (during training) curve.
-            test_epochs = test_history["epoch_no"]
-            test_loss = np.array(test_history["loss"])
-            test_loss_median = np.median(test_loss, axis=1)
-            test_loss_min = np.min(test_loss, axis=1)
-            test_loss_max = np.max(test_loss, axis=1)
-            axis.fill_between(
-                test_epochs,
-                test_loss_min,
-                test_loss_max,
-                color=colors["reddish-purple"],
-                alpha=0.25,
-                linewidth=0,
-            )
-            axis.plot(
-                test_epochs,
-                test_loss_median,
-                color=colors["reddish-purple"],
-                linewidth=LINEWIDTH / 2,
-            )
-
-            utils.add_subfigure_label(fig, axis, i * num_cols + j, SUBPLOT_LABEL_SIZE)
-            axis.set_yscale("log")
-            plt.tick_params(axis="both", which="both", labelsize=TICKS_FONT_SIZE)
-
-            if i + 1 == num_rows:
-                axes[i, j].set_xlabel("Epoch (#)", fontsize=AXIS_LABEL_FONT_SIZE)
-
-            if j == 0:
-                axes[i, j].set_ylabel("Loss", fontsize=AXIS_LABEL_FONT_SIZE)
-
-    plt.xlim([0, len(train_epochs)])
-
-    leg = plt.figlegend(
-        ["Training", "Validation", "Test (nonideal)"],
-        ncol=3,
-        bbox_to_anchor=(0, 0, 0.8, 1.05),
-        frameon=False,
-    )
-    for line in leg.get_lines():
-        line.set_linewidth(1)
-
-    plt.savefig(
-        "plotting/iv-nonlinearity-loss-curves.pdf",
-        bbox_inches="tight",
-        transparent=True,
-    )
+    utils.save_fig(fig, f"iv-nonlinearity-training-{metric}")
 
 
 def iv_nonlinearity_boxplots():

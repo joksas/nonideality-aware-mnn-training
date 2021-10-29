@@ -76,33 +76,34 @@ def add_subfigure_label(fig, axis, letter_idx, fontsize):
     )
 
 
-def plot_training_error_curves(fig, axis, iterator, subfigure_idx, inference_idx=0):
+def plot_training_curves(fig, axis, iterator, subfigure_idx, metric="error", inference_idx=0):
     colors = color_dict()
 
     # Training curve.
-    train_epochs, train_accuracy = iterator.train_epochs_and_accuracy()
-    train_error = 100 * (1 - train_accuracy)
-    plot_curve(axis, train_epochs, train_error, colors["orange"])
+    x_training, y_training = iterator.training_curves(metric)
+    plot_curve(axis, x_training, y_training, colors["orange"], metric=metric)
 
     # Validation curve.
-    validation_epochs, validation_accuracy = iterator.validation_epochs_and_accuracy()
-    validation_error = 100 * (1 - validation_accuracy)
-    plot_curve(axis, validation_epochs, validation_error, colors["sky-blue"])
+    x_validation, y_validation = iterator.validation_curves(metric)
+    plot_curve(axis, x_validation, y_validation, colors["sky-blue"], metric=metric)
 
     # Testing (during training) curve.
-    train_test_epochs, train_test_accuracy = iterator.train_test_epochs_and_accuracy(inference_idx)
-    train_test_error = 100 * (1 - train_test_accuracy)
-    plot_curve(axis, train_test_epochs, train_test_error, colors["reddish-purple"])
+    x_training_testing, y_training_testing = iterator.training_testing_curves(metric, inference_idx)
+    plot_curve(
+        axis, x_training_testing, y_training_testing, colors["reddish-purple"], metric=metric
+    )
 
     axis.set_yscale("log")
     axis.tick_params(axis="both", which="both", labelsize=Config.TICKS_FONT_SIZE)
-    axis.set_xlim([0, len(train_epochs)])
+    axis.set_xlim([0, len(x_training)])
 
     if subfigure_idx is not None:
         add_subfigure_label(fig, axis, subfigure_idx, Config.SUBPLOT_LABEL_SIZE)
 
 
-def plot_curve(axis, x, y, color):
+def plot_curve(axis, x, y, color, metric=None):
+    if metric in ["accuracy", "error"]:
+        y = 100 * y
     if len(y.shape) > 1:
         y_min = np.min(y, axis=1)
         y_max = np.max(y, axis=1)
@@ -124,3 +125,21 @@ def add_legend(
 def save_fig(fig, name: str):
     path = os.path.join(Path(__file__).parent, f"{name}.pdf")
     fig.savefig(path, bbox_inches="tight", transparent=True)
+
+
+def axis_label(var_name: str, prepend: str = None) -> str:
+    if var_name == "accuracy":
+        label = "accuracy (%)"
+    elif var_name == "error":
+        label = "error (%)"
+    elif var_name == "loss":
+        label = "loss"
+    elif var_name == "epoch":
+        label = "epoch (#)"
+    else:
+        raise ValueError(f"Unrecognised variable name {var_name}.")
+
+    if prepend is not None:
+        label = f"{prepend} {label}"
+
+    return label.capitalize()

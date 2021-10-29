@@ -351,42 +351,63 @@ class Iterator:
 
         return average_powers
 
-    def train_epochs_and_metric(self, metric: str) -> tuple[np.ndarray, np.ndarray]:
-        metric = np.array(self.info()["history"][metric])
-        num_epochs = len(metric)
-        epochs = np.arange(1, num_epochs + 1)
-        return epochs, metric
+    def training_curves(self, metric: str) -> tuple[np.ndarray, np.ndarray]:
+        if metric == "error":
+            y = self.info()["history"]["accuracy"]
+        else:
+            y = self.info()["history"][metric]
 
-    def train_epochs_and_accuracy(self) -> tuple[np.ndarray, np.ndarray]:
-        return self.train_epochs_and_metric("accuracy")
+        num_epochs = len(y)
+        x = np.arange(1, num_epochs + 1)
 
-    def train_epochs_and_loss(self) -> tuple[np.ndarray, np.ndarray]:
-        return self.train_epochs_and_metric("loss")
+        y = np.array(y)
+        if metric == "error":
+            y = 1 - y
 
-    def validation_epochs_and_metric(self, metric: str) -> tuple[np.ndarray, np.ndarray]:
+        return x, y
+
+    def validation_curves(self, metric: str) -> tuple[np.ndarray, np.ndarray]:
         try:
-            metric = self.info()["history"]["val_" + metric]
-            num_epochs = len(metric)
-            epochs = np.arange(1, num_epochs + 1)
+            if metric == "error":
+                y = self.info()["history"]["val_accuracy"]
+            else:
+                y = self.info()["history"]["val_" + metric]
+            num_epochs = len(y)
+            x = np.arange(1, num_epochs + 1)
         except KeyError:
-            epochs = self.info()["callback_infos"]["memristive_checkpoint"]["history"]["epoch_no"]
-            metric = self.info()["callback_infos"]["memristive_checkpoint"]["history"][metric]
-        epochs = np.array(epochs)
-        metric = np.array(metric)
-        return epochs, metric
+            history = self.info()["callback_infos"]["memristive_checkpoint"]["history"]
+            x = history["epoch_no"]
+            x = np.array(x)
+            if metric == "error":
+                y = history["accuracy"]
+            else:
+                y = history[metric]
 
-    def validation_epochs_and_accuracy(self) -> tuple[np.ndarray, np.ndarray]:
-        return self.validation_epochs_and_metric("accuracy")
+        y = np.array(y)
+        if metric == "error":
+            y = 1 - y
 
-    def validation_epochs_and_loss(self) -> tuple[np.ndarray, np.ndarray]:
-        return self.validation_epochs_and_metric("loss")
+        return x, y
 
     def train_test_histories(self) -> dict[str, Any]:
         return self.info()["callback_infos"]["memristive_test"]["history"]
 
-    def train_test_epochs_and_accuracy(self, inference_idx):
+    def training_testing_curves(self, metric, inference_idx):
+        """Data from test callbacks during training."""
         history = self.train_test_histories()[inference_idx]
-        return np.array(history["epoch_no"]), np.array(history["accuracy"])
+
+        if metric == "error":
+            y = history["accuracy"]
+        else:
+            y = history[metric]
+
+        x = np.array(history["epoch_no"])
+
+        y = np.array(y)
+        if metric == "error":
+            y = 1 - y
+
+        return x, y
 
     def test_metric(self, metric_name: str) -> list[np.ndarray]:
         metrics = []
