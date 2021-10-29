@@ -33,7 +33,7 @@ def get_iterators():
         ideal.get_mnist_iterator(),
         *iv_nonlinearity.get_nonideal_iterators(),
         *iv_nonlinearity_and_stuck.get_nonideal_iterators(),
-        *d2d_asymmetry.get_nonideal_iterators(),
+        *d2d_asymmetry.get_nonideal_iterators()[:2],
     ]
     inferences = [
         Inference(**utils.get_inference_params(), **inference_setup)
