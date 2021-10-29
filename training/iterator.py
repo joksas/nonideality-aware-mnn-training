@@ -214,9 +214,7 @@ class Inference(Nonideal, Iterable):
 
 
 class Iterator:
-    def __init__(
-        self, dataset: str, training: Training, inferences: list[Inference]
-    ) -> None:
+    def __init__(self, dataset: str, training: Training, inferences: list[Inference]) -> None:
         self.dataset = dataset
         self.training = training
         self.inferences = inferences
@@ -227,8 +225,7 @@ class Iterator:
         self.__training_data = None
         self.__validation_data = None
         self.__testing_data = None
-        self.__train_split_boundary = int(
-            100 * (1 - self.training.validation_split))
+        self.__train_split_boundary = int(100 * (1 - self.training.validation_split))
 
     def data(self, subset: str) -> tf.data.Dataset:
         if subset == "training":
@@ -299,9 +296,7 @@ class Iterator:
         return os.path.join(self.network_dir(), "info.pkl")
 
     def inference_nonideality_dir(self) -> str:
-        return os.path.join(
-            self.network_dir(), self.inferences[self.inference_idx].label()
-        )
+        return os.path.join(self.network_dir(), self.inferences[self.inference_idx].label())
 
     def inference_repeat_dir(self) -> str:
         return os.path.join(
@@ -333,8 +328,7 @@ class Iterator:
         for inference_idx in range(len(self.inferences)):
             self.inference_idx = inference_idx
             inference = self.inferences[self.inference_idx]
-            average_power = np.zeros(
-                (self.training.num_repeats, inference.num_repeats))
+            average_power = np.zeros((self.training.num_repeats, inference.num_repeats))
 
             for i in range(self.training.num_repeats):
                 for j in range(inference.num_repeats):
@@ -369,20 +363,14 @@ class Iterator:
     def train_epochs_and_loss(self) -> tuple[np.ndarray, np.ndarray]:
         return self.train_epochs_and_metric("loss")
 
-    def validation_epochs_and_metric(
-        self, metric: str
-    ) -> tuple[np.ndarray, np.ndarray]:
+    def validation_epochs_and_metric(self, metric: str) -> tuple[np.ndarray, np.ndarray]:
         try:
             metric = self.info()["history"]["val_" + metric]
             num_epochs = len(metric)
             epochs = np.arange(1, num_epochs + 1)
         except KeyError:
-            epochs = self.info()["callback_infos"]["memristive_checkpoint"]["history"][
-                "epoch_no"
-            ]
-            metric = self.info()["callback_infos"]["memristive_checkpoint"]["history"][
-                metric
-            ]
+            epochs = self.info()["callback_infos"]["memristive_checkpoint"]["history"]["epoch_no"]
+            metric = self.info()["callback_infos"]["memristive_checkpoint"]["history"][metric]
         epochs = np.array(epochs)
         metric = np.array(metric)
         return epochs, metric
@@ -401,8 +389,7 @@ class Iterator:
         for inference_idx in range(len(self.inferences)):
             self.inference_idx = inference_idx
             inference = self.inferences[self.inference_idx]
-            metric = np.zeros(
-                (self.training.num_repeats, inference.num_repeats))
+            metric = np.zeros((self.training.num_repeats, inference.num_repeats))
 
             for i in range(self.training.num_repeats):
                 for j in range(inference.num_repeats):

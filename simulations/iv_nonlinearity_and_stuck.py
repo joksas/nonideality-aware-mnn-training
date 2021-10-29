@@ -7,12 +7,8 @@ DATASET = "mnist"
 
 
 def custom_iterator(training_setup, inference_setups):
-    inferences = [
-        Inference(**utils.get_inference_params(), **setup) for setup in inference_setups
-    ]
-    training = Training(
-        **utils.get_training_params(), is_regularized=False, **training_setup
-    )
+    inferences = [Inference(**utils.get_inference_params(), **setup) for setup in inference_setups]
+    training = Training(**utils.get_training_params(), is_regularized=False, **training_setup)
 
     return Iterator(DATASET, training, inferences)
 

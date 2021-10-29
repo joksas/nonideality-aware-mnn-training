@@ -1,9 +1,7 @@
 import tensorflow as tf
 
 
-def I_to_y(
-    I: tf.Tensor, k_V: float, max_weight: float, G_max: float, G_min: float
-) -> tf.Tensor:
+def I_to_y(I: tf.Tensor, k_V: float, max_weight: float, G_max: float, G_min: float) -> tf.Tensor:
     """Convert output currents of a dot-product engine onto synaptic layer inputs.
 
     Args:

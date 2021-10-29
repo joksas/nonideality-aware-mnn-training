@@ -57,9 +57,7 @@ class TestCallback(MemristiveCallback):
         for inference_idx, inference in enumerate(self.iterator.inferences):
             start_time = time.time()
             self.iterator.inference_idx = inference_idx
-            callback_model = architecture.get_model(
-                self.iterator, custom_weights=model_weights
-            )
+            callback_model = architecture.get_model(self.iterator, custom_weights=model_weights)
             accuracy = []
             loss = []
             data = self.iterator.data("testing")

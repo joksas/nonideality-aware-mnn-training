@@ -19,8 +19,7 @@ def get_model(iterator, custom_weights=None, custom_weights_path=None):
         model = models.Sequential()
 
         # Convolutional layers
-        model.add(layers.Conv2D(
-            32, (3, 3), activation="relu", input_shape=(32, 32, 3)))
+        model.add(layers.Conv2D(32, (3, 3), activation="relu", input_shape=(32, 32, 3)))
         model.add(layers.MaxPooling2D((2, 2)))
         model.add(layers.Conv2D(64, (3, 3), activation="relu"))
         model.add(layers.MaxPooling2D((2, 2)))
@@ -80,8 +79,7 @@ class MemristorDense(layers.Layer):
         if self.iterator.training.is_aware():
             self.w_pos = self.add_weight(
                 shape=(self.n_in, self.n_out),
-                initializer=tf.keras.initializers.RandomNormal(
-                    mean=0.5, stddev=stdv),
+                initializer=tf.keras.initializers.RandomNormal(mean=0.5, stddev=stdv),
                 name="weights_pos",
                 trainable=True,
                 **kwargs,
@@ -89,8 +87,7 @@ class MemristorDense(layers.Layer):
 
             self.w_neg = self.add_weight(
                 shape=(self.n_in, self.n_out),
-                initializer=tf.keras.initializers.RandomNormal(
-                    mean=0.5, stddev=stdv),
+                initializer=tf.keras.initializers.RandomNormal(mean=0.5, stddev=stdv),
                 name="weights_neg",
                 trainable=True,
                 **kwargs,
@@ -114,8 +111,7 @@ class MemristorDense(layers.Layer):
         else:
             self.w = self.add_weight(
                 shape=(self.n_in, self.n_out),
-                initializer=tf.keras.initializers.RandomNormal(
-                    mean=0.0, stddev=stdv),
+                initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=stdv),
                 name="weights",
                 trainable=True,
                 **kwargs,
@@ -214,8 +210,7 @@ class MemristorDense(layers.Layer):
             n_avg = tf.constant(current_stage.iv_nonlinearity.n_avg)
             n_std = tf.constant(current_stage.iv_nonlinearity.n_std)
             # Computing currents
-            I, I_ind = crossbar.nonlinear_IV.compute_I_all(
-                V, G, V_ref, n_avg, n_std=n_std)
+            I, I_ind = crossbar.nonlinear_IV.compute_I_all(V, G, V_ref, n_avg, n_std=n_std)
         else:
             # Ideal case for computing output currents.
             if self.iterator.is_training:
@@ -232,8 +227,7 @@ class MemristorDense(layers.Layer):
         # Converting to outputs.
         y_disturbed = crossbar.map.I_to_y(I, k_V, max_weight, G_max, G_min)
 
-        tf.debugging.assert_all_finite(
-            y_disturbed, "nan in outputs", name=None)
+        tf.debugging.assert_all_finite(y_disturbed, "nan in outputs", name=None)
 
         return y_disturbed
 

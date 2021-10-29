@@ -18,9 +18,7 @@ INFERENCE_SETUPS = [
 
 
 def custom_iterator(training_setup, inference_setups, is_regularized):
-    inferences = [
-        Inference(**utils.get_inference_params(), **setup) for setup in inference_setups
-    ]
+    inferences = [Inference(**utils.get_inference_params(), **setup) for setup in inference_setups]
     training = Training(
         **utils.get_training_params(), is_regularized=is_regularized, **training_setup
     )

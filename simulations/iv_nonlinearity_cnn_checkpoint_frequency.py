@@ -7,9 +7,7 @@ DATASET = "cifar10"
 
 
 def custom_iterator(training_setup, inference_setups, memristive_validation_freq=None):
-    inferences = [
-        Inference(**utils.get_inference_params(), **setup) for setup in inference_setups
-    ]
+    inferences = [Inference(**utils.get_inference_params(), **setup) for setup in inference_setups]
     training = Training(
         **utils.get_training_params(),
         is_regularized=False,
@@ -21,11 +19,7 @@ def custom_iterator(training_setup, inference_setups, memristive_validation_freq
 
 
 def get_nonideal_iterators():
-    return [
-        custom_iterator(
-            devices.high_R(), [devices.high_R()], memristive_validation_freq=5
-        )
-    ]
+    return [custom_iterator(devices.high_R(), [devices.high_R()], memristive_validation_freq=5)]
 
 
 def get_iterators():

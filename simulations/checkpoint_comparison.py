@@ -7,9 +7,7 @@ DATASET = "mnist"
 
 
 def custom_iterator(training_setup, inference_setups, force_regular):
-    inferences = [
-        Inference(**utils.get_inference_params(), **setup) for setup in inference_setups
-    ]
+    inferences = [Inference(**utils.get_inference_params(), **setup) for setup in inference_setups]
     training = Training(
         **utils.get_training_params(),
         is_regularized=False,
@@ -22,12 +20,8 @@ def custom_iterator(training_setup, inference_setups, force_regular):
 
 def get_nonideal_iterators():
     return [
-        custom_iterator(
-            devices.symmetric_high_d2d(), [devices.symmetric_high_d2d()], True
-        ),
-        custom_iterator(
-            devices.symmetric_high_d2d(), [devices.symmetric_high_d2d()], False
-        ),
+        custom_iterator(devices.symmetric_high_d2d(), [devices.symmetric_high_d2d()], True),
+        custom_iterator(devices.symmetric_high_d2d(), [devices.symmetric_high_d2d()], False),
     ]
 
 
