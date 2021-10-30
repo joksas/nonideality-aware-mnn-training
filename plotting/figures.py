@@ -14,13 +14,7 @@ from . import utils
 
 
 def iv_nonlinearity_training_curves(metric="error", training_idx=0):
-    fig_shape = (2, 3)
-    fig, axes = plt.subplots(
-        *fig_shape,
-        sharex=True,
-        sharey=True,
-        figsize=(utils.Config.TWO_COLUMNS_WIDTH, utils.Config.TWO_COLUMNS_WIDTH / 2),
-    )
+    fig, axes = utils.fig_init(2, 0.55, fig_shape=(2, 3), sharex=True, sharey=True)
 
     iterators = simulations.iv_nonlinearity.get_iterators()
     for i in range(len(iterators)):
@@ -30,17 +24,22 @@ def iv_nonlinearity_training_curves(metric="error", training_idx=0):
     inference_idxs = [0, 0, 0, 1, 0, 0]
 
     for idx, (iterator, inference_idx) in enumerate(zip(iterators, inference_idxs)):
-        i, j = np.unravel_index(idx, fig_shape)
+        i, j = np.unravel_index(idx, axes.shape)
         axis = axes[i, j]
         utils.plot_training_curves(
             fig, axis, iterator, subfigure_idx=idx, metric=metric, inference_idx=inference_idx
         )
-        if i + 1 == fig_shape[0]:
-            axis.set_xlabel(utils.axis_label("epoch"), fontsize=utils.Config.AXIS_LABEL_FONT_SIZE)
+        if i + 1 == axes.shape[0]:
+            axis.set_xlabel(utils.axis_label("epoch"))
         if j == 0:
-            axis.set_ylabel(utils.axis_label(metric), fontsize=utils.Config.AXIS_LABEL_FONT_SIZE)
+            axis.set_ylabel(utils.axis_label(metric))
 
-    utils.add_legend(fig, ["Training", "Validation", "Test (nonideal)"], ncol=fig_shape[1])
+    utils.add_legend(
+        fig,
+        ["Training", "Validation", "Test (nonideal)"],
+        ncol=axes.shape[1],
+        bbox_to_anchor=(0.5, 1.03),
+    )
 
     utils.save_fig(fig, f"iv-nonlinearity-training-{metric}")
 

@@ -8,7 +8,7 @@ import matplotlib.transforms as mtransforms
 import numpy as np
 
 
-def _cm_to_in(length) -> float:
+def _cm_to_in(length: float) -> float:
     return length / 2.54
 
 
@@ -20,6 +20,10 @@ class Config:
     LINEWIDTH: float = 0.75
     BOXPLOT_LINEWIDTH: float = 0.75
     # Advanced Science
+    COL_WIDTHS: dict[int, float] = {
+        1: _cm_to_in(8.5),
+        2: _cm_to_in(17.8),
+    }
     ONE_COLUMN_WIDTH: float = _cm_to_in(8.5)
     TWO_COLUMNS_WIDTH: float = _cm_to_in(17.8)
 
@@ -57,6 +61,39 @@ def color_dict() -> dict[str, str]:
     ]
     colors = dict(zip(color_names, color_list()))
     return colors
+
+
+def fig_init(
+    width_num_cols: int,
+    height_frac: float,
+    fig_shape: tuple[int, int] = (1, 1),
+    sharex=False,
+    sharey=False,
+):
+    width = Config.COL_WIDTHS[width_num_cols]
+    height = height_frac * width
+
+    fig, axes = plt.subplots(
+        *fig_shape,
+        sharex=sharex,
+        sharey=sharey,
+        figsize=(width, height),
+    )
+    fig.tight_layout()
+
+    if len(axes) == 1:
+        temp_axes = np.array([axes])
+    else:
+        temp_axes = axes
+
+    for idx, axis in enumerate(temp_axes.flatten()):
+        axis.xaxis.label.set_size(Config.AXIS_LABEL_FONT_SIZE)
+        axis.yaxis.label.set_size(Config.AXIS_LABEL_FONT_SIZE)
+        axis.tick_params(axis="both", which="both", labelsize=Config.TICKS_FONT_SIZE)
+        if len(axes) > 1:
+            add_subfigure_label(fig, axis, idx, Config.SUBPLOT_LABEL_SIZE)
+
+    return fig, axes
 
 
 def add_subfigure_label(fig, axis, letter_idx, fontsize=Config.SUBPLOT_LABEL_SIZE):
@@ -99,11 +136,7 @@ def plot_training_curves(fig, axis, iterator, subfigure_idx=None, metric="error"
     )
 
     axis.set_yscale("log")
-    axis.tick_params(axis="both", which="both", labelsize=Config.TICKS_FONT_SIZE)
     axis.set_xlim([0, len(x_training)])
-
-    if subfigure_idx is not None:
-        add_subfigure_label(fig, axis, subfigure_idx, Config.SUBPLOT_LABEL_SIZE)
 
 
 def plot_curve(axis, x, y, color, metric="error"):
