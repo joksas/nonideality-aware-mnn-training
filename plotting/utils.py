@@ -59,7 +59,7 @@ def color_dict() -> dict[str, str]:
     return colors
 
 
-def add_subfigure_label(fig, axis, letter_idx, fontsize):
+def add_subfigure_label(fig, axis, letter_idx, fontsize=Config.SUBPLOT_LABEL_SIZE):
     trans = mtransforms.ScaledTranslation(-16 / 72, 2 / 72, fig.dpi_scale_trans)
     axis.text(
         0.0,
