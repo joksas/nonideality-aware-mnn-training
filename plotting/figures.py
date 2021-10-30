@@ -51,53 +51,37 @@ def iv_nonlinearity_training_curves(metric="error", training_idx=0):
     utils.save_fig(fig, f"iv-nonlinearity-training-{metric}")
 
 
-def iv_nonlinearity_boxplots():
-    fig, axes = plt.subplots(figsize=(ONE_COLUMN_WIDTH, 0.8 * ONE_COLUMN_WIDTH))
+def iv_nonlinearity_test(metric="error"):
+    fig, axes = plt.subplots(
+        figsize=(utils.Config.ONE_COLUMN_WIDTH, 0.8 * utils.Config.ONE_COLUMN_WIDTH)
+    )
     fig.tight_layout()
     iterators = simulations.iv_nonlinearity.get_iterators()
+    # Same training, different inference.
     iterators.insert(3, iterators[0])
-    indices = [0, 0, 0, 1, 0, 0]
-    errors = [
-        100 * iterator.test_error()[idx].flatten() for idx, iterator in zip(indices, iterators)
-    ]
-    powers = [iterator.avg_power()[idx].flatten() for idx, iterator in zip(indices, iterators)]
+    inference_idxs = [0, 0, 0, 1, 0, 0]
+
     colors = [utils.color_dict()[key] for key in ["vermilion", "blue", "bluish-green"]]
-    labels = ["Standard", "Nonideality-aware", "Nonideality-aware (regularised)"]
 
     boxplots = []
 
-    for idx, (error, power) in enumerate(zip(errors, powers)):
-        x_pos = np.mean(power)
-        w = 0.2
+    for idx, (iterator, inference_idx) in enumerate(zip(iterators, inference_idxs)):
+        avg_power = iterator.test_metric("avg_power", inference_idx=inference_idx)
+        error = iterator.test_metric("error", inference_idx=inference_idx)
         color = colors[idx % 3]
-        boxplot = plt.boxplot(
-            error,
-            positions=[x_pos],
-            widths=[10 ** (np.log10(x_pos) + w / 2.0) - 10 ** (np.log10(x_pos) - w / 2.0)],
-            sym=color,
-        )
-        plt.setp(boxplot["fliers"], marker="x", markersize=1, markeredgewidth=0.5)
-        for element in ["boxes", "whiskers", "fliers", "means", "medians", "caps"]:
-            plt.setp(boxplot[element], color=color, linewidth=0.5)
-
+        boxplot = utils.plot_boxplot(axes, error, color, metric=metric, x=avg_power, is_x_log=True)
         boxplots.append(boxplot)
 
-    leg = axes.legend(
-        [boxplot["boxes"][0] for boxplot in boxplots[:3]],
-        labels,
-        fontsize=LEGEND_FONT_SIZE,
-        frameon=False,
+    utils.add_boxplot_legend(
+        axes, boxplots, ["Standard", "Nonideality-aware", "Nonideality-aware (regularised)"]
     )
-    for line in leg.get_lines():
-        line.set_linewidth(1)
 
-    plt.tick_params(axis="both", which="both", labelsize=TICKS_FONT_SIZE)
-    plt.xlabel("Ohmic power consumption (W)", fontsize=AXIS_LABEL_FONT_SIZE)
-    plt.ylabel("Test error (%)", fontsize=AXIS_LABEL_FONT_SIZE)
-    axes.set_xscale("log")
-    axes.set_yscale("log")
+    plt.xlabel(utils.axis_label("power-consumption"), fontsize=utils.Config.AXIS_LABEL_FONT_SIZE)
+    plt.ylabel(
+        utils.axis_label("error", prepend="test"), fontsize=utils.Config.AXIS_LABEL_FONT_SIZE
+    )
 
-    plt.savefig("plotting/iv-nonlinearity-boxplots.pdf", bbox_inches="tight", transparent=True)
+    utils.save_fig(fig, f"iv-nonlinearity-test-{metric}")
 
 
 def iv_nonlinearity_cnn_results(metric="loss", training_idx=0):

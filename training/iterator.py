@@ -323,34 +323,6 @@ class Iterator:
         else:
             return self.inferences[self.inference_idx]
 
-    def avg_power(self) -> list[np.ndarray]:
-        average_powers = []
-        for inference_idx in range(len(self.inferences)):
-            self.inference_idx = inference_idx
-            inference = self.inferences[self.inference_idx]
-            average_power = np.zeros((self.training.num_repeats, inference.num_repeats))
-
-            for i in range(self.training.num_repeats):
-                for j in range(inference.num_repeats):
-                    filename = self.power_path()
-                    csv = np.genfromtxt(filename)
-                    power = np.mean(csv)
-                    # Two synaptic layers.
-                    power = 2 * power
-                    average_power[i, j] = power
-
-                    inference.repeat_idx += 1
-
-                inference.repeat_idx = 0
-                self.training.repeat_idx += 1
-
-            self.training.repeat_idx = 0
-            average_powers.append(average_power)
-
-        self.inference_idx = None
-
-        return average_powers
-
     def training_curves(self, metric: str) -> tuple[np.ndarray, np.ndarray]:
         if metric == "error":
             y = self.info()["history"]["accuracy"]
@@ -389,12 +361,9 @@ class Iterator:
 
         return x, y
 
-    def train_test_histories(self) -> dict[str, Any]:
-        return self.info()["callback_infos"]["memristive_test"]["history"]
-
     def training_testing_curves(self, metric, inference_idx):
         """Data from test callbacks during training."""
-        history = self.train_test_histories()[inference_idx]
+        history = self.info()["callback_infos"]["memristive_test"]["history"]
 
         if metric == "error":
             y = history["accuracy"]
@@ -409,42 +378,46 @@ class Iterator:
 
         return x, y
 
-    def test_metric(self, metric_name: str) -> list[np.ndarray]:
-        metrics = []
-        for inference_idx in range(len(self.inferences)):
-            self.inference_idx = inference_idx
-            inference = self.inferences[self.inference_idx]
-            metric = np.zeros((self.training.num_repeats, inference.num_repeats))
+    def _test_metric_existing(self, metric="accuracy", inference_idx=0) -> np.ndarray:
+        """Return test metric for which we already have data."""
+        self.inference_idx = inference_idx
+        inference = self.inferences[self.inference_idx]
+        y = np.zeros((self.training.num_repeats, inference.num_repeats))
+        for i in range(self.training.num_repeats):
+            for j in range(inference.num_repeats):
+                if metric == "accuracy":
+                    filename = self.accuracy_path()
+                elif metric == "loss":
+                    filename = self.loss_path()
+                elif metric == "avg_power":
+                    filename = self.power_path()
+                val = np.genfromtxt(filename)
+                if metric == "avg_power":
+                    val = np.mean(val)
+                    # Two synaptic layers.
+                    val = 2 * val
 
-            for i in range(self.training.num_repeats):
-                for j in range(inference.num_repeats):
-                    if metric_name == "accuracy":
-                        filename = self.accuracy_path()
-                    elif metric_name == "loss":
-                        filename = self.loss_path()
-                    csv = np.genfromtxt(filename)
-                    metric[i, j] = csv
+                y[i, j] = val
 
-                    inference.repeat_idx += 1
+                inference.repeat_idx += 1
 
-                inference.repeat_idx = 0
-                self.training.repeat_idx += 1
+            inference.repeat_idx = 0
+            self.training.repeat_idx += 1
 
-            self.training.repeat_idx = 0
-            metrics.append(metric)
-
+        self.training.repeat_idx = 0
         self.inference_idx = None
+        return y
 
-        return metrics
+    def test_metric(self, metric: str, inference_idx: int = 0) -> np.ndarray:
+        if metric in "error":
+            values = self._test_metric_existing(metric="accuracy", inference_idx=inference_idx)
+        else:
+            values = self._test_metric_existing(metric=metric, inference_idx=inference_idx)
 
-    def test_accuracy(self) -> list[np.ndarray]:
-        return self.test_metric("accuracy")
+        if metric == "error":
+            values = 1 - values
 
-    def test_loss(self) -> list[np.ndarray]:
-        return self.test_metric("loss")
-
-    def test_error(self) -> list[np.ndarray]:
-        return [1 - accuracy for accuracy in self.test_accuracy()]
+        return values
 
     def train(self, use_test_callback: bool = False) -> None:
         self.is_training = True

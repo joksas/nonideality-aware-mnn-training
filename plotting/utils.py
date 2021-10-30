@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 from typing import Union
 
+import matplotlib.pyplot as plt
 import matplotlib.transforms as mtransforms
 import numpy as np
 
@@ -16,6 +17,7 @@ class Config:
     TICKS_FONT_SIZE: float = 8
     SUBPLOT_LABEL_SIZE: float = 12
     LINEWIDTH: float = 0.75
+    BOXPLOT_LINEWIDTH: float = 0.75
     # Advanced Science
     ONE_COLUMN_WIDTH: float = _cm_to_in(8.5)
     TWO_COLUMNS_WIDTH: float = _cm_to_in(17.8)
@@ -93,7 +95,7 @@ def plot_training_curves(fig, axis, iterator, subfigure_idx=None, metric="error"
         add_subfigure_label(fig, axis, subfigure_idx, Config.SUBPLOT_LABEL_SIZE)
 
 
-def plot_curve(axis, x, y, color, metric=None):
+def plot_curve(axis, x, y, color, metric="error"):
     if metric in ["accuracy", "error"]:
         y = 100 * y
     if len(y.shape) > 1:
@@ -104,6 +106,53 @@ def plot_curve(axis, x, y, color, metric=None):
         axis.plot(x, y_median, color=color, linewidth=Config.LINEWIDTH / 2)
     else:
         axis.plot(x, y, color=color, linewidth=Config.LINEWIDTH)
+
+
+def plot_boxplot(axis, y, color, x=None, metric="error", is_x_log=False):
+    y = y.flatten()
+    if metric in ["accuracy", "error"]:
+        y = 100 * y
+
+    linear_width = 0.2
+    positions = None
+    if x is not None:
+        x = x.flatten()
+        positions = [np.mean(x)]
+    widths = None
+    if is_x_log and positions is not None:
+        widths = [
+            10 ** (np.log10(positions[0]) + linear_width / 2.0)
+            - 10 ** (np.log10(positions[0]) - linear_width / 2.0)
+        ]
+    boxplot = axis.boxplot(
+        y,
+        positions=positions,
+        widths=widths,
+        sym=color,
+    )
+    plt.setp(boxplot["fliers"], marker="x", markersize=1, markeredgewidth=0.5)
+    for element in ["boxes", "whiskers", "fliers", "means", "medians", "caps"]:
+        plt.setp(boxplot[element], color=color, linewidth=Config.BOXPLOT_LINEWIDTH)
+
+    if is_x_log:
+        axis.set_xscale("log")
+    axis.set_yscale("log")
+
+    axis.tick_params(axis="both", which="both", labelsize=Config.TICKS_FONT_SIZE)
+
+    return boxplot
+
+
+def add_boxplot_legend(axis, boxplots, labels, linewdith=1.0, loc="upper right"):
+    leg = axis.legend(
+        [boxplot["boxes"][0] for boxplot in boxplots],
+        labels,
+        fontsize=Config.LEGEND_FONT_SIZE,
+        frameon=False,
+        loc=loc,
+    )
+    for line in leg.get_lines():
+        line.set_linewidth(linewdith)
 
 
 def add_legend(
@@ -130,6 +179,8 @@ def axis_label(var_name: str, prepend: str = None) -> str:
         label = "epoch (#)"
     elif var_name == "training":
         label = "training"
+    elif var_name == "power-consumption":
+        label = "ohmic power consumption (W)"
     else:
         raise ValueError(f'Unrecognised variable name "{var_name}".')
 
