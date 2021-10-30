@@ -363,7 +363,7 @@ class Iterator:
 
     def training_testing_curves(self, metric, inference_idx):
         """Data from test callbacks during training."""
-        history = self.info()["callback_infos"]["memristive_test"]["history"]
+        history = self.info()["callback_infos"]["memristive_test"]["history"][inference_idx]
 
         if metric == "error":
             y = history["accuracy"]

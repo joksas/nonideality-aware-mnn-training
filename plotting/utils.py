@@ -82,7 +82,17 @@ def plot_training_curves(fig, axis, iterator, subfigure_idx=None, metric="error"
     plot_curve(axis, x_validation, y_validation, colors["sky-blue"], metric=metric)
 
     # Testing (during training) curve.
-    x_training_testing, y_training_testing = iterator.training_testing_curves(metric, inference_idx)
+
+    # Network might have been trained with a different number of callbacks.
+    nonideality_label = iterator.inferences[inference_idx].nonideality_label()
+    for idx, history in enumerate(iterator.info()["callback_infos"]["memristive_test"]["history"]):
+        if history["nonideality_label"] == nonideality_label:
+            true_inference_idx = idx
+            break
+
+    x_training_testing, y_training_testing = iterator.training_testing_curves(
+        metric, true_inference_idx
+    )
     plot_curve(
         axis, x_training_testing, y_training_testing, colors["reddish-purple"], metric=metric
     )
@@ -108,7 +118,7 @@ def plot_curve(axis, x, y, color, metric="error"):
         axis.plot(x, y, color=color, linewidth=Config.LINEWIDTH)
 
 
-def plot_boxplot(axis, y, color, x=None, metric="error", is_x_log=False):
+def plot_boxplot(axis, y, color, x=None, metric="error", is_x_log=False, linewidth_scaling=1.0):
     y = y.flatten()
     if metric in ["accuracy", "error"]:
         y = 100 * y
@@ -116,7 +126,10 @@ def plot_boxplot(axis, y, color, x=None, metric="error", is_x_log=False):
     linear_width = 0.2
     positions = None
     if x is not None:
-        x = x.flatten()
+        try:
+            x = x.flatten()
+        except AttributeError:
+            pass
         positions = [np.mean(x)]
     widths = None
     if is_x_log and positions is not None:
@@ -132,7 +145,9 @@ def plot_boxplot(axis, y, color, x=None, metric="error", is_x_log=False):
     )
     plt.setp(boxplot["fliers"], marker="x", markersize=1, markeredgewidth=0.5)
     for element in ["boxes", "whiskers", "fliers", "means", "medians", "caps"]:
-        plt.setp(boxplot[element], color=color, linewidth=Config.BOXPLOT_LINEWIDTH)
+        plt.setp(
+            boxplot[element], color=color, linewidth=linewidth_scaling * Config.BOXPLOT_LINEWIDTH
+        )
 
     if is_x_log:
         axis.set_xscale("log")
@@ -181,10 +196,20 @@ def axis_label(var_name: str, prepend: str = None) -> str:
         label = "training"
     elif var_name == "power-consumption":
         label = "ohmic power consumption (W)"
+    elif var_name == "d2d-uniformity":
+        label = "uniformity of D2D variability"
+    elif var_name == "checkpoint":
+        label = "checkpoint"
     else:
         raise ValueError(f'Unrecognised variable name "{var_name}".')
 
     if prepend is not None:
         label = f"{prepend} {label}"
 
-    return label.capitalize()
+    first_letter = label[0].upper()
+    if len(label) > 1:
+        label = first_letter + label[1:]
+    else:
+        label = first_letter
+
+    return label
