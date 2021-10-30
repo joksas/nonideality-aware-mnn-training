@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 from typing import Union
 
+import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.transforms as mtransforms
 import numpy as np
@@ -213,3 +214,87 @@ def axis_label(var_name: str, prepend: str = None) -> str:
         label = first_letter
 
     return label
+
+
+def annotate_heatmap(
+    im: matplotlib.image,
+    data: np.array = None,
+    valfmt: Union[str, matplotlib.ticker.StrMethodFormatter] = "{x:.2f}",
+    textcolors: tuple[str, str] = ("black", "white"),
+    threshold: float = None,
+    **textkw,
+):
+    """Annotate a heatmap. Adapted from
+    <https://matplotlib.org/stable/gallery/images_contours_and_fields/image_annotated_heatmap.html>.
+
+    Args:
+        im: The image to be labelled.
+        data: Data used to annotate. If `None`, the image's data is used.
+        valfmt: The format of the annotations inside the heatmap. This should
+            either use the string format method, e.g. `{x:.2f}`, or be a
+            `matplotlib.ticker.Formatter`.
+        textcolors: A pair of colors. The first is used for values below a
+            threshold, the second for those above.
+        threshold: Value in data units according to which the colors from
+            textcolors are applied. If `None` (the default) uses the middle of
+            the colormap as separation.
+        **kwargs: All other arguments are forwarded to each call to `text` used to create the text labels.
+    """
+    if not isinstance(data, (list, np.ndarray)):
+        data = im.get_array()
+
+    # Normalize the threshold to the images color range.
+    if threshold is not None:
+        threshold = im.norm(threshold)
+    else:
+        threshold = im.norm(data.max()) / 2.0
+
+    # Set default alignment to center, but allow it to be overwritten by textkw.
+    kw = dict(horizontalalignment="center", verticalalignment="center")
+    kw.update(textkw)
+
+    # Get the formatter in case a string is supplied
+    if isinstance(valfmt, str):
+        valfmt = matplotlib.ticker.StrMethodFormatter(valfmt)
+
+    # Loop over the data and create a `Text` for each "pixel".
+    # Change the text's color depending on the data.
+    texts = []
+    for i in range(data.shape[0]):
+        for j in range(data.shape[1]):
+            kw.update(color=textcolors[int(im.norm(data[i, j]) > threshold)])
+            text = im.axes.text(j, i, valfmt(data[i, j], None), **kw)
+            texts.append(text)
+
+    return texts
+
+
+def add_heatmap(fig, axis, data, x_ticks=None, y_ticks=None, metric="error"):
+    if metric in ["accuracy", "error"]:
+        data = 100 * data
+
+    image = axis.imshow(data, norm=matplotlib.colors.LogNorm(), cmap="cividis")
+
+    if x_ticks is not None:
+        axis.set_xticks(np.arange(len(x_ticks)))
+        axis.set_xticklabels(x_ticks)
+        axis.tick_params(top=True, bottom=False, labeltop=True, labelbottom=False)
+        plt.setp(axis.get_xticklabels(), rotation=-45, ha="right", rotation_mode="anchor")
+        axis.xaxis.set_label_position("top")
+    if y_ticks is not None:
+        axis.set_yticks(np.arange(len(y_ticks)))
+        axis.set_yticklabels(y_ticks)
+
+    cbar = fig.colorbar(image, ax=axis)
+    cbar.ax.set_ylabel(
+        axis_label(metric, prepend="median"),
+        rotation=-90,
+        va="bottom",
+        fontsize=Config.AXIS_LABEL_FONT_SIZE,
+    )
+
+    annotate_heatmap(
+        image, valfmt="{x:.1f}", textcolors=("white", "black"), size=Config.TICKS_FONT_SIZE
+    )
+
+    axis.tick_params(axis="both", which="both", labelsize=Config.TICKS_FONT_SIZE)
