@@ -99,10 +99,6 @@ def iv_nonlinearity_cnn_results(metric="error", training_idx=0):
 
     axis.set_xlabel("Training")
 
-    # Common properties.
-    for idx, axis in enumerate(axes):
-        utils.add_subfigure_label(fig, axis, idx)
-
     utils.add_legend(
         fig,
         ["Training", "Validation", "Test (nonideal)"],
@@ -113,17 +109,13 @@ def iv_nonlinearity_cnn_results(metric="error", training_idx=0):
     utils.save_fig(fig, f"iv-nonlinearity-cnn-results-{metric}")
 
 
-def d2d_conductance_histograms(is_effective=False, include_regularised=False):
+def d2d_uniformity_conductance_histograms(is_effective=False, include_regularised=False):
     num_rows = 2
     if include_regularised:
         num_rows = 3
 
-    fig, axes = plt.subplots(
-        num_rows,
-        1,
-        sharex=True,
-        sharey=True,
-        figsize=(utils.Config.ONE_COLUMN_WIDTH, num_rows * 0.75 * utils.Config.ONE_COLUMN_WIDTH),
+    fig, axes = utils.fig_init(
+        1, num_rows * 0.75, fig_shape=(num_rows, 1), sharex=True, sharey=True
     )
 
     iterators = simulations.d2d_asymmetry.get_iterators()
@@ -131,78 +123,68 @@ def d2d_conductance_histograms(is_effective=False, include_regularised=False):
         iterators = iterators[:2]
     colors = [utils.color_dict()[key] for key in ["vermilion", "blue", "bluish-green"]]
 
-    for idx, (axis, iterator, color) in enumerate(zip(axes, iterators, colors)):
+    for axis, iterator, color in zip(axes, iterators, colors):
         iterator.is_training = True
         model = architecture.get_model(iterator, custom_weights_path=iterator.weights_path())
         weights = model.layers[1].combined_weights()
         G, _ = crossbar.map.w_params_to_G(weights, iterator.training.G_min, iterator.training.G_max)
         G = 1000 * G
         if is_effective:
-            axis.hist(
-                G.numpy()[:, ::2].flatten() - G.numpy()[:, 1::2].flatten(),
-                bins=100,
-                color=color,
-            )
+            values = G[:, ::2] - G[:, 1::2]
         else:
-            axis.hist(G.numpy().flatten(), bins=100, color=color)
-        utils.add_subfigure_label(fig, axis, idx)
-        axis.tick_params(axis="both", which="both")
-        axis.set_ylabel("Count (#)")
+            values = G
+        utils.add_histogram(axis, values, color=color)
+
+        axis.set_ylabel(utils.axis_label("count"))
 
     if is_effective:
-        label = "Effective conductance (mS)"
-        filename = "d2d-G-eff-histograms"
+        label = utils.axis_label("conductance", prepend="effective")
+        filename = "d2d-uniformity-G-eff-histograms"
     else:
-        label = "Conductance (mS)"
-        filename = "d2d-G-histograms"
+        label = utils.axis_label("conductance")
+        filename = "d2d-uniformity-G-histograms"
     if include_regularised:
         filename += "-regularised"
     axes[-1].set_xlabel(label)
 
-    plt.savefig(f"plotting/{filename}.pdf", bbox_inches="tight", transparent=True)
+    utils.save_fig(fig, filename)
 
 
-def d2d_conductance_pos_neg_histograms():
-    fig, axes = plt.subplots(
-        2,
-        1,
-        sharex=True,
-        sharey=True,
-        figsize=(utils.Config.ONE_COLUMN_WIDTH, 1.5 * utils.Config.ONE_COLUMN_WIDTH),
-    )
+def d2d_uniformity_pos_neg_conductance_histograms():
+    fig, axes = utils.fig_init(1, 1.5, fig_shape=(2, 1), sharex=True, sharey=True)
 
     iterators = simulations.d2d_asymmetry.get_iterators()
 
-    for idx, (axis, iterator) in enumerate(zip(axes, iterators)):
+    for axis, iterator in zip(axes, iterators):
         iterator.is_training = True
         model = architecture.get_model(iterator, custom_weights_path=iterator.weights_path())
         weights = model.layers[1].combined_weights()
         G, _ = crossbar.map.w_params_to_G(weights, iterator.training.G_min, iterator.training.G_max)
         G = 1000 * G
-        axis.hist(
-            G.numpy()[:, ::2].flatten(),
-            bins=100,
+        utils.add_histogram(
+            axis,
+            G[:, ::2],
             color=utils.color_dict()["bluish-green"],
             alpha=0.5,
         )
-        axis.hist(
-            G.numpy()[:, 1::2].flatten(),
-            bins=100,
+        utils.add_histogram(
+            axis,
+            G[:, 1::2],
             color=utils.color_dict()["reddish-purple"],
             alpha=0.5,
         )
-        utils.add_subfigure_label(fig, axis, idx)
-        axis.set_ylabel("Count (#)")
+        axis.set_ylabel(utils.axis_label("count"))
 
-    axes[1].set_xlabel("Conductance (mS)")
-    leg = plt.figlegend(
+    axes[1].set_xlabel(utils.axis_label("conductance"))
+
+    utils.add_legend(
+        fig,
         [r"$G_+$", r"$G_-$"],
-        ncol=2,
-        bbox_to_anchor=(0, 0, 0.75, 0.95),
-        frameon=False,
+        ncol=len(axes),
+        bbox_to_anchor=(0.55, 1.0),
     )
 
-    plt.savefig("plotting/d2d-G-pos-neg-histograms.pdf", bbox_inches="tight", transparent=True)
+    utils.save_fig(fig, "d2d-uniformity-G-pos-neg-histograms")
 
 
 def d2d_uniformity_results(metric="error", training_idx=0):
@@ -230,10 +212,6 @@ def d2d_uniformity_results(metric="error", training_idx=0):
     axis.set_xticks([0, 1])
     axis.set_xticklabels(["High", "Low"])
     axis.set_xlabel(utils.axis_label("d2d-uniformity"))
-
-    # Common properties.
-    for idx, axis in enumerate(axes):
-        utils.add_subfigure_label(fig, axis, idx)
 
     utils.add_legend(
         fig,
@@ -272,9 +250,6 @@ def iv_nonlinearity_and_stuck_results(metric="error", training_idx=0):
     axis.set_xticklabels(["Standard", "Nonideality-aware"])
     axis.set_xlabel(utils.axis_label("training"))
 
-    for idx, axis in enumerate(axes):
-        utils.add_subfigure_label(fig, axis, idx)
-
     utils.add_legend(
         fig,
         ["Training", "Validation", "Test (nonideal)"],
@@ -311,9 +286,6 @@ def checkpoint_comparison_boxplots(metric="error", training_idx=0):
     axis.set_xticks([0, 1])
     axis.set_xticklabels(["Standard", "Memristive"])
     axis.set_xlabel(utils.axis_label("checkpoint"))
-
-    for idx, axis in enumerate(axes):
-        utils.add_subfigure_label(fig, axis, idx)
 
     utils.add_legend(
         fig,

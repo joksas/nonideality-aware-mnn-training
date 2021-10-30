@@ -232,6 +232,10 @@ def axis_label(var_name: str, prepend: str = None) -> str:
         label = "uniformity of D2D variability"
     elif var_name == "checkpoint":
         label = "checkpoint"
+    elif var_name == "conductance":
+        label = "conductance (mS)"
+    elif var_name == "count":
+        label = "count (#)"
     else:
         raise ValueError(f'Unrecognised variable name "{var_name}".')
 
@@ -326,3 +330,12 @@ def add_heatmap(fig, axis, data, x_ticks=None, y_ticks=None, metric="error"):
     annotate_heatmap(
         image, valfmt="{x:.1f}", textcolors=("white", "black"), size=Config.TICKS_FONT_SIZE
     )
+
+
+def add_histogram(axis, values: np.ndarray, color: str, bins: int = 100, alpha: float = 1.0):
+    try:  # In case `tf.Tensor`
+        values = values.numpy()
+    except AttributeError:
+        pass
+    values = values.flatten()
+    axis.hist(values, bins=bins, color=color, alpha=alpha)
