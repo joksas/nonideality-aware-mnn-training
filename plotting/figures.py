@@ -45,10 +45,8 @@ def iv_nonlinearity_training_curves(metric="error", training_idx=0):
 
 
 def iv_nonlinearity_test(metric="error"):
-    fig, axes = plt.subplots(
-        figsize=(utils.Config.ONE_COLUMN_WIDTH, 0.8 * utils.Config.ONE_COLUMN_WIDTH)
-    )
-    fig.tight_layout()
+    fig, axes = utils.fig_init(1, 0.8)
+
     iterators = simulations.iv_nonlinearity.get_iterators()
     # Same training, different inference.
     iterators.insert(3, iterators[0])
@@ -69,20 +67,14 @@ def iv_nonlinearity_test(metric="error"):
         axes, boxplots, ["Standard", "Nonideality-aware", "Nonideality-aware (regularised)"]
     )
 
-    plt.xlabel(utils.axis_label("power-consumption"), fontsize=utils.Config.AXIS_LABEL_FONT_SIZE)
-    plt.ylabel(utils.axis_label(metric, prepend="test"), fontsize=utils.Config.AXIS_LABEL_FONT_SIZE)
+    plt.xlabel(utils.axis_label("power-consumption"))
+    plt.ylabel(utils.axis_label(metric, prepend="test"))
 
     utils.save_fig(fig, f"iv-nonlinearity-test-{metric}")
 
 
 def iv_nonlinearity_cnn_results(metric="error", training_idx=0):
-    fig_shape = (1, 3)
-    fig, axes = plt.subplots(
-        *fig_shape,
-        sharey=True,
-        figsize=(utils.Config.TWO_COLUMNS_WIDTH, utils.Config.TWO_COLUMNS_WIDTH / 3),
-    )
-    fig.tight_layout()
+    fig, axes = utils.fig_init(2, 1 / 3, fig_shape=(1, 3), sharey=True)
 
     colors = utils.color_dict()
 
@@ -90,12 +82,12 @@ def iv_nonlinearity_cnn_results(metric="error", training_idx=0):
     for i in range(len(iterators)):
         iterators[i].training.repeat_idx = training_idx
 
-    axes[0].set_ylabel(utils.axis_label(metric), fontsize=utils.Config.AXIS_LABEL_FONT_SIZE)
+    axes[0].set_ylabel(utils.axis_label(metric))
 
     # Error curves.
     for axis, iterator in zip(axes, iterators):
         utils.plot_training_curves(fig, axis, iterator, metric=metric)
-        axis.set_xlabel(utils.axis_label("epoch"), fontsize=utils.Config.AXIS_LABEL_FONT_SIZE)
+        axis.set_xlabel(utils.axis_label("epoch"))
 
     # Box plots.
     axis = axes[2]
@@ -105,7 +97,7 @@ def iv_nonlinearity_cnn_results(metric="error", training_idx=0):
     axis.set_xticks([0, 1])
     axis.set_xticklabels(["Standard", "Nonideality-aware"])
 
-    axis.set_xlabel("Training", fontsize=utils.Config.AXIS_LABEL_FONT_SIZE)
+    axis.set_xlabel("Training")
 
     # Common properties.
     for idx, axis in enumerate(axes):
@@ -114,7 +106,7 @@ def iv_nonlinearity_cnn_results(metric="error", training_idx=0):
     utils.add_legend(
         fig,
         ["Training", "Validation", "Test (nonideal)"],
-        ncol=fig_shape[1],
+        ncol=len(axes),
         bbox_to_anchor=(0.35, 1.05),
     )
 
@@ -154,8 +146,8 @@ def d2d_conductance_histograms(is_effective=False, include_regularised=False):
         else:
             axis.hist(G.numpy().flatten(), bins=100, color=color)
         utils.add_subfigure_label(fig, axis, idx)
-        axis.tick_params(axis="both", which="both", labelsize=utils.Config.TICKS_FONT_SIZE)
-        axis.set_ylabel("Count (#)", fontsize=utils.Config.AXIS_LABEL_FONT_SIZE)
+        axis.tick_params(axis="both", which="both")
+        axis.set_ylabel("Count (#)")
 
     if is_effective:
         label = "Effective conductance (mS)"
@@ -165,7 +157,7 @@ def d2d_conductance_histograms(is_effective=False, include_regularised=False):
         filename = "d2d-G-histograms"
     if include_regularised:
         filename += "-regularised"
-    axes[-1].set_xlabel(label, fontsize=utils.Config.AXIS_LABEL_FONT_SIZE)
+    axes[-1].set_xlabel(label)
 
     plt.savefig(f"plotting/{filename}.pdf", bbox_inches="tight", transparent=True)
 
@@ -200,10 +192,9 @@ def d2d_conductance_pos_neg_histograms():
             alpha=0.5,
         )
         utils.add_subfigure_label(fig, axis, idx)
-        axis.tick_params(axis="both", which="both", labelsize=utils.Config.TICKS_FONT_SIZE)
-        axis.set_ylabel("Count (#)", fontsize=utils.Config.AXIS_LABEL_FONT_SIZE)
+        axis.set_ylabel("Count (#)")
 
-    axes[1].set_xlabel("Conductance (mS)", fontsize=utils.Config.AXIS_LABEL_FONT_SIZE)
+    axes[1].set_xlabel("Conductance (mS)")
     leg = plt.figlegend(
         [r"$G_+$", r"$G_-$"],
         ncol=2,
@@ -215,13 +206,7 @@ def d2d_conductance_pos_neg_histograms():
 
 
 def d2d_uniformity_results(metric="error", training_idx=0):
-    fig_shape = (1, 3)
-    fig, axes = plt.subplots(
-        *fig_shape,
-        sharey=True,
-        figsize=(utils.Config.TWO_COLUMNS_WIDTH, utils.Config.TWO_COLUMNS_WIDTH / 3),
-    )
-    fig.tight_layout()
+    fig, axes = utils.fig_init(2, 1 / 3, fig_shape=(1, 3), sharey=True)
 
     colors = utils.color_dict()
 
@@ -229,12 +214,12 @@ def d2d_uniformity_results(metric="error", training_idx=0):
     for i in range(len(iterators)):
         iterators[i].training.repeat_idx = training_idx
 
-    axes[0].set_ylabel(utils.axis_label(metric), fontsize=utils.Config.AXIS_LABEL_FONT_SIZE)
+    axes[0].set_ylabel(utils.axis_label(metric))
 
     # Error curves.
     for axis, iterator in zip(axes, iterators):
         utils.plot_training_curves(fig, axis, iterator, metric=metric)
-        axis.set_xlabel(utils.axis_label("epoch"), fontsize=utils.Config.AXIS_LABEL_FONT_SIZE)
+        axis.set_xlabel(utils.axis_label("epoch"))
 
     # Box plots.
     axis = axes[2]
@@ -244,7 +229,7 @@ def d2d_uniformity_results(metric="error", training_idx=0):
 
     axis.set_xticks([0, 1])
     axis.set_xticklabels(["High", "Low"])
-    axis.set_xlabel(utils.axis_label("d2d-uniformity"), fontsize=utils.Config.AXIS_LABEL_FONT_SIZE)
+    axis.set_xlabel(utils.axis_label("d2d-uniformity"))
 
     # Common properties.
     for idx, axis in enumerate(axes):
@@ -253,7 +238,7 @@ def d2d_uniformity_results(metric="error", training_idx=0):
     utils.add_legend(
         fig,
         ["Training", "Validation", "Test (nonideal)"],
-        ncol=fig_shape[1],
+        ncol=len(axes),
         bbox_to_anchor=(0.35, 1.05),
     )
 
@@ -261,25 +246,18 @@ def d2d_uniformity_results(metric="error", training_idx=0):
 
 
 def iv_nonlinearity_and_stuck_results(metric="error", training_idx=0):
-    fig_shape = (1, 3)
-
-    fig, axes = plt.subplots(
-        *fig_shape,
-        sharey=True,
-        figsize=(utils.Config.TWO_COLUMNS_WIDTH, utils.Config.TWO_COLUMNS_WIDTH / 3),
-    )
-    fig.tight_layout()
+    fig, axes = utils.fig_init(2, 1 / 3, fig_shape=(1, 3), sharey=True)
 
     iterators = simulations.iv_nonlinearity_and_stuck.get_iterators()
     for i in range(len(iterators)):
         iterators[i].training.repeat_idx = training_idx
 
-    axes[0].set_ylabel(utils.axis_label(metric), fontsize=utils.Config.AXIS_LABEL_FONT_SIZE)
+    axes[0].set_ylabel(utils.axis_label(metric))
 
     # Curves
     for idx, (iterator, axis) in enumerate(zip(iterators, axes)):
         utils.plot_training_curves(fig, axis, iterator, metric=metric)
-        axis.set_xlabel(utils.axis_label("epoch"), fontsize=utils.Config.AXIS_LABEL_FONT_SIZE)
+        axis.set_xlabel(utils.axis_label("epoch"))
 
     # Box plots
     axis = axes[-1]
@@ -292,7 +270,7 @@ def iv_nonlinearity_and_stuck_results(metric="error", training_idx=0):
 
     axis.set_xticks([0, 1])
     axis.set_xticklabels(["Standard", "Nonideality-aware"])
-    axis.set_xlabel(utils.axis_label("training"), fontsize=utils.Config.AXIS_LABEL_FONT_SIZE)
+    axis.set_xlabel(utils.axis_label("training"))
 
     for idx, axis in enumerate(axes):
         utils.add_subfigure_label(fig, axis, idx)
@@ -300,7 +278,7 @@ def iv_nonlinearity_and_stuck_results(metric="error", training_idx=0):
     utils.add_legend(
         fig,
         ["Training", "Validation", "Test (nonideal)"],
-        ncol=fig_shape[1],
+        ncol=len(axes),
         bbox_to_anchor=(0.35, 1.05),
     )
 
@@ -308,25 +286,18 @@ def iv_nonlinearity_and_stuck_results(metric="error", training_idx=0):
 
 
 def checkpoint_comparison_boxplots(metric="error", training_idx=0):
-    fig_shape = (1, 3)
-
-    fig, axes = plt.subplots(
-        *fig_shape,
-        sharey=True,
-        figsize=(utils.Config.TWO_COLUMNS_WIDTH, utils.Config.TWO_COLUMNS_WIDTH / 3),
-    )
-    fig.tight_layout()
+    fig, axes = utils.fig_init(2, 1 / 3, fig_shape=(1, 3), sharey=True)
 
     iterators = simulations.checkpoint_comparison.get_iterators()
     for i in range(len(iterators)):
         iterators[i].training.repeat_idx = training_idx
 
-    axes[0].set_ylabel(utils.axis_label(metric), fontsize=utils.Config.AXIS_LABEL_FONT_SIZE)
+    axes[0].set_ylabel(utils.axis_label(metric))
 
     # Curves
     for idx, (iterator, axis) in enumerate(zip(iterators, axes)):
         utils.plot_training_curves(fig, axis, iterator, metric=metric)
-        axis.set_xlabel(utils.axis_label("epoch"), fontsize=utils.Config.AXIS_LABEL_FONT_SIZE)
+        axis.set_xlabel(utils.axis_label("epoch"))
 
     # Box plots
     axis = axes[-1]
@@ -339,7 +310,7 @@ def checkpoint_comparison_boxplots(metric="error", training_idx=0):
 
     axis.set_xticks([0, 1])
     axis.set_xticklabels(["Standard", "Memristive"])
-    axis.set_xlabel(utils.axis_label("checkpoint"), fontsize=utils.Config.AXIS_LABEL_FONT_SIZE)
+    axis.set_xlabel(utils.axis_label("checkpoint"))
 
     for idx, axis in enumerate(axes):
         utils.add_subfigure_label(fig, axis, idx)
@@ -347,7 +318,7 @@ def checkpoint_comparison_boxplots(metric="error", training_idx=0):
     utils.add_legend(
         fig,
         ["Training", "Validation", "Test (nonideal)"],
-        ncol=fig_shape[1],
+        ncol=len(axes),
         bbox_to_anchor=(0.35, 1.05),
     )
 
@@ -399,15 +370,11 @@ def nonideality_agnosticism_heatmap(metric="error"):
             inference_label = inference_labels[inference.label()]
             df.at[training_label, inference_label] = np.median(y)
 
-    fig, axes = plt.subplots(
-        figsize=(utils.Config.TWO_COLUMNS_WIDTH, 0.5 * utils.Config.TWO_COLUMNS_WIDTH)
-    )
-    fig.tight_layout()
+    fig, axes = utils.fig_init(2, 0.5)
 
     utils.add_heatmap(fig, axes, df, x_ticks=df.columns, y_ticks=df.index, metric=metric)
 
-    axes.set_ylabel("Training", fontsize=utils.Config.AXIS_LABEL_FONT_SIZE)
-
-    axes.set_xlabel("Inference", fontsize=utils.Config.AXIS_LABEL_FONT_SIZE)
+    axes.set_ylabel("Training")
+    axes.set_xlabel("Inference")
 
     utils.save_fig(fig, f"nonideality-agnosticism-{metric}")

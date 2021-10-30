@@ -69,7 +69,7 @@ def fig_init(
     fig_shape: tuple[int, int] = (1, 1),
     sharex=False,
     sharey=False,
-):
+) -> tuple[matplotlib.figure, matplotlib.axes]:
     width = Config.COL_WIDTHS[width_num_cols]
     height = height_frac * width
 
@@ -81,7 +81,7 @@ def fig_init(
     )
     fig.tight_layout()
 
-    if len(axes) == 1:
+    if fig_shape == (1, 1):
         temp_axes = np.array([axes])
     else:
         temp_axes = axes
@@ -90,7 +90,7 @@ def fig_init(
         axis.xaxis.label.set_size(Config.AXIS_LABEL_FONT_SIZE)
         axis.yaxis.label.set_size(Config.AXIS_LABEL_FONT_SIZE)
         axis.tick_params(axis="both", which="both", labelsize=Config.TICKS_FONT_SIZE)
-        if len(axes) > 1:
+        if fig_shape != (1, 1):
             add_subfigure_label(fig, axis, idx, Config.SUBPLOT_LABEL_SIZE)
 
     return fig, axes
@@ -186,8 +186,6 @@ def plot_boxplot(axis, y, color, x=None, metric="error", is_x_log=False, linewid
     if is_x_log:
         axis.set_xscale("log")
     axis.set_yscale("log")
-
-    axis.tick_params(axis="both", which="both", labelsize=Config.TICKS_FONT_SIZE)
 
     return boxplot
 
@@ -323,11 +321,8 @@ def add_heatmap(fig, axis, data, x_ticks=None, y_ticks=None, metric="error"):
         axis_label(metric, prepend="median"),
         rotation=-90,
         va="bottom",
-        fontsize=Config.AXIS_LABEL_FONT_SIZE,
     )
 
     annotate_heatmap(
         image, valfmt="{x:.1f}", textcolors=("white", "black"), size=Config.TICKS_FONT_SIZE
     )
-
-    axis.tick_params(axis="both", which="both", labelsize=Config.TICKS_FONT_SIZE)
