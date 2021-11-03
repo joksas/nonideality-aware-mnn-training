@@ -4,13 +4,14 @@ from training import callbacks
 from training.iterator import Inference, Iterator, Training
 
 from . import (d2d_asymmetry, devices, ideal, iv_nonlinearity,
-               iv_nonlinearity_and_stuck, utils)
+               iv_nonlinearity_and_stuck, stuck_low, utils)
 
 DATASET = "mnist"
 INFERENCE_SETUPS = [
     devices.ideal(),
     devices.low_R(),
     devices.high_R(),
+    devices.stuck_low(),
     devices.high_R_and_stuck(),
     devices.symmetric_d2d(),
     devices.asymmetric_d2d(),
@@ -31,6 +32,7 @@ def get_iterators():
         ideal.get_mnist_iterator(),
         *iv_nonlinearity.get_nonideal_iterators(),
         *iv_nonlinearity_and_stuck.get_nonideal_iterators(),
+        *stuck_low.get_nonideal_iterators(),
         *d2d_asymmetry.get_nonideal_iterators()[:2],
     ]
     inferences = [

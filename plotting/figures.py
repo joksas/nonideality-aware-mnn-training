@@ -304,9 +304,10 @@ def nonideality_agnosticism_heatmap(metric="error"):
         "reg__64__0.000997_0.00351__IVNL:2.13_0.095": r"Low $I$-$V$ nonlin. (reg.)",
         "nonreg__64__7.72e-07_2.73e-06__IVNL:2.99_0.369": r"High $I$-$V$ nonlin.",
         "reg__64__7.72e-07_2.73e-06__IVNL:2.99_0.369": r"High $I$-$V$ nonlin. (reg.)",
+        "nonreg__64__7.72e-07_2.73e-06__StuckMin:0.05": r"Stuck at $G_\mathrm{off}$",
         "nonreg__64__0.000997_0.00351__D2DLN:0.25_0.25": "More uniform D2D var.",
         "nonreg__64__0.000997_0.00351__D2DLN:0.05_0.5": "Less uniform D2D var.",
-        "nonreg__64__7.72e-07_2.73e-06__IVNL:2.99_0.369+StuckMax:0.05": r"High $I$-$V$ nonlin. + stuck",
+        "nonreg__64__7.72e-07_2.73e-06__IVNL:2.99_0.369+StuckMax:0.05": r"High $I$-$V$ nonlin. + stuck at $G_\mathrm{on}$",
     }
     inference_labels = {
         "none_none__ideal": training_labels["nonreg__64__none_none__ideal"],
@@ -315,6 +316,9 @@ def nonideality_agnosticism_heatmap(metric="error"):
         ],
         "7.72e-07_2.73e-06__IVNL:2.99_0.369": training_labels[
             "nonreg__64__7.72e-07_2.73e-06__IVNL:2.99_0.369"
+        ],
+        "7.72e-07_2.73e-06__StuckMin:0.05": training_labels[
+            "nonreg__64__7.72e-07_2.73e-06__StuckMin:0.05"
         ],
         "0.000997_0.00351__D2DLN:0.25_0.25": training_labels[
             "nonreg__64__0.000997_0.00351__D2DLN:0.25_0.25"
