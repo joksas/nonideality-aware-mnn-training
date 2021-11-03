@@ -150,6 +150,43 @@ def d2d_uniformity_conductance_histograms(is_effective=False, include_regularise
     utils.save_fig(fig, filename)
 
 
+def d2d_uniformity_pos_neg_conductance_scatterplots(combined=True):
+    if combined:
+        num_rows = 1
+        height_frac = 1.0
+    else:
+        num_rows = 3
+        height_frac = 2.5
+    fig, axes = utils.fig_init(1, height_frac, fig_shape=(num_rows, 1), sharex=True, sharey=True)
+
+    iterators = simulations.d2d_asymmetry.get_iterators()
+    colors = [utils.color_dict()[key] for key in ["vermilion", "blue", "bluish-green"]]
+
+    for idx, (iterator, color) in enumerate(zip(iterators, colors)):
+        if combined:
+            axis = axes
+        else:
+            axis = axes[idx]
+        iterator.is_training = True
+        model = architecture.get_model(iterator, custom_weights_path=iterator.weights_path())
+        weights = model.layers[1].combined_weights()
+        G, _ = crossbar.map.w_params_to_G(weights, iterator.training.G_min, iterator.training.G_max)
+        G = 1000 * G
+        utils.plot_scatter(axis, G[:, ::2], G[:, 1::2], color)
+
+        axis.set_ylabel(r"$G_{-}$ (mS)")
+
+    if combined:
+        axes.set_xlabel(r"$G_{+}$ (mS)")
+    else:
+        axes[-1].set_xlabel(r"$G_{+}$ (mS)")
+
+    filename = "d2d-uniformity-G-scatter"
+    if combined:
+        filename += "-combined"
+    utils.save_fig(fig, filename)
+
+
 def d2d_uniformity_pos_neg_conductance_histograms():
     fig, axes = utils.fig_init(1, 1.5, fig_shape=(2, 1), sharex=True, sharey=True)
 

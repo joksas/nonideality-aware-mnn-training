@@ -18,6 +18,7 @@ class Config:
     TICKS_FONT_SIZE: float = 8
     SUBPLOT_LABEL_SIZE: float = 12
     LINEWIDTH: float = 0.75
+    MARKER_SIZE: float = 0.5
     BOXPLOT_LINEWIDTH: float = 0.75
     # Advanced Science
     COL_WIDTHS: dict[int, float] = {
@@ -159,6 +160,25 @@ def plot_curve(axis, x, y, color, metric="error"):
         axis.plot(x, y_median, color=color, linewidth=Config.LINEWIDTH / 2)
     else:
         axis.plot(x, y, color=color, linewidth=Config.LINEWIDTH)
+
+
+def numpify(x):
+    try:  # In case `tf.Tensor`
+        x = x.numpy()
+    except AttributeError:
+        pass
+
+    return x
+
+
+def plot_scatter(axis, x, y, color):
+    x = numpify(x)
+    y = numpify(y)
+    x = x.flatten()
+    y = y.flatten()
+    axis.scatter(
+        x, y, color=color, marker="x", s=Config.MARKER_SIZE, linewidth=Config.MARKER_SIZE / 2
+    )
 
 
 def plot_boxplot(axis, y, color, x=None, metric="error", is_x_log=False, linewidth_scaling=1.0):
