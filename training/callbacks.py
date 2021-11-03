@@ -40,7 +40,7 @@ class TestCallback(MemristiveCallback):
         self.iterator.is_training = False
         self.history = [
             {
-                "nonideality_label": inference.nonideality_label(),
+                "label": inference.label(),
                 "epoch_no": [],
                 "loss": [],
                 "accuracy": [],
