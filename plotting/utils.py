@@ -326,6 +326,7 @@ def add_heatmap(fig, axis, data, x_ticks=None, y_ticks=None, metric="error"):
         rotation=-90,
         va="bottom",
     )
+    cbar.ax.tick_params(axis="both", which="both", labelsize=Config.TICKS_FONT_SIZE)
 
     annotate_heatmap(
         image, valfmt="{x:.1f}", textcolors=("white", "black"), size=Config.TICKS_FONT_SIZE
