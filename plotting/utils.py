@@ -96,12 +96,21 @@ def fig_init(
     return fig, axes
 
 
-def add_subfigure_label(fig, axis, letter_idx, fontsize=Config.SUBPLOT_LABEL_SIZE):
+def add_subfigure_label(
+    fig,
+    axis,
+    letter_idx: int,
+    fontsize: float = Config.SUBPLOT_LABEL_SIZE,
+    is_lowercase: bool = True,
+):
     trans = mtransforms.ScaledTranslation(-16 / 72, 2 / 72, fig.dpi_scale_trans)
+    ascii_idx = 65 + letter_idx
+    if is_lowercase:
+        ascii_idx += 32
     axis.text(
         0.0,
         1.0,
-        chr(letter_idx + 65),
+        chr(ascii_idx),
         transform=axis.transAxes + trans,
         fontweight="bold",
         fontsize=fontsize,
