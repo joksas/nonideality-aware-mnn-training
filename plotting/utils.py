@@ -263,8 +263,14 @@ def axis_label(var_name: str, prepend: str = None) -> str:
         label = "checkpoint"
     elif var_name == "conductance":
         label = "conductance (mS)"
+    elif var_name == "voltage":
+        label = "voltage (V)"
+    elif var_name == "current":
+        label = "current (A)"
     elif var_name == "count":
         label = "count (#)"
+    elif var_name == "nonlinearity-parameter":
+        label = "nonlinearity parameter"
     else:
         raise ValueError(f'Unrecognised variable name "{var_name}".')
 

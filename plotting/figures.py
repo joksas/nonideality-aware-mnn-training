@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import simulations
+from scipy.io import loadmat
 from training import architecture
 from training.iterator import (D2DLognormal, Inference, Iterator,
                                IVNonlinearity, StuckAtGMin, Training)
@@ -391,3 +392,82 @@ def nonideality_agnosticism_heatmap(metric="error"):
     axes.set_xlabel("Inference")
 
     utils.save_fig(fig, f"nonideality-agnosticism-{metric}")
+
+
+def iv_curves_low_high(data_filepath):
+    # plt.rc("font", **{"size": "1"})
+    fig, axes = utils.fig_init(2, 0.4, fig_shape=(1, 2), sharex=True)
+
+    low_n_idxs = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    high_n_idxs = [
+        40,
+        31,
+        47,
+        36,
+        51,
+        50,
+        30,
+        45,
+        39,
+        52,
+        33,
+        35,
+        34,
+        41,
+        48,
+        43,
+        38,
+        42,
+        37,
+        44,
+        46,
+    ]
+
+    data = loadmat(data_filepath)["data"]
+    data = np.flip(data, axis=2)
+
+    N = 1000
+    palette = plt.cm.inferno(np.linspace(0, 1, N))
+
+    for idx, (axis, state_idxs) in enumerate(zip(axes, [low_n_idxs, high_n_idxs])):
+        min_voltage = np.inf
+        max_voltage = -np.inf
+        min_current = np.inf
+        max_current = -np.inf
+
+        for state_idx in state_idxs:
+            voltages = data[:101, 1, state_idx]
+            currents = data[:101, 0, state_idx]
+            if np.max(voltages) > max_voltage:
+                max_voltage = np.max(voltages)
+            if np.min(voltages) < max_voltage:
+                min_voltage = np.min(voltages)
+            if np.max(currents) > max_current:
+                max_current = np.max(currents)
+            if np.min(currents) < max_current:
+                min_current = np.min(currents)
+
+            n = currents[100] / currents[50]
+            palette_idx = int(np.floor(N * (n - 2) / 2))
+            axis.plot(
+                voltages, currents, color=palette[palette_idx], linewidth=utils.Config.LINEWIDTH
+            )
+
+        axis.set_xlim([min_voltage, max_voltage])
+        axis.set_ylim(bottom=0)
+        axis.set_xlabel(utils.axis_label("voltage"))
+        utils.add_subfigure_label(fig, axis, idx)
+        axis.ticklabel_format(axis="y", scilimits=(-1, 1))
+        axis.tick_params(axis="both", which="both", labelsize=utils.Config.TICKS_FONT_SIZE)
+        axis.yaxis.get_offset_text().set_fontsize(utils.Config.TICKS_FONT_SIZE)
+
+    sm = plt.cm.ScalarMappable(cmap="inferno", norm=plt.Normalize(vmin=2, vmax=4))
+    cbar = fig.colorbar(sm, ax=axes)
+    cbar.set_label(
+        label=utils.axis_label("nonlinearity-parameter"), fontsize=utils.Config.AXIS_LABEL_FONT_SIZE
+    )
+    cbar.ax.tick_params(axis="both", which="both", labelsize=utils.Config.TICKS_FONT_SIZE)
+
+    axes[0].set_ylabel(utils.axis_label("current"))
+
+    utils.save_fig(fig, "SiO_x-I-V-curves")
