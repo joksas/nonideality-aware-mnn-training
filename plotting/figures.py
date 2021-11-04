@@ -464,7 +464,10 @@ def iv_curves_low_high(data_filepath):
     sm = plt.cm.ScalarMappable(cmap="inferno", norm=plt.Normalize(vmin=2, vmax=4))
     cbar = fig.colorbar(sm, ax=axes)
     cbar.set_label(
-        label=utils.axis_label("nonlinearity-parameter"), fontsize=utils.Config.AXIS_LABEL_FONT_SIZE
+        label=utils.axis_label("nonlinearity-parameter"),
+        fontsize=utils.Config.AXIS_LABEL_FONT_SIZE,
+        rotation=-90,
+        va="bottom",
     )
     cbar.ax.tick_params(axis="both", which="both", labelsize=utils.Config.TICKS_FONT_SIZE)
 

@@ -359,6 +359,7 @@ def add_heatmap(fig, axis, data, x_ticks=None, y_ticks=None, metric="error"):
     cbar.ax.set_ylabel(
         axis_label(metric, prepend="median"),
         rotation=-90,
+        fontsize=Config.AXIS_LABEL_FONT_SIZE,
         va="bottom",
     )
     cbar.ax.tick_params(axis="both", which="both", labelsize=Config.TICKS_FONT_SIZE)
