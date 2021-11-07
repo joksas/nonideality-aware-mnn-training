@@ -1,4 +1,6 @@
+import numpy as np
 import tensorflow as tf
+from tensorflow_probability import distributions as tfd
 
 
 def random_devices_stuck(G: tf.Tensor, val: float, prob: float) -> tf.Tensor:
@@ -28,3 +30,39 @@ def random_bool_tensor(shape: list[int], prob_true: float) -> tf.Tensor:
     """
     random_float_tensor = tf.random.uniform(shape, minval=0, maxval=1, dtype=tf.dtypes.float64)
     return random_float_tensor < prob_true
+
+
+def kde(means: list[float], bandwidth: float) -> tfd.Distribution:
+    """Kernel density estimation.
+
+    Args:
+        means: Means of underlying normal distributions.
+        width: Standard deviation of underlying normal distributions.
+
+    Returns:
+        KDE distribution.
+    """
+    distributions = []
+    weights = []
+    for mean in means:
+        limits = {
+            "low": 0.0,
+            "high": np.inf,
+        }
+        truncated = tfd.TruncatedNormal(loc=mean, scale=bandwidth, **limits)
+        distributions.append(truncated)
+        prob_neg = tfd.Normal(loc=mean, scale=bandwidth).cdf(0.0)
+        if prob_neg > 1e-8:  # Only include reflection if numerically stable.
+            reflected_truncated = tfd.TruncatedNormal(loc=-mean, scale=bandwidth, **limits)
+            distributions.append(reflected_truncated)
+            prob_pos = 1.0 - prob_neg
+            weights.extend([prob_pos, prob_neg])
+        else:
+            weights.append(1.0)
+
+    kde_distribution = tfd.Mixture(
+        cat=tfd.Categorical(probs=weights),
+        components=distributions,
+    )
+
+    return kde_distribution
