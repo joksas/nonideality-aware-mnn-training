@@ -6,68 +6,9 @@ from typing import Any, Union
 import numpy as np
 import tensorflow as tf
 import tensorflow_datasets as tfds
+from crossbar.nonidealities import Nonideality
 
 from . import callbacks, network, utils
-
-
-class D2DLognormal:
-    def __init__(self, R_min_std: float, R_max_std: float) -> None:
-        self.R_min_std = R_min_std
-        self.R_max_std = R_max_std
-
-    def label(self) -> str:
-        return f"D2DLN:{self.R_min_std:.3g}_{self.R_max_std:.3g}"
-
-    def __eq__(self, other):
-        if self is None or other is None:
-            if self is None and other is None:
-                return True
-            return False
-        return self.R_min_std == other.R_min_std and self.R_max_std == other.R_max_std
-
-
-class IVNonlinearity:
-    def __init__(self, n_avg: float, n_std: float) -> None:
-        self.n_avg = n_avg
-        self.n_std = n_std
-
-    def label(self) -> str:
-        return f"IVNL:{self.n_avg:.3g}_{self.n_std:.3g}"
-
-    def __eq__(self, other):
-        if self is None or other is None:
-            if self is None and other is None:
-                return True
-            return False
-        return self.n_avg == other.n_avg and self.n_std == other.n_std
-
-
-class Stuck:
-    def __init__(self, p: float) -> None:
-        self.p = p
-
-    def __eq__(self, other):
-        if self is None or other is None:
-            if self is None and other is None:
-                return True
-            return False
-        return self.p == other.p
-
-
-class StuckAtGMin(Stuck):
-    def __init__(self, p: float) -> None:
-        Stuck.__init__(self, p)
-
-    def label(self) -> str:
-        return f"StuckMin:{self.p:.3g}"
-
-
-class StuckAtGMax(Stuck):
-    def __init__(self, p: float) -> None:
-        Stuck.__init__(self, p)
-
-    def label(self) -> str:
-        return f"StuckMax:{self.p:.3g}"
 
 
 class Nonideal:
@@ -75,42 +16,18 @@ class Nonideal:
         self,
         G_min: float = None,
         G_max: float = None,
-        iv_nonlinearity: IVNonlinearity = None,
-        stuck_at_G_min: StuckAtGMin = None,
-        stuck_at_G_max: StuckAtGMax = None,
-        d2d_lognormal: D2DLognormal = None,
+        nonidealities: list[Nonideality] = [],
     ) -> None:
         self.G_min = G_min
         self.G_max = G_max
-        self.iv_nonlinearity = iv_nonlinearity
-        self.stuck_at_G_min = stuck_at_G_min
-        self.stuck_at_G_max = stuck_at_G_max
-        self.d2d_lognormal = d2d_lognormal
+        self.nonidealities = nonidealities
 
     def __eq__(self, other):
         return (
             self.G_min == other.G_min
             and self.G_max == other.G_max
-            and self.iv_nonlinearity == other.iv_nonlinearity
-            and self.stuck_at_G_min == other.stuck_at_G_min
-            and self.stuck_at_G_max == other.stuck_at_G_max
-            and self.d2d_lognormal == other.d2d_lognormal
+            and self.nonidealities == other.nonidealities
         )
-
-    def nonideality_list(
-        self,
-    ) -> list[Union[D2DLognormal, IVNonlinearity, StuckAtGMin, StuckAtGMax]]:
-        nonidealities = []
-        for nonideality in [
-            self.iv_nonlinearity,
-            self.stuck_at_G_min,
-            self.stuck_at_G_max,
-            self.d2d_lognormal,
-        ]:
-            if nonideality is not None:
-                nonidealities.append(nonideality)
-
-        return nonidealities
 
     def conductance_label(self) -> str:
         if self.G_min is None and self.G_max is None:
@@ -119,17 +36,16 @@ class Nonideal:
         return f"{self.G_min:.3g}_{self.G_max:.3g}"
 
     def nonideality_label(self) -> str:
-        nonidealities = self.nonideality_list()
-        if len(nonidealities) == 0:
+        if len(self.nonidealities) == 0:
             return "ideal"
 
-        return "+".join(nonideality.label() for nonideality in nonidealities)
+        return "+".join(nonideality.label() for nonideality in self.nonidealities)
 
     def label(self) -> str:
         return f"{self.conductance_label()}__{self.nonideality_label()}"
 
     def is_nonideal(self) -> bool:
-        if len(self.nonideality_list()) == 0:
+        if len(self.nonidealities) == 0:
             return False
 
         return True
@@ -156,9 +72,7 @@ class Training(Nonideal, Iterable):
         num_repeats: int = 0,
         G_min: float = None,
         G_max: float = None,
-        nonidealities: dict[
-            str, Union[D2DLognormal, IVNonlinearity, StuckAtGMin, StuckAtGMax]
-        ] = {},
+        nonidealities: list[Nonideality] = [],
         force_regular_checkpoint: bool = False,
         memristive_validation_freq: int = None,
     ) -> None:
@@ -169,7 +83,7 @@ class Training(Nonideal, Iterable):
         self.validation_split = validation_split
         self.force_regular_checkpoint = force_regular_checkpoint
         self.memristive_validation_freq = memristive_validation_freq
-        Nonideal.__init__(self, G_min=G_min, G_max=G_max, **nonidealities)
+        Nonideal.__init__(self, G_min=G_min, G_max=G_max, nonidealities=nonidealities)
         Iterable.__init__(self)
 
     def regularized_label(self) -> str:
@@ -196,10 +110,10 @@ class Inference(Nonideal, Iterable):
         num_repeats: int = 0,
         G_min: float = None,
         G_max: float = None,
-        nonidealities={},
+        nonidealities: list[Nonideality] = [],
     ) -> None:
         self.num_repeats = num_repeats
-        Nonideal.__init__(self, G_min=G_min, G_max=G_max, **nonidealities)
+        Nonideal.__init__(self, G_min=G_min, G_max=G_max, nonidealities=nonidealities)
         Iterable.__init__(self)
 
     def repeat_label(self) -> str:

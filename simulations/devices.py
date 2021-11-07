@@ -1,41 +1,40 @@
-from training.iterator import (D2DLognormal, IVNonlinearity, StuckAtGMax,
-                               StuckAtGMin)
+from crossbar.nonidealities import D2DLognormal, IVNonlinearity, StuckAt
 
 
 def ideal():
-    return {"G_min": None, "G_max": None, "nonidealities": {}}
+    return {"G_min": None, "G_max": None, "nonidealities": []}
 
 
 def low_R():
     return {
         **low_R_conductance(),
-        "nonidealities": {"iv_nonlinearity": IVNonlinearity(2.132, 0.095)},
+        "nonidealities": [IVNonlinearity(2.132, 0.095)],
     }
 
 
 def high_R():
     return {
         **high_R_conductance(),
-        "nonidealities": {"iv_nonlinearity": IVNonlinearity(2.989, 0.369)},
+        "nonidealities": [IVNonlinearity(2.989, 0.369)],
     }
 
 
 def stuck_low():
     return {
         **high_R_conductance(),
-        "nonidealities": {
-            "stuck_at_G_min": StuckAtGMin(0.05),
-        },
+        "nonidealities": [
+            StuckAt(high_R_conductance()["G_min"], 0.05),
+        ],
     }
 
 
 def high_R_and_stuck():
     return {
         **high_R_conductance(),
-        "nonidealities": {
-            "iv_nonlinearity": IVNonlinearity(2.989, 0.369),
-            "stuck_at_G_max": StuckAtGMax(0.05),
-        },
+        "nonidealities": [
+            IVNonlinearity(2.989, 0.369),
+            StuckAt(high_R_conductance()["G_max"], 0.05),
+        ],
     }
 
 
@@ -56,19 +55,19 @@ def high_R_conductance():
 def symmetric_d2d():
     return {
         **low_R_conductance(),
-        "nonidealities": {"d2d_lognormal": D2DLognormal(0.25, 0.25)},
+        "nonidealities": [D2DLognormal(0.25, 0.25)],
     }
 
 
 def asymmetric_d2d():
     return {
         **low_R_conductance(),
-        "nonidealities": {"d2d_lognormal": D2DLognormal(0.05, 0.5)},
+        "nonidealities": [D2DLognormal(0.05, 0.5)],
     }
 
 
 def symmetric_high_d2d():
     return {
         **low_R_conductance(),
-        "nonidealities": {"d2d_lognormal": D2DLognormal(0.5, 0.5)},
+        "nonidealities": [D2DLognormal(0.5, 0.5)],
     }

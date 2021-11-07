@@ -1,34 +1,79 @@
-"""
-Tests of functions of crossbar.nonlinear_IV
-"""
 import pytest
-# pylint: disable=missing-function-docstring
 import tensorflow as tf
 from tests import utils
 
-from crossbar import nonlinear_IV
+from crossbar import nonidealities
+
+# Only special case, i.e. when std = 0.0 for all entries.
+d2d_lognormal_testdata = [
+    (
+        (
+            nonidealities.D2DLognormal(0.0, 0.0),
+            tf.constant(
+                [
+                    [1.0, 2.0, 3.0],
+                    [4.0, 5.0, 6.0],
+                ]
+            ),
+            0.5,
+            0.6,
+        ),
+        tf.constant(
+            [
+                [1.0, 2.0, 3.0],
+                [4.0, 5.0, 6.0],
+            ]
+        ),
+    ),
+    (
+        (
+            nonidealities.D2DLognormal(1.0, 0.0),
+            tf.constant(
+                [
+                    [1.0, 1.0, 1.0],
+                    [1.0, 1.0, 1.0],
+                ]
+            ),
+            1.0,
+            6.0,
+        ),
+        tf.constant(
+            [
+                [1.0, 1.0, 1.0],
+                [1.0, 1.0, 1.0],
+            ]
+        ),
+    ),
+]
+
+
+@pytest.mark.parametrize("args,expected", d2d_lognormal_testdata)
+def test_d2d_lognormal(args, expected):
+    nonideality, G, G_min, G_max = args
+    result = nonideality.disturb_G(G, G_min, G_max)
+    utils.assert_tf_approx(result, expected)
+
 
 # I feel it is appropriate to use multiplication for expected tensors because
 # it is not the underlying operation that we are testing. Writing it out
 # reveals the logic behind the calculations that *should* take place - Dovydas
-compute_currents_testdata = [
+iv_nonlinearity_I_ind_testdata = [
     (
-        {
-            "n_avg": tf.constant(2.0),
-            "n_std": tf.constant(0.0),
-            "V_ref": tf.constant(0.5),
-            "G": tf.constant(
+        (
+            nonidealities.IVNonlinearity(2.0, 0.0),
+            tf.constant(
                 [
                     [1.0, 2.0, 3.0, 4.0],
                     [5.0, 6.0, 7.0, 8.0],
                 ]
             ),
-            "V": tf.constant(
+            tf.constant(
                 [
                     [1.0, 0.0],
                 ]
             ),
-        },
+            1.0,
+        ),
         tf.constant(
             [
                 [
@@ -39,22 +84,21 @@ compute_currents_testdata = [
         ),
     ),
     (
-        {
-            "n_avg": tf.constant(2.0),
-            "n_std": tf.constant(0.0),
-            "V_ref": tf.constant(0.5),
-            "G": tf.constant(
+        (
+            nonidealities.IVNonlinearity(2.0, 0.0),
+            tf.constant(
                 [
                     [1.0, 2.0, 3.0, 4.0],
                     [5.0, 6.0, 7.0, 8.0],
                 ]
             ),
-            "V": tf.constant(
+            tf.constant(
                 [
                     [1.0, 0.5],
                 ]
             ),
-        },
+            2.0,
+        ),
         tf.constant(
             [
                 [
@@ -65,23 +109,22 @@ compute_currents_testdata = [
         ),
     ),
     (
-        {
-            "n_avg": tf.constant(4.0),
-            "n_std": tf.constant(0.0),
-            "V_ref": tf.constant(0.5),
-            "G": tf.constant(
+        (
+            nonidealities.IVNonlinearity(4.0, 0.0),
+            tf.constant(
                 [
                     [1.0, 2.0, 3.0, 4.0],
                     [5.0, 6.0, 7.0, 8.0],
                     [9.0, 10.0, 11.0, 12.0],
                 ]
             ),
-            "V": tf.constant(
+            tf.constant(
                 [
                     [0.0, 0.5, 1.0],
                 ]
             ),
-        },
+            0.5,
+        ),
         tf.constant(
             [
                 [
@@ -96,23 +139,22 @@ compute_currents_testdata = [
         ),
     ),
     (
-        {
-            "n_avg": tf.constant(3.0),
-            "n_std": tf.constant(0.0),
-            "V_ref": tf.constant(0.2),
-            "G": tf.constant(
+        (
+            nonidealities.IVNonlinearity(3.0, 0.0),
+            tf.constant(
                 [
                     [1.0, 2.0, 3.0, 4.0],
                     [5.0, 6.0, 7.0, 8.0],
                 ]
             ),
-            "V": tf.constant(
+            tf.constant(
                 [
                     [0.0, 0.2],
                     [0.1, 0.4],
                 ]
             ),
-        },
+            0.2,
+        ),
         tf.constant(
             [
                 [
@@ -142,11 +184,9 @@ compute_currents_testdata = [
         ),
     ),
     (
-        {
-            "n_avg": tf.constant(5.0),
-            "n_std": tf.constant(0.0),
-            "V_ref": tf.constant(0.5),
-            "G": tf.constant(
+        (
+            nonidealities.IVNonlinearity(5.0, 0.0),
+            tf.constant(
                 [
                     [1.0, 2.0, 3.0, 4.0],
                     [5.0, 6.0, 7.0, 8.0],
@@ -154,12 +194,13 @@ compute_currents_testdata = [
                     [13.0, 14.0, 15.0, 16.0],
                 ]
             ),
-            "V": tf.constant(
+            tf.constant(
                 [
                     [-0.5, -0.25, -1.0, 0.5],
                 ]
             ),
-        },
+            0.5,
+        ),
         tf.constant(
             [
                 [
@@ -190,32 +231,32 @@ compute_currents_testdata = [
 ]
 
 
-@pytest.mark.parametrize("args,expected", compute_currents_testdata)
-def test_compute_currents(args, expected):
-    I = nonlinear_IV.compute_currents(**args)
-    utils.assert_tf_approx(I, expected)
+@pytest.mark.parametrize("args,expected", iv_nonlinearity_I_ind_testdata)
+def test_iv_nonlinearity_I_ind(args, expected):
+    nonideality, G, V, V_ref = args
+    _, result = nonideality.compute_I(V, G, V_ref)
+    utils.assert_tf_approx(result, expected)
 
 
-compute_I_all_testdata = [
+iv_nonlinearity_I_testdata = [
     (
-        {
-            "n_avg": tf.constant(2.0),
-            "n_std": tf.constant(0.0),
-            "V_ref": tf.constant(0.5),
-            "G": tf.constant(
+        (
+            nonidealities.IVNonlinearity(2.0, 0.0),
+            tf.constant(
                 [
                     [1.0, 2.0, 3.0, 4.0],
                     [5.0, 6.0, 7.0, 8.0],
                     [9.0, 10.0, 11.0, 12.0],
                 ]
             ),
-            "V": tf.constant(
+            tf.constant(
                 [
                     [1.0, 0.0, -0.5],
                     [0.0, 0.25, 0.0],
                 ]
             ),
-        },
+            5.0,
+        ),
         [
             # With {n_avg = 2, n_std = 0} the bit-line outputs should
             # represent the vector-matrix product of voltages and
@@ -257,9 +298,55 @@ compute_I_all_testdata = [
 ]
 
 
-@pytest.mark.parametrize("args,expected", compute_I_all_testdata)
-def test_compute_I_all(args, expected):
+@pytest.mark.parametrize("args,expected", iv_nonlinearity_I_testdata)
+def test_iv_nonlinearity_I(args, expected):
     I_exp, I_ind_exp = expected
-    I, I_ind = nonlinear_IV.compute_I_all(**args)
+    nonideality, G, V, V_ref = args
+    I, I_ind = nonideality.compute_I(V, G, V_ref)
     utils.assert_tf_approx(I, I_exp)
     utils.assert_tf_approx(I_ind, I_ind_exp)
+
+
+stuck_at_testdata = [
+    (
+        (
+            nonidealities.StuckAt(2.0, 1.0),
+            tf.constant(
+                [
+                    [1.0, 2.0, 3.0],
+                    [4.0, 5.0, 6.0],
+                ]
+            ),
+        ),
+        tf.constant(
+            [
+                [2.0, 2.0, 2.0],
+                [2.0, 2.0, 2.0],
+            ]
+        ),
+    ),
+    (
+        (
+            nonidealities.StuckAt(5.0, 0.0),
+            tf.constant(
+                [
+                    [1.0, 2.0, 3.0],
+                    [4.0, 5.0, 6.0],
+                ]
+            ),
+        ),
+        tf.constant(
+            [
+                [1.0, 2.0, 3.0],
+                [4.0, 5.0, 6.0],
+            ]
+        ),
+    ),
+]
+
+
+@pytest.mark.parametrize("args,expected", stuck_at_testdata)
+def test_stuck_at(args, expected):
+    nonideality, G = args
+    result = nonideality.disturb_G(G)
+    utils.assert_tf_approx(result, expected)

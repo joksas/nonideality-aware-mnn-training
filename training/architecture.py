@@ -183,35 +183,20 @@ class MemristorDense(layers.Layer):
             G, max_weight = crossbar.map.w_to_G(weights, G_min, G_max)
 
         # Linearity-preserving nonidealities
-        if (
-            current_stage.stuck_at_G_min is not None
-            or current_stage.stuck_at_G_max is not None
-            or current_stage.d2d_lognormal is not None
-        ):
-            if current_stage.stuck_at_G_min is not None:
-                G = crossbar.faulty_devices.random_devices_stuck(
-                    G, G_min, current_stage.stuck_at_G_min.p
-                )
-            elif current_stage.stuck_at_G_max is not None:
-                G = crossbar.faulty_devices.random_devices_stuck(
-                    G, G_max, current_stage.stuck_at_G_max.p
-                )
-            elif current_stage.d2d_lognormal is not None:
-                G = crossbar.d2d.lognormal(
-                    G,
-                    G_min,
-                    G_max,
-                    current_stage.d2d_lognormal.R_min_std,
-                    current_stage.d2d_lognormal.R_max_std,
-                )
+        for nonideality in current_stage.nonidealities:
+            if isinstance(nonideality, crossbar.nonidealities.StuckAt):
+                G = nonideality.disturb_G(G)
+            elif isinstance(nonideality, crossbar.nonidealities.D2DLognormal):
+                G = nonideality.disturb_G(G, G_min, G_max)
 
         # Other nonidealities
-        if current_stage.iv_nonlinearity is not None:
-            n_avg = tf.constant(current_stage.iv_nonlinearity.n_avg)
-            n_std = tf.constant(current_stage.iv_nonlinearity.n_std)
-            # Computing currents
-            I, I_ind = crossbar.nonlinear_IV.compute_I_all(V, G, V_ref, n_avg, n_std=n_std)
-        else:
+        I = None
+        I_ind = None
+        for nonideality in current_stage.nonidealities:
+            if isinstance(nonideality, crossbar.nonidealities.IVNonlinearity):
+                I, I_ind = nonideality.compute_I(V, G, V_ref)
+
+        if I is None or I_ind is None:
             # Ideal case for computing output currents.
             if self.iterator.is_training:
                 I = crossbar.ideal.compute_I(V, G)

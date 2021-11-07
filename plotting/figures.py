@@ -6,10 +6,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import simulations
+from crossbar.nonidealities import D2DLognormal, IVNonlinearity, StuckAt
 from scipy.io import loadmat
 from training import architecture
-from training.iterator import (D2DLognormal, Inference, Iterator,
-                               IVNonlinearity, StuckAtGMin, Training)
+from training.iterator import Inference, Iterator, Training
 
 from . import utils
 
