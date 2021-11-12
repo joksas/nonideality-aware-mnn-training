@@ -8,6 +8,7 @@ import pandas as pd
 import simulations
 from crossbar.nonidealities import (D2DLognormal, IVNonlinearity, StuckAt,
                                     StuckDistribution)
+from matplotlib import rc
 from scipy.io import loadmat
 from training import architecture
 from training.iterator import Inference, Iterator, Training
@@ -395,7 +396,11 @@ def nonideality_agnosticism_heatmap(metric="error"):
     utils.save_fig(fig, f"nonideality-agnosticism-{metric}")
 
 
-def iv_curves_all(data_filepath):
+def iv_curves_all(data_filepath, use_cm=False):
+    if use_cm:
+        rc("text", usetex=True)
+        rc("font", **{"family": "serif", "serif": ["Computer Modern"]})
+
     fig, axes = utils.fig_init(1, 0.8, fig_shape=(1, 1))
 
     data = loadmat(data_filepath)["data"]
