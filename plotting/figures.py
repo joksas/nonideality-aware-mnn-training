@@ -6,7 +6,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import simulations
-from crossbar.nonidealities import D2DLognormal, IVNonlinearity, StuckAt
+from crossbar.nonidealities import (D2DLognormal, IVNonlinearity, StuckAt,
+                                    StuckDistribution)
 from scipy.io import loadmat
 from training import architecture
 from training.iterator import Inference, Iterator, Training
@@ -474,3 +475,33 @@ def iv_curves_low_high(data_filepath):
     axes[0].set_ylabel(utils.axis_label("current"))
 
     utils.save_fig(fig, "SiO_x-I-V-curves")
+
+
+def HfO2_stuck_distribution(data):
+    fig, axes = utils.fig_init(1, 0.8, fig_shape=(1, 1))
+
+    G_min, G_max = simulations.utils.extract_G_min_and_G_max(data)
+    vals, p = simulations.utils.extract_stuck(data, G_min, G_max)
+
+    distribution = StuckDistribution(vals, p).distribution
+    x = np.linspace(0.0, 1.5e-3, int(1e4))
+    y = distribution.prob(x)
+    y = y / 1000
+    x = 1000 * x
+
+    blue = utils.color_dict()["blue"]
+    axes.plot(x, y, lw=0.5, color=blue)
+    axes.scatter(
+        [1000 * val for val in vals], np.zeros_like(vals), marker="|", alpha=0.1, color=blue
+    )
+    orange = utils.color_dict()["orange"]
+    axes.scatter([1000 * G_min, 1000 * G_max], [0, 0], marker="|", alpha=0.75, color=orange)
+
+    axes.set_xlabel("Stuck conductance (mS)")
+    axes.set_ylabel(r"Probability density ($\mathrm{mS}^{-1}$)")
+
+    axes.set_xlim([0.0, 1.5])
+    axes.set_ylim(bottom=0.0)
+    axes.tick_params(axis="both", which="both", labelsize=utils.Config.TICKS_FONT_SIZE)
+
+    utils.save_fig(fig, "HfO2-stuck-distribution")

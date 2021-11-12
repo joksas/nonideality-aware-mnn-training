@@ -1,4 +1,7 @@
-from crossbar.nonidealities import D2DLognormal, IVNonlinearity, StuckAt
+from crossbar.nonidealities import (D2DLognormal, IVNonlinearity, StuckAt,
+                                    StuckDistribution)
+
+from . import utils
 
 
 def ideal():
@@ -70,4 +73,15 @@ def symmetric_high_d2d():
     return {
         **low_R_conductance(),
         "nonidealities": [D2DLognormal(0.5, 0.5)],
+    }
+
+
+def HfO2():
+    data = utils.load_cycling_data("G_reads_11_cycles.mat")
+    G_min, G_max = utils.extract_G_min_and_G_max(data)
+    vals, p = utils.extract_stuck(data, G_min, G_max)
+    return {
+        "G_min": G_min,
+        "G_max": G_max,
+        "nonidealities": [StuckDistribution(vals, p)],
     }

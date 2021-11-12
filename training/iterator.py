@@ -341,6 +341,7 @@ class Iterator:
                 warnings.warn(
                     f'Training directory "{self.network_dir()}" already exists. Skipping...'
                 )
+                self.training.repeat_idx += 1
                 continue
             # New callbacks in each iteration because iterator changes.
             train_callbacks = []

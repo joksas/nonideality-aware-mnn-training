@@ -184,7 +184,9 @@ class MemristorDense(layers.Layer):
 
         # Linearity-preserving nonidealities
         for nonideality in current_stage.nonidealities:
-            if isinstance(nonideality, crossbar.nonidealities.StuckAt):
+            if isinstance(nonideality, crossbar.nonidealities.StuckAt) or isinstance(
+                nonideality, crossbar.nonidealities.StuckDistribution
+            ):
                 G = nonideality.disturb_G(G)
             elif isinstance(nonideality, crossbar.nonidealities.D2DLognormal):
                 G = nonideality.disturb_G(G, G_min, G_max)

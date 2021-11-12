@@ -109,7 +109,7 @@ class StuckDistribution(Nonideality, LinearityPreserving):
         bandwidth = bandwidth_def(np.reshape(means, (len(means), 1)))
         self.__probability = probability
         self.__bandwidth = bandwidth
-        self.__distribution = self._kde(means, bandwidth)
+        self.distribution = self._kde(means, bandwidth)
 
     def label(self) -> str:
         return f"StuckDistr:{self.__probability:.3g}_{self.__bandwidth:.3g}"
@@ -157,7 +157,7 @@ class StuckDistribution(Nonideality, LinearityPreserving):
         mask = utils.random_bool_tensor(G.shape, self.__probability)
         idxs = tf.where(mask)
         zeroed_G = tf.where(mask, 0.0, G)
-        stuck_G = self.__distribution.sample(len(idxs))
+        stuck_G = self.distribution.sample(tf.math.count_nonzero(mask))
         disturbed_G = zeroed_G + tf.scatter_nd(idxs, stuck_G, G.shape)
         return disturbed_G
 
