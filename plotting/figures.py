@@ -395,8 +395,47 @@ def nonideality_agnosticism_heatmap(metric="error"):
     utils.save_fig(fig, f"nonideality-agnosticism-{metric}")
 
 
+def iv_curves_all(data_filepath):
+    fig, axes = utils.fig_init(1, 0.8, fig_shape=(1, 1))
+
+    data = loadmat(data_filepath)["data"]
+    data = np.flip(data, axis=2)
+
+    N = 1000
+    palette = plt.cm.inferno(np.linspace(0, 1, N))
+
+    min_voltage, max_voltage = 0.0, 0.5
+
+    for state_idx in range(data.shape[2]):
+        voltages = data[:101, 1, state_idx]
+        currents = data[:101, 0, state_idx]
+
+        n = currents[100] / currents[50]
+        palette_idx = int(np.floor(N * (n - 2) / 2))
+        axes.plot(voltages, currents, color=palette[palette_idx], linewidth=utils.Config.LINEWIDTH)
+
+    axes.set_xlim([min_voltage, max_voltage])
+    axes.set_xlabel(utils.axis_label("voltage"))
+    axes.tick_params(axis="both", which="both", labelsize=utils.Config.TICKS_FONT_SIZE)
+    axes.yaxis.get_offset_text().set_fontsize(utils.Config.TICKS_FONT_SIZE)
+
+    sm = plt.cm.ScalarMappable(cmap="inferno", norm=plt.Normalize(vmin=2, vmax=4))
+    cbar = fig.colorbar(sm, ax=axes)
+    cbar.set_label(
+        label=utils.axis_label("nonlinearity-parameter"),
+        fontsize=utils.Config.AXIS_LABEL_FONT_SIZE,
+        rotation=-90,
+        va="bottom",
+    )
+    cbar.ax.tick_params(axis="both", which="both", labelsize=utils.Config.TICKS_FONT_SIZE)
+
+    axes.set_ylabel(utils.axis_label("current"))
+    axes.set_yscale("log")
+
+    utils.save_fig(fig, "SiO_x-IV-curves-all")
+
+
 def iv_curves_low_high(data_filepath):
-    # plt.rc("font", **{"size": "1"})
     fig, axes = utils.fig_init(2, 0.4, fig_shape=(1, 2), sharex=True)
 
     low_n_idxs = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
@@ -429,24 +468,12 @@ def iv_curves_low_high(data_filepath):
 
     N = 1000
     palette = plt.cm.inferno(np.linspace(0, 1, N))
+    min_voltage, max_voltage = 0.0, 0.5
 
     for idx, (axis, state_idxs) in enumerate(zip(axes, [low_n_idxs, high_n_idxs])):
-        min_voltage = np.inf
-        max_voltage = -np.inf
-        min_current = np.inf
-        max_current = -np.inf
-
         for state_idx in state_idxs:
             voltages = data[:101, 1, state_idx]
             currents = data[:101, 0, state_idx]
-            if np.max(voltages) > max_voltage:
-                max_voltage = np.max(voltages)
-            if np.min(voltages) < max_voltage:
-                min_voltage = np.min(voltages)
-            if np.max(currents) > max_current:
-                max_current = np.max(currents)
-            if np.min(currents) < max_current:
-                min_current = np.min(currents)
 
             n = currents[100] / currents[50]
             palette_idx = int(np.floor(N * (n - 2) / 2))
@@ -474,7 +501,7 @@ def iv_curves_low_high(data_filepath):
 
     axes[0].set_ylabel(utils.axis_label("current"))
 
-    utils.save_fig(fig, "SiO_x-I-V-curves")
+    utils.save_fig(fig, "SiO_x-IV-curves")
 
 
 def HfO2_stuck_distribution(data):
