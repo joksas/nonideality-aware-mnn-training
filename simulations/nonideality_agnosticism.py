@@ -4,7 +4,7 @@ from training import callbacks
 from training.iterator import Inference, Iterator, Training
 
 from . import (d2d_asymmetry, devices, ideal, iv_nonlinearity,
-               iv_nonlinearity_and_stuck, stuck_low, utils)
+               iv_nonlinearity_and_stuck, stuck_distribution, stuck_low, utils)
 
 DATASET = "mnist"
 INFERENCE_SETUPS = [
@@ -15,6 +15,7 @@ INFERENCE_SETUPS = [
     devices.high_R_and_stuck(),
     devices.symmetric_d2d(),
     devices.asymmetric_d2d(),
+    devices.HfO2(),
 ]
 
 
@@ -34,6 +35,7 @@ def get_iterators():
         *iv_nonlinearity_and_stuck.get_nonideal_iterators(),
         *stuck_low.get_nonideal_iterators(),
         *d2d_asymmetry.get_nonideal_iterators()[:2],
+        *stuck_distribution.get_nonideal_iterators(),
     ]
     inferences = [
         Inference(**utils.get_inference_params(), **inference_setup)
