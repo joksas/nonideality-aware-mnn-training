@@ -102,6 +102,22 @@ class StuckAt(Nonideality, LinearityPreserving):
         return G
 
 
+class StuckAtGMin(StuckAt):
+    def __init__(self, G_min: float, probability: float) -> None:
+        StuckAt.__init__(self, G_min, probability)
+
+    def label(self):
+        return f"StuckMin:{self._StuckAt__probability:.3g}"
+
+
+class StuckAtGMax(StuckAt):
+    def __init__(self, G_max: float, probability: float) -> None:
+        StuckAt.__init__(self, G_max, probability)
+
+    def label(self):
+        return f"StuckMax:{self._StuckAt__probability:.3g}"
+
+
 class StuckDistribution(Nonideality, LinearityPreserving):
     def __init__(
         self, means: list[float], probability: float, bandwidth_def=bw_selection.scotts_rule

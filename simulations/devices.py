@@ -1,4 +1,5 @@
 from crossbar.nonidealities import (D2DLognormal, IVNonlinearity, StuckAt,
+                                    StuckAtGMax, StuckAtGMin,
                                     StuckDistribution)
 
 from . import utils
@@ -26,7 +27,7 @@ def stuck_low():
     return {
         **high_R_conductance(),
         "nonidealities": [
-            StuckAt(high_R_conductance()["G_min"], 0.05),
+            StuckAtGMin(high_R_conductance()["G_min"], 0.05),
         ],
     }
 
@@ -36,7 +37,7 @@ def high_R_and_stuck():
         **high_R_conductance(),
         "nonidealities": [
             IVNonlinearity(2.989, 0.369),
-            StuckAt(high_R_conductance()["G_max"], 0.05),
+            StuckAtGMax(high_R_conductance()["G_max"], 0.05),
         ],
     }
 
