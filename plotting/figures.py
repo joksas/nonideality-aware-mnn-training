@@ -392,8 +392,8 @@ def nonideality_agnosticism_heatmap(metric: str = "error", transpose: bool = Fal
 
     fig, axes = utils.fig_init(2, 0.5)
 
-    x_label = "Inference"
-    y_label = "Training"
+    x_label = utils.axis_label("inference")
+    y_label = utils.axis_label("training")
     filename = f"nonideality-agnosticism-{metric}"
 
     if transpose:

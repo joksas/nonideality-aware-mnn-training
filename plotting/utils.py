@@ -253,6 +253,8 @@ def axis_label(var_name: str, prepend: str = None) -> str:
         label = "loss"
     elif var_name == "epoch":
         label = "epoch (#)"
+    elif var_name == "inference":
+        label = "inference"
     elif var_name == "training":
         label = "training"
     elif var_name == "power-consumption":
