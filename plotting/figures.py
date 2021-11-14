@@ -337,7 +337,7 @@ def checkpoint_comparison_boxplots(metric="error", training_idx=0):
     utils.save_fig(fig, f"checkpoint-results-{metric}")
 
 
-def nonideality_agnosticism_heatmap(metric="error"):
+def nonideality_agnosticism_heatmap(metric: str = "error", transpose: bool = False):
     training_labels = {
         "nonreg__64__none_none__ideal": "Ideal",
         "nonreg__64__0.000997_0.00351__IVNL:2.13_0.095": r"Low $I$-$V$ nonlin.",
@@ -392,12 +392,21 @@ def nonideality_agnosticism_heatmap(metric="error"):
 
     fig, axes = utils.fig_init(2, 0.5)
 
+    x_label = "Inference"
+    y_label = "Training"
+    filename = f"nonideality-agnosticism-{metric}"
+
+    if transpose:
+        df = df.T
+        x_label, y_label = y_label, x_label
+        filename += "-tranposed"
+
     utils.add_heatmap(fig, axes, df, x_ticks=df.columns, y_ticks=df.index, metric=metric)
 
-    axes.set_ylabel("Training")
-    axes.set_xlabel("Inference")
+    axes.set_ylabel(y_label)
+    axes.set_xlabel(x_label)
 
-    utils.save_fig(fig, f"nonideality-agnosticism-{metric}")
+    utils.save_fig(fig, filename)
 
 
 def iv_curves_all(data_filepath, use_cm=False):
