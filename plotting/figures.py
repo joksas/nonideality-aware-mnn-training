@@ -615,8 +615,8 @@ def _HfO2_panels(fig, axes, data_filepath):
 
 
 def experimental_data(iv_data_filepath, pulsing_data_filepath):
-    fig, axes = utils.fig_init(2, 1.0, fig_shape=(2, 2))
-    fig.subplots_adjust(hspace=0.35)
+    fig, axes = utils.fig_init(2, 0.9, fig_shape=(2, 2))
+    fig.subplots_adjust(hspace=0.36)
     _SiO_x_panels(fig, axes[0, :], iv_data_filepath)
     _HfO2_panels(fig, axes[1, :], pulsing_data_filepath)
 
