@@ -232,9 +232,21 @@ def add_boxplot_legend(axis, boxplots, labels, linewdith=1.0, loc="upper right")
 
 
 def add_legend(
-    fig, labels, ncol=1, loc="center", bbox_to_anchor=(0.5, 1.0), linewidth=1.0, frameon=False
+    fig,
+    labels=None,
+    ncol=1,
+    loc="center",
+    bbox_to_anchor=(0.5, 1.0),
+    linewidth=1.0,
+    frameon=False,
+    handles=None,
 ):
-    leg = fig.legend(labels, ncol=ncol, loc=loc, bbox_to_anchor=bbox_to_anchor, frameon=frameon)
+    if handles is None:
+        leg = fig.legend(labels, ncol=ncol, loc=loc, bbox_to_anchor=bbox_to_anchor, frameon=frameon)
+    else:
+        leg = fig.legend(
+            handles=handles, ncol=ncol, loc=loc, bbox_to_anchor=bbox_to_anchor, frameon=frameon
+        )
     for line in leg.get_lines():
         line.set_linewidth(linewidth)
 
@@ -273,6 +285,8 @@ def axis_label(var_name: str, prepend: str = None) -> str:
         label = "count (#)"
     elif var_name == "nonlinearity-parameter":
         label = "nonlinearity parameter"
+    elif var_name == "pulse-number":
+        label = "pulse number (#)"
     else:
         raise ValueError(f'Unrecognised variable name "{var_name}".')
 

@@ -46,12 +46,17 @@ def extract_G_min_and_G_max(data: np.ndarray) -> tuple[float, float]:
 
 
 def extract_stuck(data: np.ndarray, G_min: float, G_max: float) -> tuple[list[float], float]:
+    median_range = G_max - G_min
     shape = data.shape
     data = np.reshape(data, (shape[0] * shape[1], shape[2] * shape[3]))
     mins = np.min(data, axis=0)
     maxs = np.max(data, axis=0)
     ranges = maxs - mins
     means = np.mean(data, axis=0)
-    stuck_values = means[np.where(ranges < (G_max - G_min) / 2)]
+    stuck_values = means[np.where(ranges < stuck_device_threshold(median_range))]
     probability_stuck = stuck_values.shape[0] / means.shape[0]
     return stuck_values.tolist(), probability_stuck
+
+
+def stuck_device_threshold(median_range):
+    return median_range / 2

@@ -9,6 +9,7 @@ import simulations
 from crossbar.nonidealities import (D2DLognormal, IVNonlinearity, StuckAt,
                                     StuckDistribution)
 from matplotlib import rc
+from matplotlib.lines import Line2D
 from scipy.io import loadmat
 from training import architecture
 from training.iterator import Inference, Iterator, Training
@@ -39,7 +40,7 @@ def iv_nonlinearity_training_curves(metric="error", training_idx=0):
 
     utils.add_legend(
         fig,
-        ["Training", "Validation", "Test (nonideal)"],
+        labels=["Training", "Validation", "Test (nonideal)"],
         ncol=axes.shape[1],
         bbox_to_anchor=(0.5, 1.03),
     )
@@ -104,7 +105,7 @@ def iv_nonlinearity_cnn_results(metric="error", training_idx=0):
 
     utils.add_legend(
         fig,
-        ["Training", "Validation", "Test (nonideal)"],
+        labels=["Training", "Validation", "Test (nonideal)"],
         ncol=len(axes),
         bbox_to_anchor=(0.35, 1.05),
     )
@@ -219,7 +220,7 @@ def d2d_uniformity_pos_neg_conductance_histograms():
 
     utils.add_legend(
         fig,
-        [r"$G_+$", r"$G_-$"],
+        labels=[r"$G_+$", r"$G_-$"],
         ncol=len(axes),
         bbox_to_anchor=(0.55, 1.0),
     )
@@ -255,7 +256,7 @@ def d2d_uniformity_results(metric="error", training_idx=0):
 
     utils.add_legend(
         fig,
-        ["Training", "Validation", "Test (nonideal)"],
+        labels=["Training", "Validation", "Test (nonideal)"],
         ncol=len(axes),
         bbox_to_anchor=(0.35, 1.05),
     )
@@ -292,7 +293,7 @@ def iv_nonlinearity_and_stuck_results(metric="error", training_idx=0):
 
     utils.add_legend(
         fig,
-        ["Training", "Validation", "Test (nonideal)"],
+        labels=["Training", "Validation", "Test (nonideal)"],
         ncol=len(axes),
         bbox_to_anchor=(0.35, 1.05),
     )
@@ -329,7 +330,7 @@ def checkpoint_comparison_boxplots(metric="error", training_idx=0):
 
     utils.add_legend(
         fig,
-        ["Training", "Validation", "Test (nonideal)"],
+        labels=["Training", "Validation", "Test (nonideal)"],
         ncol=len(axes),
         bbox_to_anchor=(0.35, 1.05),
     )
@@ -550,3 +551,67 @@ def HfO2_stuck_distribution(data):
     axes.tick_params(axis="both", which="both", labelsize=utils.Config.TICKS_FONT_SIZE)
 
     utils.save_fig(fig, "HfO2-stuck-distribution")
+
+
+def HfO2_pulsing_curves(data):
+    fig, axes = utils.fig_init(1, 1, fig_shape=(1, 1))
+    G_min, G_max = simulations.utils.extract_G_min_and_G_max(data)
+    median_range = G_max - G_min
+    colors = utils.color_dict()
+
+    shape = data.shape
+    num_pulses = shape[0] * shape[1]
+    num_bl = shape[2]
+    num_wl = shape[3]
+    step_size = 10
+    x = [i + 1 for i in range(0, num_pulses, step_size)]
+    data = np.reshape(data, (num_pulses, num_bl, num_wl))
+    for wl_idx in range(0, shape[3], 16):
+        for bl_idx in range(shape[2]):
+            curve_data = data[:, bl_idx, wl_idx]
+            if np.max(curve_data) - np.min(curve_data) < simulations.utils.stuck_device_threshold(
+                median_range
+            ):
+                color = colors["vermilion"]
+            else:
+                color = colors["bluish-green"]
+            y = curve_data[::step_size]
+            axes.plot(x, 1000 * y, color=color, lw=utils.Config.LINEWIDTH / 3, alpha=1 / 3)
+
+    for G in [G_min, G_max]:
+        axes.hlines(
+            1000 * G,
+            0,
+            x[-1],
+            color=colors["blue"],
+            lw=utils.Config.LINEWIDTH,
+            linestyle="dashed",
+            zorder=10,
+        )
+
+    axes.set_xlabel(utils.axis_label("pulse-number"))
+    axes.set_ylabel(utils.axis_label("conductance"))
+
+    axes.set_xlim([0, x[-1]])
+    axes.set_ylim(bottom=0.0)
+    axes.tick_params(axis="both", which="both", labelsize=utils.Config.TICKS_FONT_SIZE)
+
+    handles = [
+        Line2D([0], [0], color=colors["vermilion"], alpha=1 / 3, label="Stuck devices"),
+        Line2D([0], [0], color=colors["bluish-green"], alpha=1 / 3, label="Other devices"),
+        Line2D(
+            [0],
+            [0],
+            color=colors["blue"],
+            linestyle="dashed",
+            label=r"$G_\mathrm{off}, G_\mathrm{on}$",
+        ),
+    ]
+    utils.add_legend(
+        axes,
+        ncol=3,
+        bbox_to_anchor=(0.5, 1.05),
+        handles=handles,
+    )
+
+    utils.save_fig(fig, "HfO2-pulsing-curves")
