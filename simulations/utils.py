@@ -1,5 +1,6 @@
 import h5py
 import numpy as np
+from scipy.io import loadmat
 
 
 def get_training_params():
@@ -14,6 +15,12 @@ def get_inference_params():
     return {
         "num_repeats": 25,
     }
+
+
+def load_iv_data(path: str):
+    data = loadmat(path)["data"]
+    data = np.flip(data, axis=2)
+    return data
 
 
 def load_cycling_data(path: str, var_name: str = "G_reads"):

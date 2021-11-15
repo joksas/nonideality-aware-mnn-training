@@ -435,7 +435,6 @@ def iv_curves_all(data_filepath, use_cm=False):
 
     axes.set_xlim([min_voltage, max_voltage])
     axes.set_xlabel(utils.axis_label("voltage"))
-    axes.tick_params(axis="both", which="both", labelsize=utils.Config.TICKS_FONT_SIZE)
     axes.yaxis.get_offset_text().set_fontsize(utils.Config.TICKS_FONT_SIZE)
 
     sm = plt.cm.ScalarMappable(cmap="inferno", norm=plt.Normalize(vmin=2, vmax=4))
@@ -454,8 +453,7 @@ def iv_curves_all(data_filepath, use_cm=False):
     utils.save_fig(fig, "SiO_x-IV-curves-all")
 
 
-def iv_curves_low_high(data_filepath):
-    fig, axes = utils.fig_init(2, 0.4, fig_shape=(1, 2), sharex=True)
+def _SiO_x_panels(fig, axes, data_filepath):
 
     low_n_idxs = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     high_n_idxs = [
@@ -482,14 +480,13 @@ def iv_curves_low_high(data_filepath):
         46,
     ]
 
-    data = loadmat(data_filepath)["data"]
-    data = np.flip(data, axis=2)
+    data = simulations.utils.load_iv_data(data_filepath)
 
     N = 1000
     palette = plt.cm.inferno(np.linspace(0, 1, N))
     min_voltage, max_voltage = 0.0, 0.5
 
-    for idx, (axis, state_idxs) in enumerate(zip(axes, [low_n_idxs, high_n_idxs])):
+    for axis, state_idxs in zip(axes, [low_n_idxs, high_n_idxs]):
         for state_idx in state_idxs:
             voltages = data[:101, 1, state_idx]
             currents = data[:101, 0, state_idx]
@@ -503,9 +500,7 @@ def iv_curves_low_high(data_filepath):
         axis.set_xlim([min_voltage, max_voltage])
         axis.set_ylim(bottom=0)
         axis.set_xlabel(utils.axis_label("voltage"))
-        utils.add_subfigure_label(fig, axis, idx)
         axis.ticklabel_format(axis="y", scilimits=(-1, 1))
-        axis.tick_params(axis="both", which="both", labelsize=utils.Config.TICKS_FONT_SIZE)
         axis.yaxis.get_offset_text().set_fontsize(utils.Config.TICKS_FONT_SIZE)
 
     sm = plt.cm.ScalarMappable(cmap="inferno", norm=plt.Normalize(vmin=2, vmax=4))
@@ -520,45 +515,17 @@ def iv_curves_low_high(data_filepath):
 
     axes[0].set_ylabel(utils.axis_label("current"))
 
-    utils.save_fig(fig, "SiO_x-IV-curves")
 
-
-def HfO2_stuck_distribution(data):
-    fig, axes = utils.fig_init(1, 0.8, fig_shape=(1, 1))
-
+def _HfO2_panels(fig, axes, data_filepath):
+    data = simulations.utils.load_cycling_data(data_filepath)
     G_min, G_max = simulations.utils.extract_G_min_and_G_max(data)
     vals, p = simulations.utils.extract_stuck(data, G_min, G_max)
-
-    distribution = StuckDistribution(vals, p).distribution
-    x = np.linspace(0.0, 1.5e-3, int(1e4))
-    y = distribution.prob(x)
-    y = y / 1000
-    x = 1000 * x
-
-    blue = utils.color_dict()["blue"]
-    axes.plot(x, y, lw=0.5, color=blue)
-    axes.scatter(
-        [1000 * val for val in vals], np.zeros_like(vals), marker="|", alpha=0.1, color=blue
-    )
-    orange = utils.color_dict()["orange"]
-    axes.scatter([1000 * G_min, 1000 * G_max], [0, 0], marker="|", alpha=0.75, color=orange)
-
-    axes.set_xlabel("Stuck conductance (mS)")
-    axes.set_ylabel(r"Probability density ($\mathrm{mS}^{-1}$)")
-
-    axes.set_xlim([0.0, 1.5])
-    axes.set_ylim(bottom=0.0)
-    axes.tick_params(axis="both", which="both", labelsize=utils.Config.TICKS_FONT_SIZE)
-
-    utils.save_fig(fig, "HfO2-stuck-distribution")
-
-
-def HfO2_pulsing_curves(data):
-    fig, axes = utils.fig_init(1, 1, fig_shape=(1, 1))
-    G_min, G_max = simulations.utils.extract_G_min_and_G_max(data)
     median_range = G_max - G_min
     colors = utils.color_dict()
+    axes[0].sharey(axes[1])
+    axes[1].set_yticklabels([])
 
+    axis = axes[0]
     shape = data.shape
     num_pulses = shape[0] * shape[1]
     num_bl = shape[2]
@@ -576,29 +543,28 @@ def HfO2_pulsing_curves(data):
             else:
                 color = colors["bluish-green"]
             y = curve_data[::step_size]
-            axes.plot(x, 1000 * y, color=color, lw=utils.Config.LINEWIDTH / 3, alpha=1 / 3)
+            axis.plot(x, 1000 * y, color=color, lw=utils.Config.LINEWIDTH / 3, alpha=1 / 3)
 
     for G in [G_min, G_max]:
-        axes.hlines(
+        axis.axhline(
             1000 * G,
             0,
-            x[-1],
+            1,
             color=colors["blue"],
             lw=utils.Config.LINEWIDTH,
             linestyle="dashed",
             zorder=10,
         )
 
-    axes.set_xlabel(utils.axis_label("pulse-number"))
-    axes.set_ylabel(utils.axis_label("conductance"))
+    axis.set_xlabel(utils.axis_label("pulse-number"))
+    axis.set_ylabel(utils.axis_label("conductance"))
 
-    axes.set_xlim([0, x[-1]])
-    axes.set_ylim(bottom=0.0)
-    axes.tick_params(axis="both", which="both", labelsize=utils.Config.TICKS_FONT_SIZE)
+    axis.set_xlim([0, x[-1]])
+    axis.set_ylim(bottom=0.0)
 
     handles = [
-        Line2D([0], [0], color=colors["vermilion"], alpha=1 / 3, label="Stuck devices"),
-        Line2D([0], [0], color=colors["bluish-green"], alpha=1 / 3, label="Other devices"),
+        Line2D([0], [0], color=colors["vermilion"], label="Stuck devices"),
+        Line2D([0], [0], color=colors["bluish-green"], label="Other devices"),
         Line2D(
             [0],
             [0],
@@ -607,11 +573,51 @@ def HfO2_pulsing_curves(data):
             label=r"$G_\mathrm{off}, G_\mathrm{on}$",
         ),
     ]
+
+    # Distribution
+    axis = axes[1]
+    distribution = StuckDistribution(vals, p).distribution
+    x = np.linspace(0.0, 1.5e-3, int(1e4))
+    y = distribution.prob(x)
+    y = y / 1000
+    x = 1000 * x
+
+    axis.plot(y, x, lw=0.5, color=colors["vermilion"])
+    axis.scatter(
+        np.zeros_like(vals),
+        [1000 * val for val in vals],
+        marker="_",
+        alpha=0.1,
+        lw=utils.Config.LINEWIDTH / 2,
+        color=colors["vermilion"],
+    )
+    for G in [G_min, G_max]:
+        axis.axhline(
+            1000 * G,
+            0,
+            1,
+            color=colors["blue"],
+            lw=utils.Config.LINEWIDTH,
+            linestyle="dashed",
+            zorder=10,
+        )
+
+    axis.set_xlabel(r"Probability density ($\mathrm{mS}^{-1}$)")
+
+    axis.set_xlim(left=0.0)
+
     utils.add_legend(
-        axes,
+        fig,
         ncol=3,
-        bbox_to_anchor=(0.5, 1.05),
+        bbox_to_anchor=(0.5, 0.49),
         handles=handles,
     )
 
-    utils.save_fig(fig, "HfO2-pulsing-curves")
+
+def experimental_data(iv_data_filepath, pulsing_data_filepath):
+    fig, axes = utils.fig_init(2, 1.0, fig_shape=(2, 2))
+    fig.subplots_adjust(hspace=0.35)
+    _SiO_x_panels(fig, axes[0, :], iv_data_filepath)
+    _HfO2_panels(fig, axes[1, :], pulsing_data_filepath)
+
+    utils.save_fig(fig, "experimental-data")
