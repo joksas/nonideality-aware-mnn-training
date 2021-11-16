@@ -1,8 +1,7 @@
 import pytest
 import tensorflow as tf
+from awarememristor.crossbar import nonidealities
 from tests import utils
-
-from crossbar import nonidealities
 
 # Only special case, i.e. when std = 0.0 for all entries.
 d2d_lognormal_testdata = [

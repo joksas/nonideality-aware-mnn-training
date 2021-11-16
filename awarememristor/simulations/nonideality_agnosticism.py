@@ -1,10 +1,11 @@
 import os
 
-from training import callbacks
-from training.iterator import Inference, Iterator, Training
-
-from . import (d2d_asymmetry, devices, ideal, iv_nonlinearity,
-               iv_nonlinearity_and_stuck, stuck_distribution, stuck_low, utils)
+from awarememristor.simulations import (d2d_asymmetry, devices, ideal,
+                                        iv_nonlinearity,
+                                        iv_nonlinearity_and_stuck,
+                                        stuck_distribution, stuck_low, utils)
+from awarememristor.training import callbacks
+from awarememristor.training.iterator import Inference, Iterator, Training
 
 DATASET = "mnist"
 INFERENCE_SETUPS = [

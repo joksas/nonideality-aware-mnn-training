@@ -1,5 +1,5 @@
-from training import callbacks
-from training.iterator import Inference, Iterator, Training
+from awarememristor.training import callbacks
+from awarememristor.training.iterator import Inference, Iterator, Training
 
 from . import devices, iv_nonlinearity_cnn, utils
 

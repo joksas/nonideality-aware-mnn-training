@@ -1,6 +1,7 @@
-from crossbar.nonidealities import (D2DLognormal, IVNonlinearity, StuckAt,
-                                    StuckAtGMax, StuckAtGMin,
-                                    StuckDistribution)
+from awarememristor.crossbar.nonidealities import (D2DLognormal,
+                                                   IVNonlinearity, StuckAt,
+                                                   StuckAtGMax, StuckAtGMin,
+                                                   StuckDistribution)
 
 from . import utils
 
@@ -78,7 +79,7 @@ def symmetric_high_d2d():
 
 
 def HfO2():
-    data = utils.load_cycling_data("G_reads_11_cycles.mat")
+    data = utils.load_cycling_data("data/HfO2-data.mat")
     G_min, G_max = utils.extract_G_min_and_G_max(data)
     vals, p = utils.extract_stuck(data, G_min, G_max)
     return {

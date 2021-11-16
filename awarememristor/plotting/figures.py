@@ -1,20 +1,19 @@
 import copy
 
-import crossbar
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import simulations
-from crossbar.nonidealities import (D2DLognormal, IVNonlinearity, StuckAt,
-                                    StuckDistribution)
+from awarememristor import crossbar, simulations
+from awarememristor.crossbar.nonidealities import (D2DLognormal,
+                                                   IVNonlinearity, StuckAt,
+                                                   StuckDistribution)
+from awarememristor.plotting import utils
+from awarememristor.training import architecture
+from awarememristor.training.iterator import Inference, Iterator, Training
 from matplotlib import rc
 from matplotlib.lines import Line2D
 from scipy.io import loadmat
-from training import architecture
-from training.iterator import Inference, Iterator, Training
-
-from . import utils
 
 
 def iv_nonlinearity_training_curves(metric="error", training_idx=0):

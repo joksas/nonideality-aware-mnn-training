@@ -1,9 +1,9 @@
-from training import callbacks
-from training.iterator import Inference, Iterator, Training
+from awarememristor.training import callbacks
+from awarememristor.training.iterator import Inference, Iterator, Training
 
 from . import devices, utils
 
-DATASET = "mnist"
+DATASET = "cifar10"
 
 
 def custom_iterator(training_setup, inference_setups):
@@ -14,15 +14,13 @@ def custom_iterator(training_setup, inference_setups):
 
 
 def get_ideal_iterator():
-    return custom_iterator(devices.ideal(), [devices.high_R_and_stuck()])
+    return custom_iterator(devices.ideal(), [devices.high_R()])
 
 
 def get_nonideal_iterators():
-    iterators = [
-        custom_iterator(devices.high_R_and_stuck(), [devices.high_R_and_stuck()]),
+    return [
+        custom_iterator(devices.high_R(), [devices.high_R()]),
     ]
-
-    return iterators
 
 
 def get_iterators():

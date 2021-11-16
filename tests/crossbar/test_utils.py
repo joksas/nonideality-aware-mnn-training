@@ -2,11 +2,9 @@
 Tests of functions of crossbar.faulty_devices
 """
 import pytest
-# pylint: disable=missing-function-docstring
 import tensorflow as tf
+from awarememristor.crossbar import utils as crossbar_utils
 from tests import utils
-
-from crossbar import utils as crossbar_utils
 
 random_bool_tensor_testdata = [
     (

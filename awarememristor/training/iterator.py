@@ -6,9 +6,9 @@ from typing import Any, Union
 import numpy as np
 import tensorflow as tf
 import tensorflow_datasets as tfds
-from crossbar.nonidealities import Nonideality
+from awarememristor.crossbar.nonidealities import Nonideality
 
-from . import callbacks, network, utils
+from awarememristor.training import callbacks, network, utils
 
 
 class Nonideal:

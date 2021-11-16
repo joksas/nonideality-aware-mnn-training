@@ -3,8 +3,7 @@ import time
 
 import numpy as np
 import tensorflow as tf
-
-from . import architecture
+from awarememristor.training import architecture
 
 
 class MemristiveCallback(tf.keras.callbacks.Callback):

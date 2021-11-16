@@ -4,11 +4,10 @@ from abc import ABC, abstractmethod
 import numpy as np
 import tensorflow as tf
 import tensorflow_probability as tfp
+from awarememristor.crossbar import utils
 from KDEpy import bw_selection
 from tensorflow.python.ops.numpy_ops import np_config
 from tensorflow_probability import distributions as tfd
-
-from . import utils
 
 
 class Nonideality(ABC):

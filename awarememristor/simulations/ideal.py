@@ -1,5 +1,5 @@
-from training import callbacks
-from training.iterator import Inference, Iterator, Training
+from awarememristor.training import callbacks
+from awarememristor.training.iterator import Inference, Iterator, Training
 
 from . import (checkpoint_comparison, d2d_asymmetry, devices, iv_nonlinearity,
                iv_nonlinearity_and_stuck, iv_nonlinearity_cnn,

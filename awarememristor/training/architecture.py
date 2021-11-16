@@ -1,6 +1,6 @@
-import crossbar
 import numpy as np
 import tensorflow as tf
+from awarememristor import crossbar
 from tensorflow.keras import layers, models
 
 from . import utils

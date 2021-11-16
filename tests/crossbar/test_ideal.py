@@ -2,11 +2,9 @@
 Tests of functions of crossbar.nonlinear_IV
 """
 import pytest
-# pylint: disable=missing-function-docstring
 import tensorflow as tf
+from awarememristor.crossbar import ideal
 from tests import utils
-
-from crossbar import ideal
 
 # In the ideal case, the bit-line outputs should represent the vector-matrix
 # product of voltages and conductances.

@@ -1,6 +1,6 @@
 import tensorflow as tf
 
-from . import utils
+from awarememristor.crossbar import utils
 
 
 def compute_I_all(V: tf.Tensor, G: tf.Tensor) -> tf.Tensor:
