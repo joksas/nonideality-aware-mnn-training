@@ -130,16 +130,8 @@ def plot_training_curves(fig, axis, iterator, subfigure_idx=None, metric="error"
     plot_curve(axis, x_validation, y_validation, colors["sky-blue"], metric=metric)
 
     # Testing (during training) curve.
-
-    # Network might have been trained with a different number of callbacks.
-    nonideality_label = iterator.inferences[inference_idx].nonideality_label()
-    for idx, history in enumerate(iterator.info()["callback_infos"]["memristive_test"]["history"]):
-        if history["nonideality_label"] == nonideality_label:
-            true_inference_idx = idx
-            break
-
     x_training_testing, y_training_testing = iterator.training_testing_curves(
-        metric, true_inference_idx
+        metric, iterator.inferences[inference_idx]
     )
     plot_curve(
         axis, x_training_testing, y_training_testing, colors["reddish-purple"], metric=metric

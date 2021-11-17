@@ -274,9 +274,12 @@ class Iterator:
 
         return x, y
 
-    def training_testing_curves(self, metric, inference_idx):
+    def training_testing_curves(self, metric: str, inference: Inference):
         """Data from test callbacks during training."""
-        history = self.info()["callback_infos"]["memristive_test"]["history"][inference_idx]
+
+        history = self.info()["callback_infos"]["memristive_test"]["history"][
+            self._memristive_test_callback_idx(inference)
+        ]
 
         if metric == "error":
             y = history["accuracy"]
@@ -291,7 +294,16 @@ class Iterator:
 
         return x, y
 
-    def _test_metric_existing(self, metric="accuracy", inference_idx=0) -> np.ndarray:
+    def _memristive_test_callback_idx(self, inference: Inference) -> int:
+        """Number of inferences might not equal the number of memristive test callbacks."""
+        nonideality_label = inference.nonideality_label()
+        for idx, history in enumerate(self.info()["callback_infos"]["memristive_test"]["history"]):
+            if history["nonideality_label"] == nonideality_label:
+                return idx
+
+        raise ValueError("Index not found.")
+
+    def _test_metric_existing(self, inference_idx: int, metric: str = "accuracy") -> np.ndarray:
         """Return test metric for which we already have data."""
         self.inference_idx = inference_idx
         inference = self.inferences[self.inference_idx]
@@ -323,9 +335,9 @@ class Iterator:
 
     def test_metric(self, metric: str, inference_idx: int = 0) -> np.ndarray:
         if metric in "error":
-            values = self._test_metric_existing(metric="accuracy", inference_idx=inference_idx)
+            values = self._test_metric_existing(inference_idx, metric="accuracy")
         else:
-            values = self._test_metric_existing(metric=metric, inference_idx=inference_idx)
+            values = self._test_metric_existing(inference_idx, metric=metric)
 
         if metric == "error":
             values = 1 - values
