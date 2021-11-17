@@ -9,6 +9,8 @@ import tensorflow_datasets as tfds
 from awarememristor.crossbar.nonidealities import Nonideality
 from awarememristor.training import callbacks, network, utils
 
+warnings.simplefilter("default")
+
 
 class Nonideal:
     def __init__(
@@ -296,9 +298,23 @@ class Iterator:
 
     def _memristive_test_callback_idx(self, inference: Inference) -> int:
         """Number of inferences might not equal the number of memristive test callbacks."""
+        # New method
+        label = inference.label()
+        for idx, history in enumerate(self.info()["callback_infos"]["memristive_test"]["history"]):
+            try:
+                if history["label"] == label:
+                    return idx
+            except KeyError:
+                break
+
+        # Old method
         nonideality_label = inference.nonideality_label()
         for idx, history in enumerate(self.info()["callback_infos"]["memristive_test"]["history"]):
             if history["nonideality_label"] == nonideality_label:
+                warnings.warn(
+                    "Using the old method of storing memristive test results.",
+                    PendingDeprecationWarning,
+                )
                 return idx
 
         raise ValueError("Index not found.")
