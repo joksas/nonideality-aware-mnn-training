@@ -252,7 +252,9 @@ def add_legend(
 
 
 def save_fig(fig, name: str):
-    path = os.path.join(Path(__file__).parent, f"{name}.pdf")
+    dir_name = "plots"
+    os.makedirs(dir_name, exist_ok=True)
+    path = os.path.join(dir_name, f"{name}.pdf")
     fig.savefig(path, bbox_inches="tight", transparent=True)
 
 
