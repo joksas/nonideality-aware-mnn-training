@@ -40,21 +40,6 @@ def I_total_to_y(
     return y
 
 
-def clip_weights(weights: tf.Tensor, max_weight: float) -> tf.Tensor:
-    """Clip weights below 0 and above `max_weight`.
-
-    Args:
-        weights: Synaptic weights.
-        max_weight: Assumed maximum weight.
-
-    Returns:
-        Clipped weights.
-    """
-    weights = tf.clip_by_value(weights, 0.0, max_weight)
-
-    return weights
-
-
 def compute_k_G(max_weight: float, G_max: float, G_min: float) -> float:
     """Compute conductance scaling factor.
 
@@ -101,8 +86,8 @@ def w_params_to_G(weight_params: tf.Tensor, G_min: float, G_max: float) -> tf.Te
     """Map weight parameters onto conductances.
 
     Args:
-        weight_params: Weight parameters of shape `m x 2n`. These are used to train each conductance
-            (instead of pair of conductances) directly.
+        weight_params: Nonnegative weight parameters of shape `m x 2n`. These are used to train
+            each conductance (instead of pair of conductances) directly.
         G_min: Minimum conductance of electroformed memristors.
         G_max: Maximum conductance of electroformed memristors.
 
@@ -111,9 +96,6 @@ def w_params_to_G(weight_params: tf.Tensor, G_min: float, G_max: float) -> tf.Te
         max_weight: Assumed maximum weight.
     """
     max_weight = tf.math.reduce_max(weight_params)
-
-    weight_params = clip_weights(weight_params, max_weight)
-
     k_G = compute_k_G(max_weight, G_max, G_min)
     G = k_G * weight_params + G_min
 

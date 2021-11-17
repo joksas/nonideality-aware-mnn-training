@@ -1,7 +1,9 @@
+import math
+
 import numpy as np
 import tensorflow as tf
 from awarememristor import crossbar
-from tensorflow.keras import layers, models
+from tensorflow.keras import constraints, layers, models
 
 from . import utils
 
@@ -82,6 +84,7 @@ class MemristorDense(layers.Layer):
                 initializer=tf.keras.initializers.RandomNormal(mean=0.5, stddev=stdv),
                 name="weights_pos",
                 trainable=True,
+                constraint=constraints.NonNeg(),
                 **kwargs,
             )
 
@@ -90,6 +93,7 @@ class MemristorDense(layers.Layer):
                 initializer=tf.keras.initializers.RandomNormal(mean=0.5, stddev=stdv),
                 name="weights_neg",
                 trainable=True,
+                constraint=constraints.NonNeg(),
                 **kwargs,
             )
 
@@ -98,6 +102,7 @@ class MemristorDense(layers.Layer):
                 initializer=tf.keras.initializers.Constant(value=0.5),
                 name="biases_pos",
                 trainable=True,
+                constraint=constraints.NonNeg(),
                 **kwargs,
             )
 
@@ -106,6 +111,7 @@ class MemristorDense(layers.Layer):
                 initializer=tf.keras.initializers.Constant(value=0.5),
                 name="biases_neg",
                 trainable=True,
+                constraint=constraints.NonNeg(),
                 **kwargs,
             )
         else:
