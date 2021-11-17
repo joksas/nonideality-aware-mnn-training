@@ -59,10 +59,6 @@ def infer(iterator):
 
     print(f"Test loss: {score[0]:.4f}\nTest accuracy: {score[1]:.4f}")
 
-    loss_path = iterator.loss_path()
-    open(loss_path, "a").close()
-    tf.print(score[0], output_stream=f"file://{loss_path}")
-
-    accuracy_path = iterator.accuracy_path()
-    open(accuracy_path, "a").close()
-    tf.print(score[1], output_stream=f"file://{accuracy_path}")
+    for var, path in zip(score, [iterator.loss_path(), iterator.accuracy_path()]):
+        with open(path, mode="a", encoding="utf-8"):
+            tf.print(var, output_stream=f"file://{path}")

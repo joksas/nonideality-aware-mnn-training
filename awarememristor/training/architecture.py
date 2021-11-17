@@ -213,9 +213,9 @@ class MemristorDense(layers.Layer):
 
         if not self.iterator.is_training and not self.iterator.is_callback:
             power_path = self.iterator.power_path()
-            open(power_path, "a").close()
             P_avg = utils.compute_avg_crossbar_power(V, I_ind)
-            tf.print(P_avg, output_stream=f"file://{power_path}")
+            with open(power_path, mode="a", encoding="utf-8"):
+                tf.print(P_avg, output_stream=f"file://{power_path}")
 
         # Converting to outputs.
         y_disturbed = crossbar.map.I_to_y(I, k_V, max_weight, G_max, G_min)
