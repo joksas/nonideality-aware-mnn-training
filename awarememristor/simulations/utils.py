@@ -94,14 +94,6 @@ def low_high_n_SiO_x_vals(data, is_high_nonlinearity):
     return G_off, G_on, n_avg, n_std
 
 
-def _SiO_x_curve_indices():
-    """Return indices for low-nonlinearity and high-nonlinearity regions."""
-    return (
-        [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-        [40, 31, 47, 36, 51, 50, 30, 45, 39, 52, 33, 35, 34, 41, 48, 43, 38, 42, 37, 44, 46],
-    )
-
-
 def load_cycling_data(path: str, var_name: str = "G_reads"):
     """Load cycling data.
 
