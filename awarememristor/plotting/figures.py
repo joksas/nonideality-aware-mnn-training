@@ -416,21 +416,25 @@ def iv_curves_all(data_filepath, use_cm=False):
 
     fig, axes = utils.fig_init(1, 0.8, fig_shape=(1, 1))
 
-    data = loadmat(data_filepath)["data"]
-    data = np.flip(data, axis=2)
+    data = simulations.utils.load_iv_data(data_filepath)
+    voltages, currents = simulations.utils.all_SiO_x_curves(data)
 
     N = 1000
     palette = plt.cm.inferno(np.linspace(0, 1, N))
 
     min_voltage, max_voltage = 0.0, 0.5
 
-    for state_idx in range(data.shape[2]):
-        voltages = data[:101, 1, state_idx]
-        currents = data[:101, 0, state_idx]
-
-        n = currents[100] / currents[50]
+    for idx in range(voltages.shape[0]):
+        voltage_curve = voltages[idx, :]
+        current_curve = currents[idx, :]
+        n = simulations.utils.nonlinearity_parameter(current_curve)
         palette_idx = int(np.floor(N * (n - 2) / 2))
-        axes.plot(voltages, currents, color=palette[palette_idx], linewidth=utils.Config.LINEWIDTH)
+        axes.plot(
+            voltage_curve,
+            current_curve,
+            color=palette[palette_idx],
+            linewidth=utils.Config.LINEWIDTH,
+        )
 
     axes.set_xlim([min_voltage, max_voltage])
     axes.set_xlabel(utils.axis_label("voltage"))
@@ -453,47 +457,24 @@ def iv_curves_all(data_filepath, use_cm=False):
 
 
 def _SiO_x_panels(fig, axes, data_filepath):
-
-    low_n_idxs = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-    high_n_idxs = [
-        40,
-        31,
-        47,
-        36,
-        51,
-        50,
-        30,
-        45,
-        39,
-        52,
-        33,
-        35,
-        34,
-        41,
-        48,
-        43,
-        38,
-        42,
-        37,
-        44,
-        46,
-    ]
-
     data = simulations.utils.load_iv_data(data_filepath)
 
     N = 1000
     palette = plt.cm.inferno(np.linspace(0, 1, N))
     min_voltage, max_voltage = 0.0, 0.5
 
-    for axis, state_idxs in zip(axes, [low_n_idxs, high_n_idxs]):
-        for state_idx in state_idxs:
-            voltages = data[:101, 1, state_idx]
-            currents = data[:101, 0, state_idx]
-
-            n = currents[100] / currents[50]
+    curves = simulations.utils.low_high_n_SiO_x_curves(data)
+    for axis, (voltages, currents) in zip(axes, curves):
+        for idx in range(voltages.shape[0]):
+            voltage_curve = voltages[idx, :]
+            current_curve = currents[idx, :]
+            n = simulations.utils.nonlinearity_parameter(current_curve)
             palette_idx = int(np.floor(N * (n - 2) / 2))
             axis.plot(
-                voltages, currents, color=palette[palette_idx], linewidth=utils.Config.LINEWIDTH
+                voltage_curve,
+                current_curve,
+                color=palette[palette_idx],
+                linewidth=utils.Config.LINEWIDTH,
             )
 
         axis.set_xlim([min_voltage, max_voltage])

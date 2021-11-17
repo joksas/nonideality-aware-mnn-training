@@ -20,7 +20,86 @@ def get_inference_params():
 def load_iv_data(path: str):
     data = loadmat(path)["data"]
     data = np.flip(data, axis=2)
+    data = np.transpose(data, (1, 2, 0))
     return data
+
+
+def all_SiO_x_curves(data, max_voltage=0.5, voltage_step=0.005):
+    num_points = int(max_voltage / voltage_step) + 1
+
+    data = data[:, :, :num_points]
+    voltages = data[1, :, :]
+    currents = data[0, :, :]
+
+    return voltages, currents
+
+
+def low_high_n_SiO_x_curves(data):
+    # Arbitrary, but 11 results in a similar G_on/G_off ratio.
+    NUM_LOW_N_CURVES = 11
+
+    voltages, currents = all_SiO_x_curves(data)
+
+    num_points = voltages.shape[1]
+    half_voltage_idx = int(num_points / 2)
+    resistances = voltages[:, half_voltage_idx] / currents[:, half_voltage_idx]
+    indices = np.argsort(resistances)
+    resistances = resistances[indices]
+    voltages = voltages[indices, :]
+    currents = currents[indices, :]
+
+    low_n_ratio = resistances[NUM_LOW_N_CURVES - 1] / resistances[0]
+
+    high_n_R_off = resistances[-1]
+    idx = len(indices) - 2
+    while True:
+        # Stop whenever we exceed G_on/G_off ratio of low-nonlinearity region.
+        if high_n_R_off / resistances[idx] > low_n_ratio:
+            break
+        idx -= 1
+
+    low_n_voltages = voltages[:NUM_LOW_N_CURVES, :]
+    low_n_currents = currents[:NUM_LOW_N_CURVES, :]
+    high_n_voltages = voltages[idx:, :]
+    high_n_currents = currents[idx:, :]
+
+    return (low_n_voltages, low_n_currents), (high_n_voltages, high_n_currents)
+
+
+def nonlinearity_parameter(current_curve):
+    num_points = len(current_curve)
+    half_voltage_idx = int(num_points / 2)
+    return current_curve[-1] / current_curve[half_voltage_idx]
+
+
+def G_at_half_voltage(voltage_curve, current_curve):
+    num_points = len(current_curve)
+    half_voltage_idx = int(num_points / 2)
+    return current_curve[half_voltage_idx] / voltage_curve[half_voltage_idx]
+
+
+def low_high_n_SiO_x_vals(data, is_high_nonlinearity):
+    curves = low_high_n_SiO_x_curves(data)
+    if is_high_nonlinearity:
+        idx = 1
+    else:
+        idx = 0
+    voltage_curves, current_curves = curves[idx]
+
+    n = [nonlinearity_parameter(curve) for curve in current_curves]
+    n_avg, n_std = np.mean(n), np.std(n, ddof=1)
+
+    G_on = G_at_half_voltage(voltage_curves[0, :], current_curves[0, :])
+    G_off = G_at_half_voltage(voltage_curves[-1, :], current_curves[-1, :])
+    return G_off, G_on, n_avg, n_std
+
+
+def _SiO_x_curve_indices():
+    """Return indices for low-nonlinearity and high-nonlinearity regions."""
+    return (
+        [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+        [40, 31, 47, 36, 51, 50, 30, 45, 39, 52, 33, 35, 34, 41, 48, 43, 38, 42, 37, 44, 46],
+    )
 
 
 def load_cycling_data(path: str, var_name: str = "G_reads"):

@@ -10,29 +10,28 @@ def ideal():
 
 
 def _SiO_x_V_ref() -> dict[str, float]:
-    return {"V_ref": 0.25}
+    data = utils.load_iv_data("data/SiO_x-data.mat")
+    (voltages, _), (_, _) = utils.low_high_n_SiO_x_curves(data)
+    V_ref = voltages[0][-1] / 2
+
+    return {"V_ref": V_ref}
 
 
 def _SiO_x_G(is_high_nonlinearity: bool) -> dict[str, float]:
-    if is_high_nonlinearity:
-        return {
-            "G_off": 1 / 1295000,
-            "G_on": 1 / 366200,
-        }
+    data = utils.load_iv_data("data/SiO_x-data.mat")
+    G_off, G_on, _, _ = utils.low_high_n_SiO_x_vals(data, is_high_nonlinearity)
     return {
-        "G_off": 1 / 1003,
-        "G_on": 1 / 284.6,
+        "G_off": G_off,
+        "G_on": G_on,
     }
 
 
 def _SiO_x_nonidealities(is_high_nonlinearity: bool):
+    data = utils.load_iv_data("data/SiO_x-data.mat")
+    _, _, n_avg, n_std = utils.low_high_n_SiO_x_vals(data, is_high_nonlinearity)
     V_ref = _SiO_x_V_ref()["V_ref"]
-    if is_high_nonlinearity:
-        return {
-            "nonidealities": [IVNonlinearity(V_ref, 2.989, 0.369)],
-        }
     return {
-        "nonidealities": [IVNonlinearity(V_ref, 2.132, 0.095)],
+        "nonidealities": [IVNonlinearity(V_ref, n_avg, n_std)],
     }
 
 
