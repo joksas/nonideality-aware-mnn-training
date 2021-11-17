@@ -120,19 +120,19 @@ def load_cycling_data(path: str, var_name: str = "G_reads"):
     return data
 
 
-def extract_G_min_and_G_max(data: np.ndarray) -> tuple[float, float]:
+def extract_G_off_and_G_on(data: np.ndarray) -> tuple[float, float]:
     shape = data.shape
     data = np.reshape(data, (shape[0] * shape[1], shape[2] * shape[3]))
-    G_mins = np.min(data, axis=0)
-    G_min = np.median(G_mins)
-    G_maxs = np.max(data, axis=0)
-    G_max = np.median(G_maxs)
+    G_offs = np.min(data, axis=0)
+    G_off = np.median(G_offs)
+    G_ons = np.max(data, axis=0)
+    G_on = np.median(G_ons)
 
-    return G_min, G_max
+    return G_off, G_on
 
 
-def extract_stuck(data: np.ndarray, G_min: float, G_max: float) -> tuple[list[float], float]:
-    median_range = G_max - G_min
+def extract_stuck(data: np.ndarray, G_off: float, G_on: float) -> tuple[list[float], float]:
+    median_range = G_on - G_off
     shape = data.shape
     data = np.reshape(data, (shape[0] * shape[1], shape[2] * shape[3]))
     mins = np.min(data, axis=0)
