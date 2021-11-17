@@ -300,7 +300,7 @@ def iv_nonlinearity_and_stuck_results(metric="error", training_idx=0):
     utils.save_fig(fig, f"iv-nonlinearity-and-stuck-results-{metric}")
 
 
-def checkpoint_comparison_boxplots(metric="error", training_idx=0):
+def checkpoint_comparison_results(metric="error", training_idx=0):
     fig, axes = utils.fig_init(2, 1 / 3, fig_shape=(1, 3), sharey=True)
 
     iterators = simulations.checkpoint_comparison.get_iterators()
