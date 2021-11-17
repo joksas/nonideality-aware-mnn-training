@@ -220,8 +220,6 @@ class MemristorDense(layers.Layer):
         # Converting to outputs.
         y_disturbed = crossbar.map.I_to_y(I, k_V, max_weight, G_max, G_min)
 
-        tf.debugging.assert_all_finite(y_disturbed, "nan in outputs", name=None)
-
         return y_disturbed
 
     def get_output_shape_for(self, input_shape):
