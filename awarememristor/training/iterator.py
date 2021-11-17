@@ -7,7 +7,6 @@ import numpy as np
 import tensorflow as tf
 import tensorflow_datasets as tfds
 from awarememristor.crossbar.nonidealities import Nonideality
-
 from awarememristor.training import callbacks, network, utils
 
 
@@ -134,7 +133,7 @@ class Iterator:
         self.inferences = inferences
         self.is_callback = False
         self.is_training = False
-        self.inference_idx = None
+        self.inference_idx = 0
         self.test_batch_size = 100  # divisor of the size of the test set
         self.__training_data = None
         self.__validation_data = None
@@ -319,7 +318,7 @@ class Iterator:
             self.training.repeat_idx += 1
 
         self.training.repeat_idx = 0
-        self.inference_idx = None
+        self.inference_idx = 0
         return y
 
     def test_metric(self, metric: str, inference_idx: int = 0) -> np.ndarray:
@@ -376,4 +375,4 @@ class Iterator:
                 self.training.repeat_idx += 1
 
             self.training.repeat_idx = 0
-        self.inference_idx = None
+        self.inference_idx = 0
