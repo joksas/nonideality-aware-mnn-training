@@ -47,12 +47,12 @@ class LinearityNonpreserving(ABC):
 
 class IVNonlinearity(Nonideality, LinearityNonpreserving):
     def __init__(self, V_ref: float, n_avg: float, n_std: float) -> None:
-        self.__V_ref = V_ref
-        self.__n_avg = n_avg
-        self.__n_std = n_std
+        self.V_ref = V_ref
+        self.n_avg = n_avg
+        self.n_std = n_std
 
     def label(self):
-        return f"IVNL:{self.__n_avg:.3g}_{self.__n_std:.3g}"
+        return f"IVNL:{self.n_avg:.3g}_{self.n_std:.3g}"
 
     def compute_I(self, V, G):
         """Compute current values by modelling I-V behaviour using nonlinearity
@@ -64,14 +64,14 @@ class IVNonlinearity(Nonideality, LinearityNonpreserving):
         generated amount of current equals the expected amount described by
         Ohm's law, i.e. `I = V*G`.
         """
-        n = tf.random.normal(G.get_shape().as_list(), mean=self.__n_avg, stddev=self.__n_std)
+        n = tf.random.normal(G.get_shape().as_list(), mean=self.n_avg, stddev=self.n_std)
         # n <= 1 would produce unrealistic behaviour, while 1 < n < 2 is not typical in I-V curves
         n = tf.clip_by_value(n, 2.0, math.inf)
 
-        ohmic_current = self.__V_ref * tf.expand_dims(G, axis=0)
+        ohmic_current = self.V_ref * tf.expand_dims(G, axis=0)
         # Take absolute value of V to prevent negative numbers from being raised to
         # a negative power. We assume symmetrical behaviour with negative voltages.
-        ratio = tf.expand_dims(tf.abs(V) / self.__V_ref, axis=-1)
+        ratio = tf.expand_dims(tf.abs(V) / self.V_ref, axis=-1)
         exponent = utils.tf_log2(n)
         sign = tf.expand_dims(tf.sign(V), axis=-1)
 
@@ -90,15 +90,15 @@ class StuckAt(Nonideality, LinearityPreserving):
             probability: Probability that a given device will be set to `val`.
                 Probability must be in the [0.0, 1.0] range.
         """
-        self.__value = value
-        self.__probability = probability
+        self.value = value
+        self.probability = probability
 
     def label(self):
-        return f"Stuck:{self.__value:.3g}_{self.__probability:.3g}"
+        return f"Stuck:{self.value:.3g}_{self.probability:.3g}"
 
     def disturb_G(self, G):
-        mask = utils.random_bool_tensor(G.shape, self.__probability)
-        G = tf.where(mask, self.__value, G)
+        mask = utils.random_bool_tensor(G.shape, self.probability)
+        G = tf.where(mask, self.value, G)
         return G
 
 
@@ -107,7 +107,7 @@ class StuckAtGMin(StuckAt):
         StuckAt.__init__(self, G_off, probability)
 
     def label(self):
-        return f"StuckMin:{self._StuckAt__probability:.3g}"
+        return f"StuckMin:{self.probability:.3g}"
 
 
 class StuckAtGMax(StuckAt):
@@ -115,7 +115,7 @@ class StuckAtGMax(StuckAt):
         StuckAt.__init__(self, G_on, probability)
 
     def label(self):
-        return f"StuckMax:{self._StuckAt__probability:.3g}"
+        return f"StuckMax:{self.probability:.3g}"
 
 
 class StuckDistribution(Nonideality, LinearityPreserving):
@@ -123,12 +123,12 @@ class StuckDistribution(Nonideality, LinearityPreserving):
         self, means: list[float], probability: float, bandwidth_def=bw_selection.scotts_rule
     ):
         bandwidth = bandwidth_def(np.reshape(means, (len(means), 1)))
-        self.__probability = probability
-        self.__bandwidth = bandwidth
+        self.probability = probability
+        self.bandwidth = bandwidth
         self.distribution = self._kde(means, bandwidth)
 
     def label(self) -> str:
-        return f"StuckDistr:{self.__probability:.3g}_{self.__bandwidth:.3g}"
+        return f"StuckDistr:{self.probability:.3g}_{self.bandwidth:.3g}"
 
     @staticmethod
     def _kde(means: list[float], bandwidth: float) -> tfd.Distribution:
@@ -170,7 +170,7 @@ class StuckDistribution(Nonideality, LinearityPreserving):
         return kde_distribution
 
     def disturb_G(self, G):
-        mask = utils.random_bool_tensor(G.shape, self.__probability)
+        mask = utils.random_bool_tensor(G.shape, self.probability)
         idxs = tf.where(mask)
         zeroed_G = tf.where(mask, 0.0, G)
         stuck_G = self.distribution.sample(tf.math.count_nonzero(mask))
@@ -187,22 +187,22 @@ class D2DLognormal(Nonideality, LinearityPreserving):
             R_off_std: Standard deviation of the (lognormal distribution's) underlying normal
                 distribution associated with R_off (i.e. 1/G_off).
         """
-        self.__G_off = G_off
-        self.__G_on = G_on
-        self.__R_on_std = R_on_std
-        self.__R_off_std = R_off_std
+        self.G_off = G_off
+        self.G_on = G_on
+        self.R_on_std = R_on_std
+        self.R_off_std = R_off_std
 
     def label(self):
-        return f"D2DLN:{self.__R_on_std:.3g}_{self.__R_off_std:.3g}"
+        return f"D2DLN:{self.R_on_std:.3g}_{self.R_off_std:.3g}"
 
     def disturb_G(self, G):
         """Disturb conductances lognormally."""
         R = 1 / G
-        R_on = 1 / self.__G_on
-        R_off = 1 / self.__G_off
+        R_on = 1 / self.G_on
+        R_off = 1 / self.G_off
 
         # Piece-wise linear interpolation
-        std_ref = [self.__R_on_std, self.__R_off_std]
+        std_ref = [self.R_on_std, self.R_off_std]
         R_std = tfp.math.interp_regular_1d_grid(R, R_on, R_off, std_ref)
 
         # Lognormal modelling
