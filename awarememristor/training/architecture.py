@@ -215,7 +215,7 @@ class MemristorDense(layers.Layer):
             power_path = self.iterator.power_path()
             open(power_path, "a").close()
             P_avg = utils.compute_avg_crossbar_power(V, I_ind)
-            tf.print(P_avg, output_stream="file://{}".format(power_path))
+            tf.print(P_avg, output_stream=f"file://{power_path}")
 
         # Converting to outputs.
         y_disturbed = crossbar.map.I_to_y(I, k_V, max_weight, G_max, G_min)

@@ -57,12 +57,12 @@ def infer(iterator):
 
     score = model.evaluate(iterator.data("testing"), verbose=0)
 
-    print("Test loss: %0.4f\nTest accuracy: %0.4f" % (score[0], score[1]))
+    print(f"Test loss: {score[0]:.4f}\nTest accuracy: {score[1]:.4f}")
 
     loss_path = iterator.loss_path()
     open(loss_path, "a").close()
-    tf.print(score[0], output_stream="file://{}".format(loss_path))
+    tf.print(score[0], output_stream=f"file://{loss_path}")
 
     accuracy_path = iterator.accuracy_path()
     open(accuracy_path, "a").close()
-    tf.print(score[1], output_stream="file://{}".format(accuracy_path))
+    tf.print(score[1], output_stream=f"file://{accuracy_path}")

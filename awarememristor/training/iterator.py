@@ -102,7 +102,7 @@ class Training(Nonideal, Iterable):
         return l
 
     def network_label(self) -> str:
-        return "network-{}".format(self.repeat_idx)
+        return f"network-{self.repeat_idx}"
 
 
 class Inference(Nonideal, Iterable):
@@ -118,7 +118,7 @@ class Inference(Nonideal, Iterable):
         Iterable.__init__(self)
 
     def repeat_label(self) -> str:
-        return "repeat-{}".format(self.repeat_idx)
+        return f"repeat-{self.repeat_idx}"
 
     def __eq__(self, other):
         return (
