@@ -15,8 +15,8 @@ w_params_to_G_testdata = [
                     [2.5, 0.0, 0.0, 1.25],
                 ]
             ),
-            "G_min": tf.constant(2.0),
-            "G_max": tf.constant(10.0),
+            "G_off": tf.constant(2.0),
+            "G_on": tf.constant(10.0),
         },
         [
             tf.constant(
@@ -36,8 +36,8 @@ w_params_to_G_testdata = [
                     [2.0, 0.0],
                 ]
             ),
-            "G_min": tf.constant(1.0),
-            "G_max": tf.constant(3.0),
+            "G_off": tf.constant(1.0),
+            "G_on": tf.constant(3.0),
         },
         [
             tf.constant(
@@ -69,8 +69,8 @@ w_to_G_testdata = [
                     [-2.5, 0.0, 1.25],
                 ]
             ),
-            "G_min": tf.constant(2.0),
-            "G_max": tf.constant(10.0),
+            "G_off": tf.constant(2.0),
+            "G_on": tf.constant(10.0),
         },
         [
             tf.constant(
@@ -90,8 +90,8 @@ w_to_G_testdata = [
                     [-2.0],
                 ]
             ),
-            "G_min": tf.constant(3.0),
-            "G_max": tf.constant(5.0),
+            "G_off": tf.constant(3.0),
+            "G_on": tf.constant(5.0),
         },
         [
             tf.constant(
@@ -159,7 +159,7 @@ ideal_dpe_testdata = [
 
 
 @pytest.mark.parametrize(
-    "G_min,G_max",
+    "G_off,G_on",
     [
         (tf.constant(0.1), tf.constant(0.2)),
         (tf.constant(0.2), tf.constant(5.0)),
@@ -180,14 +180,14 @@ ideal_dpe_testdata = [
     ],
 )
 @pytest.mark.parametrize("args,expected", ideal_dpe_testdata)
-def test_ideal_dpe(args, expected, G_min, G_max, V_ref, is_ideal):
+def test_ideal_dpe(args, expected, G_off, G_on, V_ref, is_ideal):
     x = args["x"]
     w = args["w"]
 
     k_V = 2 * V_ref
     V = crossbar.map.x_to_V(x, k_V)
 
-    G, max_weight = crossbar.map.w_to_G(w, G_min, G_max)
+    G, max_weight = crossbar.map.w_to_G(w, G_off, G_on)
 
     if is_ideal:
         I = crossbar.ideal.compute_I(V, G)
@@ -195,6 +195,6 @@ def test_ideal_dpe(args, expected, G_min, G_max, V_ref, is_ideal):
         nonideality = crossbar.nonidealities.IVNonlinearity(V_ref, 2.0, 0.0)
         I, _ = nonideality.compute_I(V, G)
 
-    y = crossbar.map.I_to_y(I, k_V, max_weight, G_max, G_min)
+    y = crossbar.map.I_to_y(I, k_V, max_weight, G_on, G_off)
 
     utils.assert_tf_approx(y, expected)

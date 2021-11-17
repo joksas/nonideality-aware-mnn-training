@@ -50,8 +50,8 @@ d2d_lognormal_testdata = [
 
 @pytest.mark.parametrize("args,expected", d2d_lognormal_testdata)
 def test_d2d_lognormal(args, expected):
-    G_min, G_max, R_min_std, R_max_std, G = args
-    nonideality = nonidealities.D2DLognormal(G_min, G_max, R_min_std, R_max_std)
+    G_off, G_on, R_on_std, R_off_std, G = args
+    nonideality = nonidealities.D2DLognormal(G_off, G_on, R_on_std, R_off_std)
     result = nonideality.disturb_G(G)
     utils.assert_tf_approx(result, expected)
 

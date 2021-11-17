@@ -103,16 +103,16 @@ class StuckAt(Nonideality, LinearityPreserving):
 
 
 class StuckAtGMin(StuckAt):
-    def __init__(self, G_min: float, probability: float) -> None:
-        StuckAt.__init__(self, G_min, probability)
+    def __init__(self, G_off: float, probability: float) -> None:
+        StuckAt.__init__(self, G_off, probability)
 
     def label(self):
         return f"StuckMin:{self._StuckAt__probability:.3g}"
 
 
 class StuckAtGMax(StuckAt):
-    def __init__(self, G_max: float, probability: float) -> None:
-        StuckAt.__init__(self, G_max, probability)
+    def __init__(self, G_on: float, probability: float) -> None:
+        StuckAt.__init__(self, G_on, probability)
 
     def label(self):
         return f"StuckMax:{self._StuckAt__probability:.3g}"
@@ -179,31 +179,31 @@ class StuckDistribution(Nonideality, LinearityPreserving):
 
 
 class D2DLognormal(Nonideality, LinearityPreserving):
-    def __init__(self, G_min: float, G_max: float, R_min_std: float, R_max_std: float) -> None:
+    def __init__(self, G_off: float, G_on: float, R_on_std: float, R_off_std: float) -> None:
         """
         Args:
-            R_min_std: Standard deviation of the (lognormal distribution's) underlying normal
-                distribution associated with R_min (i.e. 1/G_max).
-            R_max_std: Standard deviation of the (lognormal distribution's) underlying normal
-                distribution associated with R_max (i.e. 1/G_min).
+            R_on_std: Standard deviation of the (lognormal distribution's) underlying normal
+                distribution associated with R_on (i.e. 1/G_on).
+            R_off_std: Standard deviation of the (lognormal distribution's) underlying normal
+                distribution associated with R_off (i.e. 1/G_off).
         """
-        self.__G_min = G_min
-        self.__G_max = G_max
-        self.__R_min_std = R_min_std
-        self.__R_max_std = R_max_std
+        self.__G_off = G_off
+        self.__G_on = G_on
+        self.__R_on_std = R_on_std
+        self.__R_off_std = R_off_std
 
     def label(self):
-        return f"D2DLN:{self.__R_min_std:.3g}_{self.__R_max_std:.3g}"
+        return f"D2DLN:{self.__R_on_std:.3g}_{self.__R_off_std:.3g}"
 
     def disturb_G(self, G):
         """Disturb conductances lognormally."""
         R = 1 / G
-        R_min = 1 / self.__G_max
-        R_max = 1 / self.__G_min
+        R_on = 1 / self.__G_on
+        R_off = 1 / self.__G_off
 
         # Piece-wise linear interpolation
-        std_ref = [self.__R_min_std, self.__R_max_std]
-        R_std = tfp.math.interp_regular_1d_grid(R, R_min, R_max, std_ref)
+        std_ref = [self.__R_on_std, self.__R_off_std]
+        R_std = tfp.math.interp_regular_1d_grid(R, R_on, R_off, std_ref)
 
         # Lognormal modelling
         R2 = tf.math.pow(R, 2)

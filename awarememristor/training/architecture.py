@@ -176,17 +176,17 @@ class MemristorDense(layers.Layer):
 
         # Handle case when training is aware, but inference assumes no nonidealities.
         if current_stage.is_aware():
-            G_min = current_stage.G_min
-            G_max = current_stage.G_max
+            G_off = current_stage.G_off
+            G_on = current_stage.G_on
         else:
-            G_min = self.iterator.training.G_min
-            G_max = self.iterator.training.G_max
+            G_off = self.iterator.training.G_off
+            G_on = self.iterator.training.G_on
 
         # Mapping weights onto conductances.
         if self.iterator.training.is_aware():
-            G, max_weight = crossbar.map.w_params_to_G(weights, G_min, G_max)
+            G, max_weight = crossbar.map.w_params_to_G(weights, G_off, G_on)
         else:
-            G, max_weight = crossbar.map.w_to_G(weights, G_min, G_max)
+            G, max_weight = crossbar.map.w_to_G(weights, G_off, G_on)
 
         # Linearity-preserving nonidealities
         for nonideality in current_stage.nonidealities:
@@ -214,7 +214,7 @@ class MemristorDense(layers.Layer):
                 tf.print(P_avg, output_stream=f"file://{power_path}")
 
         # Converting to outputs.
-        y_disturbed = crossbar.map.I_to_y(I, k_V, max_weight, G_max, G_min)
+        y_disturbed = crossbar.map.I_to_y(I, k_V, max_weight, G_on, G_off)
 
         return y_disturbed
 
