@@ -167,12 +167,12 @@ class MemristorDense(layers.Layer):
         return self.out
 
     def memristive_outputs(self, x, weights):
+        current_stage = self.iterator.current_stage()
+
         # Mapping inputs onto voltages.
-        V_ref = tf.constant(0.25)
+        V_ref = current_stage.V_ref
         k_V = 2 * V_ref
         V = crossbar.map.x_to_V(x, k_V)
-
-        current_stage = self.iterator.current_stage()
 
         # Handle case when training is aware, but inference assumes no nonidealities.
         if current_stage.is_aware():
