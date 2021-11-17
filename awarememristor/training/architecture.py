@@ -200,8 +200,8 @@ class MemristorDense(layers.Layer):
             if isinstance(nonideality, crossbar.nonidealities.LinearityNonpreserving):
                 I, I_ind = nonideality.compute_I(V, G)
 
+        # Ideal case for computing output currents.
         if I is None or I_ind is None:
-            # Ideal case for computing output currents.
             if self.iterator.is_training:
                 I = crossbar.ideal.compute_I(V, G)
             else:
