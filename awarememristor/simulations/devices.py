@@ -14,15 +14,15 @@ def _SiO_x_V_ref() -> dict[str, float]:
     (voltages, _), (_, _) = utils.low_high_n_SiO_x_curves(data)
     V_ref = voltages[0][-1] / 2
 
-    return {"V_ref": V_ref}
+    return {"V_ref": float(V_ref)}
 
 
 def _SiO_x_G(is_high_nonlinearity: bool) -> dict[str, float]:
     data = utils.load_iv_data("data/SiO_x-data.mat")
     G_off, G_on, _, _ = utils.low_high_n_SiO_x_vals(data, is_high_nonlinearity)
     return {
-        "G_off": G_off,
-        "G_on": G_on,
+        "G_off": float(G_off),
+        "G_on": float(G_on),
     }
 
 
@@ -31,7 +31,7 @@ def _SiO_x_nonidealities(is_high_nonlinearity: bool):
     _, _, n_avg, n_std = utils.low_high_n_SiO_x_vals(data, is_high_nonlinearity)
     V_ref = _SiO_x_V_ref()["V_ref"]
     return {
-        "nonidealities": [IVNonlinearity(V_ref, n_avg, n_std)],
+        "nonidealities": [IVNonlinearity(V_ref, float(n_avg), float(n_std))],
     }
 
 
@@ -97,6 +97,7 @@ def high_magnitude_more_uniform_d2d():
 def HfO2():
     data = utils.load_cycling_data("data/HfO2-data.mat")
     G_off, G_on = utils.extract_G_off_and_G_on(data)
+    G_off, G_on = float(G_off), float(G_on)
     vals, p = utils.extract_stuck(data, G_off, G_on)
     return {
         **_SiO_x_V_ref(),
