@@ -32,7 +32,7 @@ w_params_to_G_testdata = [
         {
             "weight_params": tf.constant(
                 [
-                    [8.0, -10.0],
+                    [8.0, 0.0],
                     [2.0, 0.0],
                 ]
             ),
@@ -192,8 +192,8 @@ def test_ideal_dpe(args, expected, G_min, G_max, V_ref, is_ideal):
     if is_ideal:
         I = crossbar.ideal.compute_I(V, G)
     else:
-        nonideality = crossbar.nonidealities.IVNonlinearity(2.0, 0.0)
-        I, _ = nonideality.compute_I(V, G, V_ref)
+        nonideality = crossbar.nonidealities.IVNonlinearity(V_ref, 2.0, 0.0)
+        I, _ = nonideality.compute_I(V, G)
 
     y = crossbar.map.I_to_y(I, k_V, max_weight, G_max, G_min)
 

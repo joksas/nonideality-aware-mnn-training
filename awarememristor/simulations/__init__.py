@@ -1,5 +1,7 @@
-from awarememristor.simulations import (
-    checkpoint_comparison, d2d_asymmetry, ideal, iv_nonlinearity,
-    iv_nonlinearity_and_stuck, iv_nonlinearity_cnn,
-    iv_nonlinearity_cnn_checkpoint_frequency, nonideality_agnosticism,
-    stuck_distribution, stuck_low, utils)
+from awarememristor.simulations import (checkpoint_comparison,
+                                        differential_pair_separation, ideal,
+                                        iv_nonlinearity,
+                                        iv_nonlinearity_and_stuck_on,
+                                        iv_nonlinearity_cnn,
+                                        nonideality_agnosticism,
+                                        stuck_distribution, stuck_off, utils)

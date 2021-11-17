@@ -17,16 +17,19 @@ class Nonideal:
         self,
         G_min: float = None,
         G_max: float = None,
+        V_ref: float = None,
         nonidealities: list[Nonideality] = [],
     ) -> None:
         self.G_min = G_min
         self.G_max = G_max
+        self.V_ref = V_ref
         self.nonidealities = nonidealities
 
     def __eq__(self, other):
         return (
             self.G_min == other.G_min
             and self.G_max == other.G_max
+            and self.V_ref == other.V_ref
             and self.nonidealities == other.nonidealities
         )
 
@@ -73,6 +76,7 @@ class Training(Nonideal, Iterable):
         num_repeats: int = 0,
         G_min: float = None,
         G_max: float = None,
+        V_ref: float = None,
         nonidealities: list[Nonideality] = [],
         force_regular_checkpoint: bool = False,
         memristive_validation_freq: int = None,
@@ -84,7 +88,7 @@ class Training(Nonideal, Iterable):
         self.validation_split = validation_split
         self.force_regular_checkpoint = force_regular_checkpoint
         self.memristive_validation_freq = memristive_validation_freq
-        Nonideal.__init__(self, G_min=G_min, G_max=G_max, nonidealities=nonidealities)
+        Nonideal.__init__(self, G_min=G_min, G_max=G_max, V_ref=V_ref, nonidealities=nonidealities)
         Iterable.__init__(self)
 
     def regularized_label(self) -> str:
@@ -111,10 +115,11 @@ class Inference(Nonideal, Iterable):
         num_repeats: int = 0,
         G_min: float = None,
         G_max: float = None,
+        V_ref: float = None,
         nonidealities: list[Nonideality] = [],
     ) -> None:
         self.num_repeats = num_repeats
-        Nonideal.__init__(self, G_min=G_min, G_max=G_max, nonidealities=nonidealities)
+        Nonideal.__init__(self, G_min=G_min, G_max=G_max, V_ref=V_ref, nonidealities=nonidealities)
         Iterable.__init__(self)
 
     def repeat_label(self) -> str:

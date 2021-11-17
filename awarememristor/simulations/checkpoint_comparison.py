@@ -20,8 +20,16 @@ def custom_iterator(training_setup, inference_setups, force_regular):
 
 def get_nonideal_iterators():
     return [
-        custom_iterator(devices.symmetric_high_d2d(), [devices.symmetric_high_d2d()], True),
-        custom_iterator(devices.symmetric_high_d2d(), [devices.symmetric_high_d2d()], False),
+        custom_iterator(
+            devices.high_magnitude_more_uniform_d2d(),
+            [devices.high_magnitude_more_uniform_d2d()],
+            True,
+        ),
+        custom_iterator(
+            devices.high_magnitude_more_uniform_d2d(),
+            [devices.high_magnitude_more_uniform_d2d()],
+            False,
+        ),
     ]
 
 

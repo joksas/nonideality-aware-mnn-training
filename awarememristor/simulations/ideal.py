@@ -1,15 +1,16 @@
+from awarememristor.simulations import (iv_nonlinearity,
+                                        iv_nonlinearity_and_stuck_on,
+                                        stuck_off)
 from awarememristor.training import callbacks
 from awarememristor.training.iterator import Inference, Iterator, Training
-
-from . import (checkpoint_comparison, d2d_asymmetry, devices, iv_nonlinearity,
-               iv_nonlinearity_and_stuck, iv_nonlinearity_cnn,
-               iv_nonlinearity_cnn_checkpoint_frequency, utils)
 
 
 def get_mnist_iterator():
     iterators = [
         iv_nonlinearity.get_ideal_iterator(),
-        iv_nonlinearity_and_stuck.get_ideal_iterator(),
+        stuck_low.get_ideal_iterator(),
+        iv_nonlinearity_and_stuck_on.get_ideal_iterator(),
+        stuck_distribution.get_ideal_iterator(),
     ]
 
     return Iterator(

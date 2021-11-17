@@ -16,15 +16,15 @@ def custom_iterator(training_setup, inference_setups, is_regularized):
 
 
 def get_ideal_iterator():
-    return custom_iterator(devices.ideal(), [devices.low_R(), devices.high_R()], False)
+    return custom_iterator(devices.ideal(), [devices.SiO_x(False), devices.SiO_x(True)], False)
 
 
 def get_nonideal_iterators():
     return [
-        custom_iterator(devices.low_R(), [devices.low_R()], False),
-        custom_iterator(devices.low_R(), [devices.low_R()], True),
-        custom_iterator(devices.high_R(), [devices.high_R()], False),
-        custom_iterator(devices.high_R(), [devices.high_R()], True),
+        custom_iterator(devices.SiO_x(False), [devices.SiO_x(False)], False),
+        custom_iterator(devices.SiO_x(False), [devices.SiO_x(False)], True),
+        custom_iterator(devices.SiO_x(True), [devices.SiO_x(True)], False),
+        custom_iterator(devices.SiO_x(True), [devices.SiO_x(True)], True),
     ]
 
 

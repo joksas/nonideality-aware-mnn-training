@@ -31,7 +31,7 @@ class LinearityPreserving(ABC):
 
 class LinearityNonpreserving(ABC):
     @abstractmethod
-    def compute_I(self, V: tf.Tensor, G: tf.Tensor, *args, **kwargs) -> tuple[tf.Tensor, tf.Tensor]:
+    def compute_I(self, V: tf.Tensor, G: tf.Tensor) -> tuple[tf.Tensor, tf.Tensor]:
         """Compute currents in a crossbar suffering from linearity-nonpreserving nonideality.
 
         Args:
@@ -46,14 +46,15 @@ class LinearityNonpreserving(ABC):
 
 
 class IVNonlinearity(Nonideality, LinearityNonpreserving):
-    def __init__(self, n_avg: float, n_std: float) -> None:
+    def __init__(self, V_ref: float, n_avg: float, n_std: float) -> None:
+        self.__V_ref = V_ref
         self.__n_avg = n_avg
         self.__n_std = n_std
 
     def label(self):
         return f"IVNL:{self.__n_avg:.3g}_{self.__n_std:.3g}"
 
-    def compute_I(self, V, G, V_ref: float):
+    def compute_I(self, V, G):
         """Compute current values by modelling I-V behaviour using nonlinearity
         parameter.
 
@@ -67,10 +68,10 @@ class IVNonlinearity(Nonideality, LinearityNonpreserving):
         # n <= 1 would produce unrealistic behaviour, while 1 < n < 2 is not typical in I-V curves
         n = tf.clip_by_value(n, 2.0, math.inf)
 
-        ohmic_current = V_ref * tf.expand_dims(G, axis=0)
+        ohmic_current = self.__V_ref * tf.expand_dims(G, axis=0)
         # Take absolute value of V to prevent negative numbers from being raised to
         # a negative power. We assume symmetrical behaviour with negative voltages.
-        ratio = tf.expand_dims(tf.abs(V) / V_ref, axis=-1)
+        ratio = tf.expand_dims(tf.abs(V) / self.__V_ref, axis=-1)
         exponent = utils.tf_log2(n)
         sign = tf.expand_dims(tf.sign(V), axis=-1)
 
@@ -178,7 +179,7 @@ class StuckDistribution(Nonideality, LinearityPreserving):
 
 
 class D2DLognormal(Nonideality, LinearityPreserving):
-    def __init__(self, R_min_std: float, R_max_std: float) -> None:
+    def __init__(self, G_min: float, G_max: float, R_min_std: float, R_max_std: float) -> None:
         """
         Args:
             R_min_std: Standard deviation of the (lognormal distribution's) underlying normal
@@ -186,17 +187,19 @@ class D2DLognormal(Nonideality, LinearityPreserving):
             R_max_std: Standard deviation of the (lognormal distribution's) underlying normal
                 distribution associated with R_max (i.e. 1/G_min).
         """
+        self.__G_min = G_min
+        self.__G_max = G_max
         self.__R_min_std = R_min_std
         self.__R_max_std = R_max_std
 
     def label(self):
         return f"D2DLN:{self.__R_min_std:.3g}_{self.__R_max_std:.3g}"
 
-    def disturb_G(self, G, G_min: float, G_max: float):
+    def disturb_G(self, G):
         """Disturb conductances lognormally."""
         R = 1 / G
-        R_min = 1 / G_max
-        R_max = 1 / G_min
+        R_min = 1 / self.__G_max
+        R_max = 1 / self.__G_min
 
         # Piece-wise linear interpolation
         std_ref = [self.__R_min_std, self.__R_max_std]

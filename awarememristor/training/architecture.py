@@ -190,19 +190,15 @@ class MemristorDense(layers.Layer):
 
         # Linearity-preserving nonidealities
         for nonideality in current_stage.nonidealities:
-            if isinstance(nonideality, crossbar.nonidealities.StuckAt) or isinstance(
-                nonideality, crossbar.nonidealities.StuckDistribution
-            ):
+            if isinstance(nonideality, crossbar.nonidealities.LinearityPreserving):
                 G = nonideality.disturb_G(G)
-            elif isinstance(nonideality, crossbar.nonidealities.D2DLognormal):
-                G = nonideality.disturb_G(G, G_min, G_max)
 
-        # Other nonidealities
+        # Linearity-nonpreserving nonidealities
         I = None
         I_ind = None
         for nonideality in current_stage.nonidealities:
-            if isinstance(nonideality, crossbar.nonidealities.IVNonlinearity):
-                I, I_ind = nonideality.compute_I(V, G, V_ref)
+            if isinstance(nonideality, crossbar.nonidealities.LinearityNonpreserving):
+                I, I_ind = nonideality.compute_I(V, G)
 
         if I is None or I_ind is None:
             # Ideal case for computing output currents.

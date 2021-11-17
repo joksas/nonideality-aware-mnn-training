@@ -7,15 +7,16 @@ from tests import utils
 d2d_lognormal_testdata = [
     (
         (
-            nonidealities.D2DLognormal(0.0, 0.0),
+            0.5,
+            0.6,
+            0.0,
+            0.0,
             tf.constant(
                 [
                     [1.0, 2.0, 3.0],
                     [4.0, 5.0, 6.0],
                 ]
             ),
-            0.5,
-            0.6,
         ),
         tf.constant(
             [
@@ -26,15 +27,16 @@ d2d_lognormal_testdata = [
     ),
     (
         (
-            nonidealities.D2DLognormal(1.0, 0.0),
+            1.0,
+            6.0,
+            0.0,
+            0.0,
             tf.constant(
                 [
                     [1.0, 1.0, 1.0],
                     [1.0, 1.0, 1.0],
                 ]
             ),
-            1.0,
-            6.0,
         ),
         tf.constant(
             [
@@ -48,8 +50,9 @@ d2d_lognormal_testdata = [
 
 @pytest.mark.parametrize("args,expected", d2d_lognormal_testdata)
 def test_d2d_lognormal(args, expected):
-    nonideality, G, G_min, G_max = args
-    result = nonideality.disturb_G(G, G_min, G_max)
+    G_min, G_max, R_min_std, R_max_std, G = args
+    nonideality = nonidealities.D2DLognormal(G_min, G_max, R_min_std, R_max_std)
+    result = nonideality.disturb_G(G)
     utils.assert_tf_approx(result, expected)
 
 
@@ -59,7 +62,7 @@ def test_d2d_lognormal(args, expected):
 iv_nonlinearity_I_ind_testdata = [
     (
         (
-            nonidealities.IVNonlinearity(2.0, 0.0),
+            nonidealities.IVNonlinearity(1.0, 2.0, 0.0),
             tf.constant(
                 [
                     [1.0, 2.0, 3.0, 4.0],
@@ -71,7 +74,6 @@ iv_nonlinearity_I_ind_testdata = [
                     [1.0, 0.0],
                 ]
             ),
-            1.0,
         ),
         tf.constant(
             [
@@ -84,7 +86,7 @@ iv_nonlinearity_I_ind_testdata = [
     ),
     (
         (
-            nonidealities.IVNonlinearity(2.0, 0.0),
+            nonidealities.IVNonlinearity(2.0, 2.0, 0.0),
             tf.constant(
                 [
                     [1.0, 2.0, 3.0, 4.0],
@@ -96,7 +98,6 @@ iv_nonlinearity_I_ind_testdata = [
                     [1.0, 0.5],
                 ]
             ),
-            2.0,
         ),
         tf.constant(
             [
@@ -109,7 +110,7 @@ iv_nonlinearity_I_ind_testdata = [
     ),
     (
         (
-            nonidealities.IVNonlinearity(4.0, 0.0),
+            nonidealities.IVNonlinearity(0.5, 4.0, 0.0),
             tf.constant(
                 [
                     [1.0, 2.0, 3.0, 4.0],
@@ -122,7 +123,6 @@ iv_nonlinearity_I_ind_testdata = [
                     [0.0, 0.5, 1.0],
                 ]
             ),
-            0.5,
         ),
         tf.constant(
             [
@@ -139,7 +139,7 @@ iv_nonlinearity_I_ind_testdata = [
     ),
     (
         (
-            nonidealities.IVNonlinearity(3.0, 0.0),
+            nonidealities.IVNonlinearity(0.2, 3.0, 0.0),
             tf.constant(
                 [
                     [1.0, 2.0, 3.0, 4.0],
@@ -152,7 +152,6 @@ iv_nonlinearity_I_ind_testdata = [
                     [0.1, 0.4],
                 ]
             ),
-            0.2,
         ),
         tf.constant(
             [
@@ -184,7 +183,7 @@ iv_nonlinearity_I_ind_testdata = [
     ),
     (
         (
-            nonidealities.IVNonlinearity(5.0, 0.0),
+            nonidealities.IVNonlinearity(0.5, 5.0, 0.0),
             tf.constant(
                 [
                     [1.0, 2.0, 3.0, 4.0],
@@ -198,7 +197,6 @@ iv_nonlinearity_I_ind_testdata = [
                     [-0.5, -0.25, -1.0, 0.5],
                 ]
             ),
-            0.5,
         ),
         tf.constant(
             [
@@ -232,15 +230,15 @@ iv_nonlinearity_I_ind_testdata = [
 
 @pytest.mark.parametrize("args,expected", iv_nonlinearity_I_ind_testdata)
 def test_iv_nonlinearity_I_ind(args, expected):
-    nonideality, G, V, V_ref = args
-    _, result = nonideality.compute_I(V, G, V_ref)
+    nonideality, G, V = args
+    _, result = nonideality.compute_I(V, G)
     utils.assert_tf_approx(result, expected)
 
 
 iv_nonlinearity_I_testdata = [
     (
         (
-            nonidealities.IVNonlinearity(2.0, 0.0),
+            nonidealities.IVNonlinearity(5.0, 2.0, 0.0),
             tf.constant(
                 [
                     [1.0, 2.0, 3.0, 4.0],
@@ -254,7 +252,6 @@ iv_nonlinearity_I_testdata = [
                     [0.0, 0.25, 0.0],
                 ]
             ),
-            5.0,
         ),
         [
             # With {n_avg = 2, n_std = 0} the bit-line outputs should
@@ -300,8 +297,8 @@ iv_nonlinearity_I_testdata = [
 @pytest.mark.parametrize("args,expected", iv_nonlinearity_I_testdata)
 def test_iv_nonlinearity_I(args, expected):
     I_exp, I_ind_exp = expected
-    nonideality, G, V, V_ref = args
-    I, I_ind = nonideality.compute_I(V, G, V_ref)
+    nonideality, G, V = args
+    I, I_ind = nonideality.compute_I(V, G)
     utils.assert_tf_approx(I, I_exp)
     utils.assert_tf_approx(I_ind, I_ind_exp)
 

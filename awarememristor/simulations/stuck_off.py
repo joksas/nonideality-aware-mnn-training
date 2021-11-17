@@ -1,30 +1,31 @@
 from awarememristor.training import callbacks
 from awarememristor.training.iterator import Inference, Iterator, Training
 
-from . import devices, iv_nonlinearity_cnn, utils
+from . import devices, utils
 
-DATASET = "cifar10"
+DATASET = "mnist"
 
 
-def custom_iterator(training_setup, inference_setups, memristive_validation_freq=None):
+def custom_iterator(training_setup, inference_setups):
     inferences = [Inference(**utils.get_inference_params(), **setup) for setup in inference_setups]
-    training = Training(
-        **utils.get_training_params(),
-        is_regularized=False,
-        memristive_validation_freq=memristive_validation_freq,
-        **training_setup
-    )
+    training = Training(**utils.get_training_params(), is_regularized=False, **training_setup)
 
     return Iterator(DATASET, training, inferences)
 
 
+def get_ideal_iterator():
+    return custom_iterator(devices.ideal(), [devices.stuck_off()])
+
+
 def get_nonideal_iterators():
-    return [custom_iterator(devices.high_R(), [devices.high_R()], memristive_validation_freq=5)]
+    return [
+        custom_iterator(devices.stuck_off(), [devices.stuck_off()]),
+    ]
 
 
 def get_iterators():
     return [
-        iv_nonlinearity_cnn.get_ideal_iterator(),
+        get_ideal_iterator(),
         *get_nonideal_iterators(),
     ]
 

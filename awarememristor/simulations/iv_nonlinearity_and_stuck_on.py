@@ -14,12 +14,15 @@ def custom_iterator(training_setup, inference_setups):
 
 
 def get_ideal_iterator():
-    return custom_iterator(devices.ideal(), [devices.high_R_and_stuck()])
+    return custom_iterator(devices.ideal(), [devices.SiO_x_high_nonlinearity_and_stuck_on()])
 
 
 def get_nonideal_iterators():
     iterators = [
-        custom_iterator(devices.high_R_and_stuck(), [devices.high_R_and_stuck()]),
+        custom_iterator(
+            devices.SiO_x_high_nonlinearity_and_stuck_on(),
+            [devices.SiO_x_high_nonlinearity_and_stuck_on()],
+        ),
     ]
 
     return iterators

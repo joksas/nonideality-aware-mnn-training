@@ -1,23 +1,13 @@
 import os
 
-from awarememristor.simulations import (d2d_asymmetry, devices, ideal,
-                                        iv_nonlinearity,
-                                        iv_nonlinearity_and_stuck,
-                                        stuck_distribution, stuck_low, utils)
+from awarememristor.simulations import (devices, differential_pair_separation,
+                                        ideal, iv_nonlinearity,
+                                        iv_nonlinearity_and_stuck_on,
+                                        stuck_distribution, stuck_off, utils)
 from awarememristor.training import callbacks
 from awarememristor.training.iterator import Inference, Iterator, Training
 
 DATASET = "mnist"
-INFERENCE_SETUPS = [
-    devices.ideal(),
-    devices.low_R(),
-    devices.high_R(),
-    devices.stuck_low(),
-    devices.high_R_and_stuck(),
-    devices.symmetric_d2d(),
-    devices.asymmetric_d2d(),
-    devices.HfO2(),
-]
 
 
 def custom_iterator(training_setup, inference_setups, is_regularized):
@@ -30,17 +20,28 @@ def custom_iterator(training_setup, inference_setups, is_regularized):
 
 
 def get_iterators():
+    inference_setups = [
+        devices.ideal(),
+        devices.SiO_x(False),
+        devices.SiO_x(True),
+        devices.stuck_off(),
+        devices.SiO_x_high_nonlinearity_and_stuck_on(),
+        devices.more_uniform_d2d(),
+        devices.less_uniform_d2d(),
+        devices.HfO2(),
+    ]
+
     iterators = [
         ideal.get_mnist_iterator(),
         *iv_nonlinearity.get_nonideal_iterators(),
-        *iv_nonlinearity_and_stuck.get_nonideal_iterators(),
-        *stuck_low.get_nonideal_iterators(),
-        *d2d_asymmetry.get_nonideal_iterators()[:2],
+        *iv_nonlinearity_and_stuck_on.get_nonideal_iterators(),
+        *stuck_off.get_nonideal_iterators(),
+        *differential_pair_separation.get_nonideal_iterators()[:2],
         *stuck_distribution.get_nonideal_iterators(),
     ]
     inferences = [
         Inference(**utils.get_inference_params(), **inference_setup)
-        for inference_setup in INFERENCE_SETUPS
+        for inference_setup in inference_setups
     ]
 
     for idx, iterator in enumerate(iterators):
