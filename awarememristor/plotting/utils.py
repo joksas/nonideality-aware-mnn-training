@@ -264,7 +264,7 @@ def axis_label(var_name: str, prepend: str = None) -> str:
     elif var_name == "training":
         label = "training"
     elif var_name == "power-consumption":
-        label = "ohmic power consumption (W)"
+        label = "power consumption (W)"
     elif var_name == "d2d-uniformity":
         label = "uniformity of D2D variability"
     elif var_name == "checkpoint":
