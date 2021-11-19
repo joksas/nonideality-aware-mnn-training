@@ -102,20 +102,20 @@ class StuckAt(Nonideality, LinearityPreserving):
         return G
 
 
-class StuckAtGMin(StuckAt):
+class StuckAtGOff(StuckAt):
     def __init__(self, G_off: float, probability: float) -> None:
         StuckAt.__init__(self, G_off, probability)
 
     def label(self):
-        return f"StuckMin:{self.probability:.3g}"
+        return f"StuckOff:{self.probability:.3g}"
 
 
-class StuckAtGMax(StuckAt):
+class StuckAtGOn(StuckAt):
     def __init__(self, G_on: float, probability: float) -> None:
         StuckAt.__init__(self, G_on, probability)
 
     def label(self):
-        return f"StuckMax:{self.probability:.3g}"
+        return f"StuckOn:{self.probability:.3g}"
 
 
 class StuckDistribution(Nonideality, LinearityPreserving):

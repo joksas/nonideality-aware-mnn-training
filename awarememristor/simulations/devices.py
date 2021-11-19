@@ -1,6 +1,6 @@
 from awarememristor.crossbar.nonidealities import (D2DLognormal,
                                                    IVNonlinearity, StuckAt,
-                                                   StuckAtGMax, StuckAtGMin,
+                                                   StuckAtGOff, StuckAtGOn,
                                                    StuckDistribution)
 from awarememristor.simulations import utils
 
@@ -49,7 +49,7 @@ def stuck_off():
         **_SiO_x_V_ref(),
         **G,
         "nonidealities": [
-            StuckAtGMin(G["G_off"], 0.05),
+            StuckAtGOff(G["G_off"], 0.05),
         ],
     }
 
@@ -58,7 +58,7 @@ def SiO_x_high_nonlinearity_and_stuck_on():
     is_high_nonlinearity = True
     G = _SiO_x_G(is_high_nonlinearity)
     nonidealities = _SiO_x_nonidealities(is_high_nonlinearity)["nonidealities"] + [
-        StuckAtGMax(G["G_on"], 0.05)
+        StuckAtGOn(G["G_on"], 0.05)
     ]
     return {
         **_SiO_x_V_ref(),
