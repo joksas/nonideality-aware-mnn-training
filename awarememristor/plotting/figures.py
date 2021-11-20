@@ -112,54 +112,46 @@ def iv_nonlinearity_cnn_results(metric="error", training_idx=0):
     utils.save_fig(fig, f"iv-nonlinearity-cnn-results-{metric}")
 
 
-def d2d_uniformity_pos_neg_conductance_scatterplots(combined=True):
-    if combined:
-        num_rows = 1
-        height_frac = 1.0
-    else:
-        num_rows = 4
-        height_frac = 3.2
-    fig, axes = utils.fig_init(1, height_frac, fig_shape=(num_rows, 1), sharex=True, sharey=True)
+def d2d_uniformity_pos_neg_conductance_scatterplots():
+    fig, axes = utils.fig_init(
+        2, 0.24, fig_shape=(1, 5), sharex=True, sharey=True, scaled_translation=(-8 / 72, 2 / 72)
+    )
+    fig.subplots_adjust(wspace=0.125)
 
     iterators = simulations.differential_pair_separation.get_iterators()
-    colors = [utils.color_dict()[key] for key in ["vermilion", "orange", "blue", "bluish-green"]]
+    colors = [
+        utils.color_dict()[key]
+        for key in ["vermilion", "reddish-purple", "orange", "blue", "bluish-green"]
+    ]
+    iterators.insert(1, iterators[0])
+    inference_idxs = [0, 2, 0, 0, 0]
 
     for idx, (iterator, color) in enumerate(zip(iterators, colors)):
+        axis = axes[idx]
+
         iterator.is_training = False
         iterator.is_callback = True
-        if combined:
-            axis = axes
-        else:
-            axis = axes[idx]
+        iterator.inference_idx = inference_idxs[idx]
         model = architecture.get_model(iterator, custom_weights_path=iterator.weights_path())
         weights = model.layers[1].combined_weights()
 
-        current_stage = iterator.current_stage()
-        if current_stage.is_aware():
-            G_off = current_stage.G_off
-            G_on = current_stage.G_on
-        else:
-            G_off = iterator.training.G_off
-            G_on = iterator.training.G_on
+        inference = iterator.current_stage()
+        G_off = inference.G_off
+        G_on = inference.G_on
 
         if iterator.training.is_aware():
             G, _ = crossbar.map.w_params_to_G(weights, G_off, G_on)
         else:
-            G, _ = crossbar.map.w_to_G(weights, G_off, G_on)
+            G, _ = crossbar.map.w_to_G(weights, G_off, G_on, mapping_rule=inference.mapping_rule)
 
         G = 1e6 * G
         utils.plot_scatter(axis, G[:, ::2], G[:, 1::2], color)
 
-        axis.set_ylabel(r"$G_{-}$ (μS)")
+        axis.set_xlabel(r"$G_{+}$ (μS)")
 
-    if combined:
-        axes.set_xlabel(r"$G_{+}$ (μS)")
-    else:
-        axes[-1].set_xlabel(r"$G_{+}$ (μS)")
+    axes[0].set_ylabel(r"$G_{-}$ (μS)")
 
     filename = "d2d-uniformity-G-scatter"
-    if combined:
-        filename += "-combined"
     utils.save_fig(fig, filename)
 
 

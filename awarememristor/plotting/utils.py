@@ -70,6 +70,7 @@ def fig_init(
     fig_shape: tuple[int, int] = (1, 1),
     sharex=False,
     sharey=False,
+    scaled_translation: tuple[float, float] = (-16 / 72, 2 / 72),
 ) -> tuple[matplotlib.figure, matplotlib.axes]:
     width = Config.COL_WIDTHS[width_num_cols]
     height = height_frac * width
@@ -92,7 +93,7 @@ def fig_init(
         axis.yaxis.label.set_size(Config.AXIS_LABEL_FONT_SIZE)
         axis.tick_params(axis="both", which="both", labelsize=Config.TICKS_FONT_SIZE)
         if fig_shape != (1, 1):
-            add_subfigure_label(fig, axis, idx, Config.SUBPLOT_LABEL_SIZE)
+            add_subfigure_label(fig, axis, idx, scaled_translation, Config.SUBPLOT_LABEL_SIZE)
 
     return fig, axes
 
@@ -101,10 +102,11 @@ def add_subfigure_label(
     fig,
     axis,
     letter_idx: int,
+    scaled_translation: tuple[float, float],
     fontsize: float = Config.SUBPLOT_LABEL_SIZE,
     is_lowercase: bool = True,
 ):
-    trans = mtransforms.ScaledTranslation(-16 / 72, 2 / 72, fig.dpi_scale_trans)
+    trans = mtransforms.ScaledTranslation(*scaled_translation, fig.dpi_scale_trans)
     ascii_idx = 65 + letter_idx
     if is_lowercase:
         ascii_idx += 32

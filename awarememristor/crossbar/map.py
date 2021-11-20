@@ -102,13 +102,17 @@ def w_params_to_G(weight_params: tf.Tensor, G_off: float, G_on: float) -> tf.Ten
     return G, max_weight
 
 
-def w_to_G(weights: tf.Tensor, G_off: float, G_on: float) -> tf.Tensor:
+@tf.function
+def w_to_G(
+    weights: tf.Tensor, G_off: float, G_on: float, mapping_rule: str = "default"
+) -> tf.Tensor:
     """Map weights onto conductances.
 
     Args:
         weights: Weights of shape `m x n`.
         G_off: Memristor conductance in OFF state.
         G_on: Memristor conductance in ON state.
+        mapping_rule: One of `("default", "avg")`.
 
     Returns:
         G: Conductances of shape `m x n`.
@@ -119,9 +123,17 @@ def w_to_G(weights: tf.Tensor, G_off: float, G_on: float) -> tf.Tensor:
     k_G = compute_k_G(max_weight, G_on, G_off)
     G_eff = k_G * weights
 
-    # We implement the pairs by choosing the lowest possible conductances.
-    G_pos = tf.math.maximum(G_eff, 0.0) + G_off
-    G_neg = -tf.math.minimum(G_eff, 0.0) + G_off
+    if mapping_rule == "default":
+        # We implement the pairs by choosing the lowest possible conductances.
+        G_pos = tf.math.maximum(G_eff, 0.0) + G_off
+        G_neg = -tf.math.minimum(G_eff, 0.0) + G_off
+    elif mapping_rule == "avg":
+        # We map the pairs symmetrically around `G_avg`.
+        G_avg = (G_off + G_on) / 2
+        G_pos = G_avg + 0.5 * G_eff
+        G_neg = G_avg - 0.5 * G_eff
+    else:
+        raise ValueError(f"Mapping rule {mapping_rule} is not recognized!")
 
     # Odd columns dedicated to positive weights.
     # Even columns dedicated to negative weights.

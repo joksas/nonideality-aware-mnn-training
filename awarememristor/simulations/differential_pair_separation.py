@@ -1,3 +1,5 @@
+import copy
+
 from awarememristor.training import callbacks
 from awarememristor.training.iterator import Inference, Iterator, Training
 
@@ -16,9 +18,18 @@ def custom_iterator(training_setup, inference_setups, is_regularized=False):
 
 
 def get_ideal_iterator():
-    return custom_iterator(
+    iterator = custom_iterator(
         devices.ideal(), [devices.more_uniform_d2d(), devices.less_uniform_d2d()], False
     )
+    new_inferences = []
+    for inference in iterator.inferences:
+        new_inference = copy.deepcopy(inference)
+        new_inference.mapping_rule = "avg"
+        new_inferences.append(new_inference)
+
+    iterator.inferences += new_inferences
+
+    return iterator
 
 
 def get_nonideal_iterators():

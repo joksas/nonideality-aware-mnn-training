@@ -19,11 +19,13 @@ class Nonideal:
         G_on: float = None,
         V_ref: float = None,
         nonidealities: list[Nonideality] = [],
+        mapping_rule: str = "default",
     ) -> None:
         self.G_off = G_off
         self.G_on = G_on
         self.V_ref = V_ref
         self.nonidealities = nonidealities
+        self.mapping_rule = mapping_rule
 
     def __eq__(self, other):
         return (
@@ -43,7 +45,10 @@ class Nonideal:
         if len(self.nonidealities) == 0:
             return "ideal"
 
-        return "+".join(nonideality.label() for nonideality in self.nonidealities)
+        l = "+".join(nonideality.label() for nonideality in self.nonidealities)
+        if self.mapping_rule != "default":
+            l += f"__{self.mapping_rule}"
+        return l
 
     def label(self) -> str:
         return f"{self.conductance_label()}__{self.nonideality_label()}"
@@ -80,6 +85,7 @@ class Training(Nonideal, Iterable):
         nonidealities: list[Nonideality] = [],
         force_regular_checkpoint: bool = False,
         memristive_validation_freq: int = None,
+        mapping_rule: str = "default",
     ) -> None:
         self.batch_size = batch_size
         self.num_epochs = num_epochs
@@ -88,7 +94,14 @@ class Training(Nonideal, Iterable):
         self.validation_split = validation_split
         self.force_regular_checkpoint = force_regular_checkpoint
         self.memristive_validation_freq = memristive_validation_freq
-        Nonideal.__init__(self, G_off=G_off, G_on=G_on, V_ref=V_ref, nonidealities=nonidealities)
+        Nonideal.__init__(
+            self,
+            G_off=G_off,
+            G_on=G_on,
+            V_ref=V_ref,
+            nonidealities=nonidealities,
+            mapping_rule=mapping_rule,
+        )
         Iterable.__init__(self)
 
     def regularized_label(self) -> str:
@@ -117,9 +130,17 @@ class Inference(Nonideal, Iterable):
         G_on: float = None,
         V_ref: float = None,
         nonidealities: list[Nonideality] = [],
+        mapping_rule: str = "default",
     ) -> None:
         self.num_repeats = num_repeats
-        Nonideal.__init__(self, G_off=G_off, G_on=G_on, V_ref=V_ref, nonidealities=nonidealities)
+        Nonideal.__init__(
+            self,
+            G_off=G_off,
+            G_on=G_on,
+            V_ref=V_ref,
+            nonidealities=nonidealities,
+            mapping_rule=mapping_rule,
+        )
         Iterable.__init__(self)
 
     def repeat_label(self) -> str:
