@@ -112,46 +112,6 @@ def iv_nonlinearity_cnn_results(metric="error", training_idx=0):
     utils.save_fig(fig, f"iv-nonlinearity-cnn-results-{metric}")
 
 
-def d2d_uniformity_conductance_histograms(is_effective=False, include_regularised=False):
-    num_rows = 2
-    if include_regularised:
-        num_rows = 3
-
-    fig, axes = utils.fig_init(
-        1, num_rows * 0.75, fig_shape=(num_rows, 1), sharex=True, sharey=True
-    )
-
-    iterators = simulations.d2d_asymmetry.get_iterators()
-    if not include_regularised:
-        iterators = iterators[:2]
-    colors = [utils.color_dict()[key] for key in ["vermilion", "blue", "bluish-green"]]
-
-    for axis, iterator, color in zip(axes, iterators, colors):
-        model = architecture.get_model(iterator, custom_weights_path=iterator.weights_path())
-        weights = model.layers[1].combined_weights()
-        G, _ = crossbar.map.w_params_to_G(weights, iterator.training.G_min, iterator.training.G_max)
-        G = 1000 * G
-        if is_effective:
-            values = G[:, ::2] - G[:, 1::2]
-        else:
-            values = G
-        utils.add_histogram(axis, values, color=color)
-
-        axis.set_ylabel(utils.axis_label("count"))
-
-    if is_effective:
-        label = utils.axis_label("conductance", prepend="effective")
-        filename = "d2d-uniformity-G-eff-histograms"
-    else:
-        label = utils.axis_label("conductance")
-        filename = "d2d-uniformity-G-histograms"
-    if include_regularised:
-        filename += "-regularised"
-    axes[-1].set_xlabel(label)
-
-    utils.save_fig(fig, filename)
-
-
 def d2d_uniformity_pos_neg_conductance_scatterplots(combined=True):
     if combined:
         num_rows = 1
@@ -201,78 +161,6 @@ def d2d_uniformity_pos_neg_conductance_scatterplots(combined=True):
     if combined:
         filename += "-combined"
     utils.save_fig(fig, filename)
-
-
-def d2d_uniformity_pos_neg_conductance_histograms():
-    fig, axes = utils.fig_init(1, 1.5, fig_shape=(2, 1), sharex=True, sharey=True)
-
-    iterators = simulations.d2d_asymmetry.get_iterators()
-
-    for axis, iterator in zip(axes, iterators):
-        model = architecture.get_model(iterator, custom_weights_path=iterator.weights_path())
-        weights = model.layers[1].combined_weights()
-        G, _ = crossbar.map.w_params_to_G(weights, iterator.training.G_min, iterator.training.G_max)
-        G = 1000 * G
-        utils.add_histogram(
-            axis,
-            G[:, ::2],
-            color=utils.color_dict()["bluish-green"],
-            alpha=0.5,
-        )
-        utils.add_histogram(
-            axis,
-            G[:, 1::2],
-            color=utils.color_dict()["reddish-purple"],
-            alpha=0.5,
-        )
-        axis.set_ylabel(utils.axis_label("count"))
-
-    axes[1].set_xlabel(utils.axis_label("conductance"))
-
-    utils.add_legend(
-        fig,
-        labels=[r"$G_+$", r"$G_-$"],
-        ncol=len(axes),
-        bbox_to_anchor=(0.55, 1.0),
-    )
-
-    utils.save_fig(fig, "d2d-uniformity-G-pos-neg-histograms")
-
-
-def d2d_uniformity_results(metric="error", training_idx=0):
-    fig, axes = utils.fig_init(2, 1 / 3, fig_shape=(1, 3), sharey=True)
-
-    colors = utils.color_dict()
-
-    iterators = simulations.d2d_asymmetry.get_iterators()[:2]
-    for i in range(len(iterators)):
-        iterators[i].training.repeat_idx = training_idx
-
-    axes[0].set_ylabel(utils.axis_label(metric))
-
-    # Error curves.
-    for axis, iterator in zip(axes, iterators):
-        utils.plot_training_curves(fig, axis, iterator, metric=metric)
-        axis.set_xlabel(utils.axis_label("epoch"))
-
-    # Box plots.
-    axis = axes[2]
-    for idx, (iterator, color) in enumerate(zip(iterators, [colors["vermilion"], colors["blue"]])):
-        y = iterator.test_metric(metric)
-        _ = utils.plot_boxplot(axis, y, color, x=idx, metric=metric, linewidth_scaling=2 / 3)
-
-    axis.set_xticks([0, 1])
-    axis.set_xticklabels(["High", "Low"])
-    axis.set_xlabel(utils.axis_label("d2d-uniformity"))
-
-    utils.add_legend(
-        fig,
-        labels=["Training", "Validation", "Test (nonideal)"],
-        ncol=len(axes),
-        bbox_to_anchor=(0.35, 1.05),
-    )
-
-    utils.save_fig(fig, f"d2d-uniformity-results-{metric}")
 
 
 def iv_nonlinearity_and_stuck_results(metric="error", training_idx=0):
