@@ -15,6 +15,12 @@ def custom_iterator(training_setup, inference_setups, is_regularized=False):
     return Iterator(DATASET, training, inferences)
 
 
+def get_ideal_iterator():
+    return custom_iterator(
+        devices.ideal(), [devices.more_uniform_d2d(), devices.less_uniform_d2d()], False
+    )
+
+
 def get_nonideal_iterators():
     return [
         custom_iterator(devices.more_uniform_d2d(), [devices.more_uniform_d2d()]),
@@ -26,7 +32,10 @@ def get_nonideal_iterators():
 
 
 def get_iterators():
-    return get_nonideal_iterators()
+    return [
+        get_ideal_iterator(),
+        *get_nonideal_iterators(),
+    ]
 
 
 def main():

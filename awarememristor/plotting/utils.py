@@ -163,13 +163,19 @@ def numpify(x):
     return x
 
 
-def plot_scatter(axis, x, y, color):
+def plot_scatter(axis, x, y, color, alpha=1.0):
     x = numpify(x)
     y = numpify(y)
     x = x.flatten()
     y = y.flatten()
     axis.scatter(
-        x, y, color=color, marker="x", s=Config.MARKER_SIZE, linewidth=Config.MARKER_SIZE / 2
+        x,
+        y,
+        color=color,
+        marker="x",
+        s=Config.MARKER_SIZE,
+        linewidth=Config.MARKER_SIZE / 2,
+        alpha=alpha,
     )
 
 

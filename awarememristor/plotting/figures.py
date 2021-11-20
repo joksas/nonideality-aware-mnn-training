@@ -127,7 +127,6 @@ def d2d_uniformity_conductance_histograms(is_effective=False, include_regularise
     colors = [utils.color_dict()[key] for key in ["vermilion", "blue", "bluish-green"]]
 
     for axis, iterator, color in zip(axes, iterators, colors):
-        iterator.is_training = True
         model = architecture.get_model(iterator, custom_weights_path=iterator.weights_path())
         weights = model.layers[1].combined_weights()
         G, _ = crossbar.map.w_params_to_G(weights, iterator.training.G_min, iterator.training.G_max)
@@ -158,31 +157,45 @@ def d2d_uniformity_pos_neg_conductance_scatterplots(combined=True):
         num_rows = 1
         height_frac = 1.0
     else:
-        num_rows = 3
-        height_frac = 2.5
+        num_rows = 4
+        height_frac = 3.2
     fig, axes = utils.fig_init(1, height_frac, fig_shape=(num_rows, 1), sharex=True, sharey=True)
 
-    iterators = simulations.d2d_asymmetry.get_iterators()
-    colors = [utils.color_dict()[key] for key in ["vermilion", "blue", "bluish-green"]]
+    iterators = simulations.differential_pair_separation.get_iterators()
+    colors = [utils.color_dict()[key] for key in ["vermilion", "orange", "blue", "bluish-green"]]
 
     for idx, (iterator, color) in enumerate(zip(iterators, colors)):
+        iterator.is_training = False
+        iterator.is_callback = True
         if combined:
             axis = axes
         else:
             axis = axes[idx]
-        iterator.is_training = True
         model = architecture.get_model(iterator, custom_weights_path=iterator.weights_path())
         weights = model.layers[1].combined_weights()
-        G, _ = crossbar.map.w_params_to_G(weights, iterator.training.G_min, iterator.training.G_max)
-        G = 1000 * G
+
+        current_stage = iterator.current_stage()
+        if current_stage.is_aware():
+            G_off = current_stage.G_off
+            G_on = current_stage.G_on
+        else:
+            G_off = iterator.training.G_off
+            G_on = iterator.training.G_on
+
+        if iterator.training.is_aware():
+            G, _ = crossbar.map.w_params_to_G(weights, G_off, G_on)
+        else:
+            G, _ = crossbar.map.w_to_G(weights, G_off, G_on)
+
+        G = 1e6 * G
         utils.plot_scatter(axis, G[:, ::2], G[:, 1::2], color)
 
-        axis.set_ylabel(r"$G_{-}$ (mS)")
+        axis.set_ylabel(r"$G_{-}$ (μS)")
 
     if combined:
-        axes.set_xlabel(r"$G_{+}$ (mS)")
+        axes.set_xlabel(r"$G_{+}$ (μS)")
     else:
-        axes[-1].set_xlabel(r"$G_{+}$ (mS)")
+        axes[-1].set_xlabel(r"$G_{+}$ (μS)")
 
     filename = "d2d-uniformity-G-scatter"
     if combined:
@@ -196,7 +209,6 @@ def d2d_uniformity_pos_neg_conductance_histograms():
     iterators = simulations.d2d_asymmetry.get_iterators()
 
     for axis, iterator in zip(axes, iterators):
-        iterator.is_training = True
         model = architecture.get_model(iterator, custom_weights_path=iterator.weights_path())
         weights = model.layers[1].combined_weights()
         G, _ = crossbar.map.w_params_to_G(weights, iterator.training.G_min, iterator.training.G_max)
