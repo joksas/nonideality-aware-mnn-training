@@ -33,6 +33,7 @@ class Nonideal:
             and self.G_on == other.G_on
             and self.V_ref == other.V_ref
             and self.nonidealities == other.nonidealities
+            and self.mapping_rule == other.mapping_rule
         )
 
     def conductance_label(self) -> str:
@@ -54,13 +55,7 @@ class Nonideal:
         return f"{self.conductance_label()}__{self.nonideality_label()}"
 
     def is_nonideal(self) -> bool:
-        if len(self.nonidealities) == 0:
-            return False
-
-        return True
-
-    def is_aware(self) -> bool:
-        return self.is_nonideal()
+        return len(self.nonidealities) > 0
 
 
 class Iterable:
