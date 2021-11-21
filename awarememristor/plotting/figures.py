@@ -63,7 +63,9 @@ def iv_nonlinearity_test(metric="error"):
         avg_power = iterator.test_metric("avg_power", inference_idx=inference_idx)
         y = iterator.test_metric(metric, inference_idx=inference_idx)
         color = colors[idx % 3]
-        boxplot = utils.plot_boxplot(axes, y, color, metric=metric, x=avg_power, is_x_log=True)
+        boxplot = utils.plot_boxplot(
+            axes, y, color, metric=metric, x=avg_power, is_x_log=True, linear_width=0.2
+        )
         boxplots.append(boxplot)
 
     utils.add_boxplot_legend(
@@ -425,7 +427,7 @@ def _SiO_x_panels(fig, axes, data_filepath):
 
 def _HfO2_panels(fig, axes, data_filepath):
     data = simulations.utils.load_cycling_data(data_filepath)
-    G_min, G_max = simulations.utils.extract_G_min_and_G_max(data)
+    G_min, G_max = simulations.utils.extract_G_off_and_G_on(data)
     vals, p = simulations.utils.extract_stuck(data, G_min, G_max)
     median_range = G_max - G_min
     colors = utils.color_dict()
