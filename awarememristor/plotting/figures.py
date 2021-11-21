@@ -67,7 +67,7 @@ def iv_nonlinearity_test(metric="error"):
         boxplots.append(boxplot)
 
     utils.add_boxplot_legend(
-        axes, boxplots, ["Standard", "Nonideality-aware", "Nonideality-aware (regularised)"]
+        axes, boxplots, ["Standard", "Nonideality-aware", "Nonideality-aware (regularized)"]
     )
 
     plt.xlabel(utils.axis_label("power-consumption"))
