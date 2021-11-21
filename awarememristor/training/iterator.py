@@ -90,7 +90,7 @@ class Training(Nonideal, Iterable):
         self.validation_split = validation_split
         self.force_regular_checkpoint = force_regular_checkpoint
         self.memristive_validation_freq = memristive_validation_freq
-        self.__force_standard_w = force_standard_w
+        self.force_standard_w = force_standard_w
         Nonideal.__init__(
             self,
             G_off=G_off,
@@ -113,7 +113,7 @@ class Training(Nonideal, Iterable):
             l += "__rc"
         if self.memristive_validation_freq is not None:
             l += f"__val_freq_{self.memristive_validation_freq}"
-        if self.__force_standard_w:
+        if self.force_standard_w:
             l += "__standard_w"
         return l
 
@@ -121,7 +121,7 @@ class Training(Nonideal, Iterable):
         return f"network-{self.repeat_idx}"
 
     def uses_weight_params(self) -> bool:
-        return self.is_nonideal() and not self.__force_standard_w
+        return self.is_nonideal() and not self.force_standard_w
 
 
 class Inference(Nonideal, Iterable):
