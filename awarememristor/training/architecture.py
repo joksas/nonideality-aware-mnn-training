@@ -78,7 +78,7 @@ class MemristorDense(layers.Layer):
             reg_gamma = 1e-4
             kwargs["regularizer"] = tf.keras.regularizers.l1(reg_gamma)
 
-        if self.iterator.training.is_aware():
+        if self.iterator.training.uses_weight_params():
             self.w_pos = self.add_weight(
                 shape=(self.n_in, self.n_out),
                 initializer=tf.keras.initializers.RandomNormal(mean=0.5, stddev=stdv),
@@ -132,7 +132,7 @@ class MemristorDense(layers.Layer):
             )
 
     def combined_weights(self):
-        if self.iterator.training.is_aware():
+        if self.iterator.training.uses_weight_params():
             b_pos = tf.expand_dims(self.b_pos, axis=0)
             b_neg = tf.expand_dims(self.b_neg, axis=0)
             combined_weights_pos = tf.concat([self.w_pos, b_pos], 0)
@@ -156,7 +156,10 @@ class MemristorDense(layers.Layer):
         return combined_weights
 
     def call(self, x, mask=None):
-        if not self.iterator.training.is_aware() and not self.iterator.current_stage().is_aware():
+        if (
+            not self.iterator.training.uses_weight_params()
+            and not self.iterator.current_stage().is_nonideal()
+        ):
             return tf.tensordot(x, self.w, axes=1) + self.b
 
         ones = tf.ones([tf.shape(x)[0], 1])
@@ -175,7 +178,7 @@ class MemristorDense(layers.Layer):
         V = crossbar.map.x_to_V(x, k_V)
 
         # Handle case when training is aware, but inference assumes no nonidealities.
-        if current_stage.is_aware():
+        if current_stage.is_nonideal():
             G_off = current_stage.G_off
             G_on = current_stage.G_on
         else:
@@ -183,7 +186,7 @@ class MemristorDense(layers.Layer):
             G_on = self.iterator.training.G_on
 
         # Mapping weights onto conductances.
-        if self.iterator.training.is_aware():
+        if self.iterator.training.uses_weight_params():
             G, max_weight = crossbar.map.w_params_to_G(weights, G_off, G_on)
         else:
             G, max_weight = crossbar.map.w_to_G(weights, G_off, G_on, current_stage.mapping_rule)

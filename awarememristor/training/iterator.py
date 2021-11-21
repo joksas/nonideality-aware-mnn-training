@@ -81,6 +81,7 @@ class Training(Nonideal, Iterable):
         force_regular_checkpoint: bool = False,
         memristive_validation_freq: int = None,
         mapping_rule: str = "default",
+        force_standard_w: bool = False,
     ) -> None:
         self.batch_size = batch_size
         self.num_epochs = num_epochs
@@ -89,6 +90,7 @@ class Training(Nonideal, Iterable):
         self.validation_split = validation_split
         self.force_regular_checkpoint = force_regular_checkpoint
         self.memristive_validation_freq = memristive_validation_freq
+        self.__force_standard_w = force_standard_w
         Nonideal.__init__(
             self,
             G_off=G_off,
@@ -111,10 +113,15 @@ class Training(Nonideal, Iterable):
             l += "__rc"
         if self.memristive_validation_freq is not None:
             l += f"__val_freq_{self.memristive_validation_freq}"
+        if self.__force_standard_w:
+            l += "__standard_w"
         return l
 
     def network_label(self) -> str:
         return f"network-{self.repeat_idx}"
+
+    def uses_weight_params(self) -> bool:
+        return self.is_nonideal() and not self.__force_standard_w
 
 
 class Inference(Nonideal, Iterable):
@@ -395,7 +402,7 @@ class Iterator:
             train_callbacks = []
             if use_test_callback:
                 train_callbacks.append(callbacks.TestCallback(self))
-            if not self.training.is_aware() or self.training.force_regular_checkpoint:
+            if not self.training.is_nonideal() or self.training.force_regular_checkpoint:
                 train_callbacks.append(callbacks.RegularCheckpoint(self))
             else:
                 train_callbacks.append(callbacks.MemristiveCheckpoint(self))

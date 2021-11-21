@@ -137,13 +137,12 @@ def d2d_uniformity_pos_neg_conductance_scatterplots(metric="error"):
         utils.color_dict()[key]
         for key in ["vermilion", "reddish-purple", "orange", "blue", "bluish-green"]
     ]
-    iterators.insert(1, iterators[0])
-    inference_idxs = [0, 2, 0, 0, 0]
 
-    for idx, (axis, iterator, color) in enumerate(zip(axes, iterators, colors)):
+    temp_iterators = [iterators[idx] for idx in [0, 1, 4, 5, 6]]
+    for idx, (axis, iterator, color) in enumerate(zip(axes, temp_iterators, colors)):
         iterator.is_training = False
         iterator.is_callback = True
-        iterator.inference_idx = inference_idxs[idx]
+        iterator.inference_idx = 0
         model = architecture.get_model(iterator, custom_weights_path=iterator.weights_path())
         weights = model.layers[1].combined_weights()
 
@@ -151,7 +150,7 @@ def d2d_uniformity_pos_neg_conductance_scatterplots(metric="error"):
         G_off = inference.G_off
         G_on = inference.G_on
 
-        if iterator.training.is_aware():
+        if iterator.training.uses_weight_params():
             G, _ = crossbar.map.w_params_to_G(weights, G_off, G_on)
         else:
             G, _ = crossbar.map.w_to_G(weights, G_off, G_on, mapping_rule=inference.mapping_rule)
@@ -163,20 +162,18 @@ def d2d_uniformity_pos_neg_conductance_scatterplots(metric="error"):
 
     axes[0].set_ylabel(utils.axis_label("g-minus", unit_prefix="μ"))
 
-    temp_iterators = [iterators[idx] for idx in [0, 1, 2]]
-    inference_idxs = [0, 2, 0]
-    for idx, (iterator, inference_idx) in enumerate(zip(temp_iterators, inference_idxs)):
-        avg_power = iterator.test_metric("avg_power", inference_idx=inference_idx)
-        y = iterator.test_metric(metric, inference_idx=inference_idx)
+    temp_iterators = [iterators[idx] for idx in [0, 1, 4]]
+    for idx, iterator in enumerate(temp_iterators):
+        avg_power = iterator.test_metric("avg_power")
+        y = iterator.test_metric(metric)
         color = colors[idx]
         utils.plot_boxplot(axes[-2], y, color, x=1000 * avg_power, metric=metric)
 
-    temp_iterators = [iterators[idx] for idx in [0, 1, 3, 4]]
-    inference_idxs = [1, 3, 0, 0]
+    temp_iterators = [iterators[idx] for idx in [2, 3, 5, 6]]
     color_idxs = [0, 1, -2, -1]
-    for idx, (iterator, inference_idx) in enumerate(zip(temp_iterators, inference_idxs)):
-        avg_power = iterator.test_metric("avg_power", inference_idx=inference_idx)
-        y = iterator.test_metric(metric, inference_idx=inference_idx)
+    for idx, iterator in enumerate(temp_iterators):
+        avg_power = iterator.test_metric("avg_power")
+        y = iterator.test_metric(metric)
         color = colors[color_idxs[idx]]
         utils.plot_boxplot(axes[-1], y, color, x=1000 * avg_power, metric=metric)
 

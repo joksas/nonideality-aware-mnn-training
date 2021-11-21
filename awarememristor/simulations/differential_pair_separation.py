@@ -8,10 +8,23 @@ from . import devices, utils
 DATASET = "mnist"
 
 
-def custom_iterator(training_setup, inference_setups, is_regularized=False):
-    inferences = [Inference(**utils.get_inference_params(), **setup) for setup in inference_setups]
+def custom_iterator(
+    training_setup,
+    inference_setups,
+    is_regularized=False,
+    force_standard_w=False,
+    mapping_rule="default",
+):
+    inferences = [
+        Inference(mapping_rule=mapping_rule, **utils.get_inference_params(), **setup)
+        for setup in inference_setups
+    ]
     training = Training(
-        **utils.get_training_params(), is_regularized=is_regularized, **training_setup
+        **utils.get_training_params(),
+        is_regularized=is_regularized,
+        force_standard_w=force_standard_w,
+        mapping_rule=mapping_rule,
+        **training_setup
     )
 
     return Iterator(DATASET, training, inferences)
@@ -21,19 +34,34 @@ def get_ideal_iterator():
     iterator = custom_iterator(
         devices.ideal(), [devices.more_uniform_d2d(), devices.less_uniform_d2d()], False
     )
-    new_inferences = []
-    for inference in iterator.inferences:
-        new_inference = copy.deepcopy(inference)
-        new_inference.mapping_rule = "avg"
-        new_inferences.append(new_inference)
-
-    iterator.inferences += new_inferences
 
     return iterator
 
 
 def get_nonideal_iterators():
     return [
+        custom_iterator(
+            devices.more_uniform_d2d(),
+            [devices.more_uniform_d2d()],
+            force_standard_w=True,
+        ),
+        custom_iterator(
+            devices.more_uniform_d2d(),
+            [devices.more_uniform_d2d()],
+            force_standard_w=True,
+            mapping_rule="avg",
+        ),
+        custom_iterator(
+            devices.less_uniform_d2d(),
+            [devices.less_uniform_d2d()],
+            force_standard_w=True,
+        ),
+        custom_iterator(
+            devices.less_uniform_d2d(),
+            [devices.less_uniform_d2d()],
+            force_standard_w=True,
+            mapping_rule="avg",
+        ),
         custom_iterator(devices.more_uniform_d2d(), [devices.more_uniform_d2d()]),
         custom_iterator(devices.less_uniform_d2d(), [devices.less_uniform_d2d()]),
         custom_iterator(
@@ -44,7 +72,6 @@ def get_nonideal_iterators():
 
 def get_iterators():
     return [
-        get_ideal_iterator(),
         *get_nonideal_iterators(),
     ]
 
