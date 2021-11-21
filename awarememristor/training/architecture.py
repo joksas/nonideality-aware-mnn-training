@@ -186,7 +186,7 @@ class MemristorDense(layers.Layer):
         if self.iterator.training.is_aware():
             G, max_weight = crossbar.map.w_params_to_G(weights, G_off, G_on)
         else:
-            G, max_weight = crossbar.map.w_to_G(weights, G_off, G_on)
+            G, max_weight = crossbar.map.w_to_G(weights, G_off, G_on, current_stage.mapping_rule)
 
         # Linearity-preserving nonidealities
         for nonideality in current_stage.nonidealities:
