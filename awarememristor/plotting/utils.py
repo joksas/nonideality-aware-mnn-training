@@ -276,7 +276,7 @@ def save_fig(fig, name: str):
     fig.savefig(path, bbox_inches="tight", transparent=True)
 
 
-def axis_label(var_name: str, prepend: str = None) -> str:
+def axis_label(var_name: str, prepend: str = None, unit_prefix: str = "") -> str:
     if var_name == "accuracy":
         label = "accuracy (%)"
     elif var_name == "error":
@@ -284,29 +284,31 @@ def axis_label(var_name: str, prepend: str = None) -> str:
     elif var_name == "loss":
         label = "loss"
     elif var_name == "epoch":
-        label = "epoch (#)"
+        label = "epoch"
     elif var_name == "inference":
         label = "inference"
     elif var_name == "training":
         label = "training"
     elif var_name == "power-consumption":
-        label = "power consumption (W)"
+        label = f"power consumption ({unit_prefix}W)"
     elif var_name == "d2d-uniformity":
         label = "uniformity of D2D variability"
     elif var_name == "checkpoint":
         label = "checkpoint"
     elif var_name == "conductance":
-        label = "conductance (mS)"
+        label = f"conductance ({unit_prefix}S)"
     elif var_name == "voltage":
-        label = "voltage (V)"
+        label = f"voltage ({unit_prefix}V)"
     elif var_name == "current":
-        label = "current (A)"
-    elif var_name == "count":
-        label = "count (#)"
+        label = f"current ({unit_prefix}A)"
     elif var_name == "nonlinearity-parameter":
         label = "nonlinearity parameter"
     elif var_name == "pulse-number":
-        label = "pulse number (#)"
+        label = "pulse number"
+    elif var_name == "g-plus":
+        label = rf"$G_{{+}}$ ({unit_prefix}S)"
+    elif var_name == "g-minus":
+        label = rf"$G_{{-}}$ ({unit_prefix}S)"
     else:
         raise ValueError(f'Unrecognised variable name "{var_name}".')
 

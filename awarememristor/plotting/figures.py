@@ -157,9 +157,9 @@ def d2d_uniformity_pos_neg_conductance_scatterplots(metric="error"):
         G = 1e6 * G
         utils.plot_scatter(axis, G[:, ::2], G[:, 1::2], color)
 
-        axis.set_xlabel(r"$G_{+}$ (μS)")
+        axis.set_xlabel(utils.axis_label("g-plus", unit_prefix="μ"))
 
-    axes[0].set_ylabel(r"$G_{-}$ (μS)")
+    axes[0].set_ylabel(utils.axis_label("g-minus", unit_prefix="μ"))
 
     temp_iterators = [iterators[idx] for idx in [0, 1, 2]]
     inference_idxs = [0, 2, 0]
@@ -179,7 +179,7 @@ def d2d_uniformity_pos_neg_conductance_scatterplots(metric="error"):
         utils.plot_boxplot(axes[-1], y, color, x=1000 * avg_power, metric=metric)
 
     for axis in axes[-2:]:
-        axis.set_xlabel("Power consumption (mW)")
+        axis.set_xlabel(utils.axis_label("power-consumption", unit_prefix="m"))
 
     axes[-2].set_ylabel(utils.axis_label("error"))
     axes[-1].sharey(axes[-2])
@@ -464,7 +464,7 @@ def _HfO2_panels(fig, axes, data_filepath):
         )
 
     axis.set_xlabel(utils.axis_label("pulse-number"))
-    axis.set_ylabel(utils.axis_label("conductance"))
+    axis.set_ylabel(utils.axis_label("conductance", unit_prefix="m"))
 
     axis.set_xlim([0, x[-1]])
     axis.set_ylim(bottom=0.0)
