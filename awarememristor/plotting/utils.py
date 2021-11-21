@@ -71,17 +71,24 @@ def fig_init(
     sharex=False,
     sharey=False,
     scaled_translation: tuple[float, float] = (-16 / 72, 2 / 72),
+    custom_fig: matplotlib.figure = None,
 ) -> tuple[matplotlib.figure, matplotlib.axes]:
     width = Config.COL_WIDTHS[width_num_cols]
     height = height_frac * width
-
-    fig, axes = plt.subplots(
-        *fig_shape,
-        sharex=sharex,
-        sharey=sharey,
-        figsize=(width, height),
-    )
-    fig.tight_layout()
+    if custom_fig is not None:
+        fig = custom_fig
+        fig.set_size_inches(width, height)
+        axes = fig.axes
+        axes = np.array(axes)
+        fig_shape = axes.shape
+    else:
+        fig, axes = plt.subplots(
+            *fig_shape,
+            sharex=sharex,
+            sharey=sharey,
+            figsize=(width, height),
+        )
+        fig.tight_layout()
 
     if fig_shape == (1, 1):
         temp_axes = np.array([axes])
@@ -181,12 +188,20 @@ def plot_scatter(axis, x, y, color, alpha=1.0):
     )
 
 
-def plot_boxplot(axis, y, color, x=None, metric="error", is_x_log=False, linewidth_scaling=1.0):
+def plot_boxplot(
+    axis,
+    y,
+    color,
+    x=None,
+    metric="error",
+    is_x_log=False,
+    linewidth_scaling=1.0,
+    linear_width: float = 0.25,
+):
     y = y.flatten()
     if metric in ["accuracy", "error"]:
         y = 100 * y
 
-    linear_width = 0.2
     positions = None
     if x is not None:
         try:
@@ -194,19 +209,20 @@ def plot_boxplot(axis, y, color, x=None, metric="error", is_x_log=False, linewid
         except AttributeError:
             pass
         positions = [np.mean(x)]
-    widths = None
     if is_x_log and positions is not None:
         widths = [
             10 ** (np.log10(positions[0]) + linear_width / 2.0)
             - 10 ** (np.log10(positions[0]) - linear_width / 2.0)
         ]
+    else:
+        widths = [linear_width]
     boxplot = axis.boxplot(
         y,
         positions=positions,
         widths=widths,
         sym=color,
     )
-    plt.setp(boxplot["fliers"], marker="x", markersize=1, markeredgewidth=0.5)
+    plt.setp(boxplot["fliers"], marker="x", markersize=4 * Config.MARKER_SIZE, markeredgewidth=0.5)
     for element in ["boxes", "whiskers", "fliers", "means", "medians", "caps"]:
         plt.setp(
             boxplot[element], color=color, linewidth=linewidth_scaling * Config.BOXPLOT_LINEWIDTH
@@ -214,6 +230,8 @@ def plot_boxplot(axis, y, color, x=None, metric="error", is_x_log=False, linewid
 
     if is_x_log:
         axis.set_xscale("log")
+    else:
+        axis.set_xscale("linear")
     axis.set_yscale("log")
 
     return boxplot

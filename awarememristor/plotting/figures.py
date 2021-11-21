@@ -112,11 +112,23 @@ def iv_nonlinearity_cnn_results(metric="error", training_idx=0):
     utils.save_fig(fig, f"iv-nonlinearity-cnn-results-{metric}")
 
 
-def d2d_uniformity_pos_neg_conductance_scatterplots():
-    fig, axes = utils.fig_init(
-        2, 0.24, fig_shape=(1, 5), sharex=True, sharey=True, scaled_translation=(-8 / 72, 2 / 72)
-    )
-    fig.subplots_adjust(wspace=0.125)
+def d2d_uniformity_pos_neg_conductance_scatterplots(metric="error"):
+    fig = plt.figure(constrained_layout=True)
+    gs = fig.add_gridspec(2, 1, height_ratios=[1, 2])
+
+    gs_top = gs[0].subgridspec(1, 5)
+    gs_bottom = gs[1].subgridspec(1, 2)
+
+    subplots = list(gs_top) + list(gs_bottom)
+    for subplot in subplots:
+        fig.add_subplot(subplot)
+
+    fig, axes = utils.fig_init(2, 0.75, custom_fig=fig)
+
+    for axis in axes[1:5]:
+        axis.sharex(axes[0])
+        axis.sharey(axes[0])
+        axis.label_outer()
 
     iterators = simulations.differential_pair_separation.get_iterators()
     colors = [
@@ -126,9 +138,7 @@ def d2d_uniformity_pos_neg_conductance_scatterplots():
     iterators.insert(1, iterators[0])
     inference_idxs = [0, 2, 0, 0, 0]
 
-    for idx, (iterator, color) in enumerate(zip(iterators, colors)):
-        axis = axes[idx]
-
+    for idx, (axis, iterator, color) in enumerate(zip(axes, iterators, colors)):
         iterator.is_training = False
         iterator.is_callback = True
         iterator.inference_idx = inference_idxs[idx]
@@ -150,6 +160,31 @@ def d2d_uniformity_pos_neg_conductance_scatterplots():
         axis.set_xlabel(r"$G_{+}$ (μS)")
 
     axes[0].set_ylabel(r"$G_{-}$ (μS)")
+
+    temp_iterators = [iterators[idx] for idx in [0, 1, 2]]
+    inference_idxs = [0, 2, 0]
+    for idx, (iterator, inference_idx) in enumerate(zip(temp_iterators, inference_idxs)):
+        avg_power = iterator.test_metric("avg_power", inference_idx=inference_idx)
+        y = iterator.test_metric(metric, inference_idx=inference_idx)
+        color = colors[idx]
+        utils.plot_boxplot(axes[-2], y, color, x=1000 * avg_power, metric=metric)
+
+    temp_iterators = [iterators[idx] for idx in [0, 1, 3, 4]]
+    inference_idxs = [1, 3, 0, 0]
+    color_idxs = [0, 1, -2, -1]
+    for idx, (iterator, inference_idx) in enumerate(zip(temp_iterators, inference_idxs)):
+        avg_power = iterator.test_metric("avg_power", inference_idx=inference_idx)
+        y = iterator.test_metric(metric, inference_idx=inference_idx)
+        color = colors[color_idxs[idx]]
+        utils.plot_boxplot(axes[-1], y, color, x=1000 * avg_power, metric=metric)
+
+    for axis in axes[-2:]:
+        axis.set_xlabel("Power consumption (mW)")
+
+    axes[-2].set_ylabel(utils.axis_label("error"))
+    axes[-1].sharey(axes[-2])
+    axes[-1].sharex(axes[-2])
+    axes[-1].label_outer()
 
     filename = "d2d-uniformity-G-scatter"
     utils.save_fig(fig, filename)
