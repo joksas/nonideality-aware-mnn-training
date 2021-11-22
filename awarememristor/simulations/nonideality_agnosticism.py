@@ -36,7 +36,7 @@ def get_iterators():
         *iv_nonlinearity.get_nonideal_iterators(),
         *iv_nonlinearity_and_stuck_on.get_nonideal_iterators(),
         *stuck_off.get_nonideal_iterators(),
-        *differential_pair_separation.get_nonideal_iterators()[:2],
+        *differential_pair_separation.get_nonideal_iterators()[-3:-1],
         *stuck_distribution.get_nonideal_iterators(),
     ]
     inferences = [
