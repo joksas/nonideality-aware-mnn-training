@@ -1,4 +1,5 @@
-from awarememristor.simulations import (differential_pair_separation,
+from awarememristor.simulations import (checkpoint_comparison,
+                                        differential_pair_separation,
                                         iv_nonlinearity,
                                         iv_nonlinearity_and_stuck_on,
                                         iv_nonlinearity_cnn,
@@ -14,6 +15,7 @@ def get_mnist_iterator():
         iv_nonlinearity_and_stuck_on.get_ideal_iterator(),
         stuck_distribution.get_ideal_iterator(),
         differential_pair_separation.get_ideal_iterator(),
+        checkpoint_comparison.get_ideal_iterator(),
     ]
 
     return Iterator(

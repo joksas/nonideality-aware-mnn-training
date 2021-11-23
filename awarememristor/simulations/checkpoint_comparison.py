@@ -18,6 +18,10 @@ def custom_iterator(training_setup, inference_setups, force_regular):
     return Iterator(DATASET, training, inferences)
 
 
+def get_ideal_iterator():
+    return custom_iterator(devices.ideal(), [devices.high_magnitude_more_uniform_d2d()], False)
+
+
 def get_nonideal_iterators():
     return [
         custom_iterator(
