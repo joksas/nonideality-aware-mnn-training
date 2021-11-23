@@ -63,6 +63,9 @@ def get_nonideal_iterators():
             mapping_rule="avg",
         ),
         custom_iterator(devices.more_uniform_d2d(), [devices.more_uniform_d2d()]),
+        custom_iterator(
+            devices.more_uniform_d2d(), [devices.more_uniform_d2d()], is_regularized=True
+        ),
         custom_iterator(devices.less_uniform_d2d(), [devices.less_uniform_d2d()]),
         custom_iterator(
             devices.less_uniform_d2d(), [devices.less_uniform_d2d()], is_regularized=True

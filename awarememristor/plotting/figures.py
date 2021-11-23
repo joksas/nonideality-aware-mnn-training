@@ -116,30 +116,30 @@ def iv_nonlinearity_cnn_results(metric="error", training_idx=0):
 
 def d2d_uniformity_pos_neg_conductance_scatterplots(metric="error"):
     fig = plt.figure(constrained_layout=True)
-    gs = fig.add_gridspec(2, 1, height_ratios=[1, 2])
+    gs = fig.add_gridspec(2, 1, height_ratios=[1, 1])
 
-    gs_top = gs[0].subgridspec(1, 5)
+    gs_top = gs[0].subgridspec(2, 4)
     gs_bottom = gs[1].subgridspec(1, 2)
 
     subplots = list(gs_top) + list(gs_bottom)
     for subplot in subplots:
         fig.add_subplot(subplot)
 
-    fig, axes = utils.fig_init(2, 0.75, custom_fig=fig)
+    fig, axes = utils.fig_init(2, 1.0, custom_fig=fig)
 
-    for axis in axes[1:5]:
-        axis.sharex(axes[0])
+    for axis in axes[:8]:
+        axis.sharex(axes[4])
         axis.sharey(axes[0])
         axis.label_outer()
+        axis.set_aspect("equal", adjustable="box")
 
     iterators = simulations.differential_pair_separation.get_iterators()
     colors = [
-        utils.color_dict()[key]
-        for key in ["vermilion", "reddish-purple", "orange", "blue", "bluish-green"]
+        utils.color_dict()[key] for key in ["vermilion", "reddish-purple", "blue", "bluish-green"]
     ]
 
-    temp_iterators = [iterators[idx] for idx in [0, 1, 4, 5, 6]]
-    for idx, (axis, iterator, color) in enumerate(zip(axes, temp_iterators, colors)):
+    temp_iterators = [iterators[idx] for idx in [0, 1, 4, 5, 2, 3, 6, 7]]
+    for idx, (axis, iterator, color) in enumerate(zip(axes, temp_iterators, colors + colors)):
         iterator.is_training = False
         iterator.is_callback = True
         iterator.inference_idx = 0
@@ -158,27 +158,21 @@ def d2d_uniformity_pos_neg_conductance_scatterplots(metric="error"):
         G = 1e6 * G
         utils.plot_scatter(axis, G[:, ::2], G[:, 1::2], color)
 
-        axis.set_xlabel(utils.axis_label("g-plus", unit_prefix="μ"))
+        axis.xaxis.set_ticks(np.arange(1.0, 3.0, 0.5))
+        axis.yaxis.set_ticks(np.arange(1.0, 3.0, 0.5))
 
-    axes[0].set_ylabel(utils.axis_label("g-minus", unit_prefix="μ"))
+        if idx > 3:
+            axis.set_xlabel(utils.axis_label("g-plus", unit_prefix="μ"))
+        if idx in [0, 4]:
+            axis.set_ylabel(utils.axis_label("g-minus", unit_prefix="μ"))
 
-    temp_iterators = [iterators[idx] for idx in [0, 1, 4]]
-    for idx, iterator in enumerate(temp_iterators):
-        avg_power = iterator.test_metric("avg_power")
-        y = iterator.test_metric(metric)
-        color = colors[idx]
-        utils.plot_boxplot(axes[-2], y, color, x=1000 * avg_power, metric=metric)
-
-    temp_iterators = [iterators[idx] for idx in [2, 3, 5, 6]]
-    color_idxs = [0, 1, -2, -1]
-    for idx, iterator in enumerate(temp_iterators):
-        avg_power = iterator.test_metric("avg_power")
-        y = iterator.test_metric(metric)
-        color = colors[color_idxs[idx]]
-        utils.plot_boxplot(axes[-1], y, color, x=1000 * avg_power, metric=metric)
-
-    for axis in axes[-2:]:
-        axis.set_xlabel(utils.axis_label("power-consumption", unit_prefix="m"))
+    for iterator_idxs, axis in zip([[0, 1, 4, 5], [2, 3, 6, 7]], axes[-2:]):
+        for iterator_idx, color in zip(iterator_idxs, colors):
+            iterator = iterators[iterator_idx]
+            avg_power = iterator.test_metric("avg_power")
+            y = iterator.test_metric(metric)
+            utils.plot_boxplot(axis, y, color, x=1000 * avg_power, metric=metric)
+            axis.set_xlabel(utils.axis_label("power-consumption", unit_prefix="m"))
 
     axes[-2].set_ylabel(utils.axis_label("error"))
     axes[-1].sharey(axes[-2])
