@@ -70,7 +70,7 @@ def fig_init(
     fig_shape: tuple[int, int] = (1, 1),
     sharex=False,
     sharey=False,
-    scaled_translation: tuple[float, float] = (-16 / 72, 2 / 72),
+    scaled_translation: tuple[float, float] = (-12 / 72, 2 / 72),
     custom_fig: matplotlib.figure = None,
 ) -> tuple[matplotlib.figure, matplotlib.axes]:
     width = Config.COL_WIDTHS[width_num_cols]

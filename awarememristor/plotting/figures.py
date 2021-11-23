@@ -423,8 +423,6 @@ def _HfO2_panels(fig, axes, data_filepath):
     vals, p = simulations.utils.extract_stuck(data, G_min, G_max)
     median_range = G_max - G_min
     colors = utils.color_dict()
-    axes[0].sharey(axes[1])
-    axes[1].set_yticklabels([])
 
     axis = axes[0]
     shape = data.shape
@@ -510,15 +508,30 @@ def _HfO2_panels(fig, axes, data_filepath):
     utils.add_legend(
         fig,
         ncol=3,
-        bbox_to_anchor=(0.5, 0.49),
+        bbox_to_anchor=(0.5, 0.48),
         handles=handles,
     )
 
 
 def experimental_data(iv_data_filepath, pulsing_data_filepath):
-    fig, axes = utils.fig_init(2, 0.9, fig_shape=(2, 2))
-    fig.subplots_adjust(hspace=0.36)
-    _SiO_x_panels(fig, axes[0, :], iv_data_filepath)
-    _HfO2_panels(fig, axes[1, :], pulsing_data_filepath)
+    fig = plt.figure()
+    gs = fig.add_gridspec(2, 1, height_ratios=[0.9, 1.0])
+    gs.update(wspace=0.025, hspace=0.45)
+
+    gs_top = gs[0].subgridspec(1, 2, wspace=0.2)
+    gs_bottom = gs[1].subgridspec(1, 2, wspace=0.1)
+
+    subplots = list(gs_top) + list(gs_bottom)
+    for subplot in subplots:
+        fig.add_subplot(subplot)
+
+    fig, axes = utils.fig_init(2, 0.9, custom_fig=fig)
+
+    axes[1].sharex(axes[0])
+    axes[3].sharey(axes[2])
+    axes[3].label_outer()
+
+    _SiO_x_panels(fig, axes[[0, 1]], iv_data_filepath)
+    _HfO2_panels(fig, axes[[2, 3]], pulsing_data_filepath)
 
     utils.save_fig(fig, "experimental-data")
