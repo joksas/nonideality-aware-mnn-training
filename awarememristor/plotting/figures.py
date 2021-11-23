@@ -117,7 +117,7 @@ def iv_nonlinearity_cnn_results(metric="error", training_idx=0):
 
 def d2d_uniformity_pos_neg_conductance_scatterplots(metric="error"):
     fig = plt.figure(constrained_layout=True)
-    gs = fig.add_gridspec(2, 1, height_ratios=[1, 1])
+    gs = fig.add_gridspec(2, 1)
 
     gs_top = gs[0].subgridspec(2, 4)
     gs_bottom = gs[1].subgridspec(1, 2)
@@ -126,7 +126,7 @@ def d2d_uniformity_pos_neg_conductance_scatterplots(metric="error"):
     for subplot in subplots:
         fig.add_subplot(subplot)
 
-    fig, axes = utils.fig_init(2, 1.0, custom_fig=fig)
+    fig, axes = utils.fig_init(2, 1.1, custom_fig=fig)
 
     for axis in axes[:8]:
         axis.sharex(axes[4])
@@ -508,24 +508,23 @@ def _HfO2_panels(fig, axes, data_filepath):
     utils.add_legend(
         fig,
         ncol=3,
-        bbox_to_anchor=(0.5, 0.48),
+        bbox_to_anchor=(0.5, 0.54),
         handles=handles,
     )
 
 
 def experimental_data(iv_data_filepath, pulsing_data_filepath):
-    fig = plt.figure()
-    gs = fig.add_gridspec(2, 1, height_ratios=[0.9, 1.0])
-    gs.update(wspace=0.025, hspace=0.45)
+    fig = plt.figure(constrained_layout=True)
+    gs = fig.add_gridspec(3, 1, height_ratios=[0.8, 0.08, 1.0])
 
-    gs_top = gs[0].subgridspec(1, 2, wspace=0.2)
-    gs_bottom = gs[1].subgridspec(1, 2, wspace=0.1)
+    gs_top = gs[0].subgridspec(1, 2, wspace=0.03)
+    gs_bottom = gs[2].subgridspec(1, 2, wspace=0.03)
 
     subplots = list(gs_top) + list(gs_bottom)
     for subplot in subplots:
         fig.add_subplot(subplot)
 
-    fig, axes = utils.fig_init(2, 0.9, custom_fig=fig)
+    fig, axes = utils.fig_init(2, 1.0, custom_fig=fig)
 
     axes[1].sharex(axes[0])
     axes[3].sharey(axes[2])
