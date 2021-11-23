@@ -172,7 +172,7 @@ def d2d_uniformity_pos_neg_conductance_scatterplots(metric="error"):
             iterator = iterators[iterator_idx]
             avg_power = iterator.test_metric("avg_power")
             y = iterator.test_metric(metric)
-            utils.plot_boxplot(axis, y, color, x=1000 * avg_power, metric=metric)
+            utils.plot_boxplot(axis, y, color, x=1000 * avg_power, metric=metric, linear_width=0.2)
             axis.set_xlabel(utils.axis_label("power-consumption", unit_prefix="m"))
 
     axes[-2].set_ylabel(utils.axis_label("error"))
