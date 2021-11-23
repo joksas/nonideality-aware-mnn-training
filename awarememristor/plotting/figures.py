@@ -103,6 +103,7 @@ def iv_nonlinearity_cnn_results(metric="error", training_idx=0):
     axis.set_xticklabels(["Standard", "Nonideality-aware"])
 
     axis.set_xlabel("Training")
+    axis.set_ylim(top=95.0)
 
     utils.add_legend(
         fig,
