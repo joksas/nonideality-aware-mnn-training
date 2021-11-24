@@ -258,7 +258,7 @@ def checkpoint_comparison_results(metric="error", training_idx=0):
     utils.save_fig(fig, f"checkpoint-results-{metric}")
 
 
-def nonideality_agnosticism_heatmap(metric: str = "error", transpose: bool = False):
+def nonideality_agnosticism_heatmap(metric: str = "error", norm_rows=True):
     training_labels = {
         "nonreg__64__none_none__ideal": "Ideal",
         "nonreg__64__0.000997_0.00351__IVNL:2.13_0.0953": r"Low $I$-$V$ nonlin.",
@@ -302,8 +302,8 @@ def nonideality_agnosticism_heatmap(metric: str = "error", transpose: bool = Fal
         ],
     }
     df = pd.DataFrame(
-        index=[training_labels[key] for key in training_labels],
-        columns=[inference_labels[key] for key in inference_labels],
+        columns=[training_labels[key] for key in training_labels],
+        index=[inference_labels[key] for key in inference_labels],
     )
     df = df.astype(float)
     iterators = simulations.nonideality_agnosticism.get_iterators()
@@ -315,23 +315,20 @@ def nonideality_agnosticism_heatmap(metric: str = "error", transpose: bool = Fal
         ]
         for inference, y in zip(iterator.inferences, ys):
             inference_label = inference_labels[inference.label()]
-            df.at[training_label, inference_label] = np.median(y)
+            df.at[inference_label, training_label] = np.median(y)
 
     fig, axes = utils.fig_init(2, 0.5)
 
-    x_label = utils.axis_label("inference")
-    y_label = utils.axis_label("training")
     filename = f"nonideality-agnosticism-{metric}"
+    if not norm_rows:
+        filename += "-not-norm"
 
-    if transpose:
-        df = df.T
-        x_label, y_label = y_label, x_label
-        filename += "-tranposed"
+    utils.add_heatmap(
+        fig, axes, df, x_ticks=df.columns, y_ticks=df.index, metric=metric, norm_rows=norm_rows
+    )
 
-    utils.add_heatmap(fig, axes, df, x_ticks=df.columns, y_ticks=df.index, metric=metric)
-
-    axes.set_ylabel(y_label)
-    axes.set_xlabel(x_label)
+    axes.set_ylabel(utils.axis_label("inference"))
+    axes.set_xlabel(utils.axis_label("training"))
 
     utils.save_fig(fig, filename)
 
