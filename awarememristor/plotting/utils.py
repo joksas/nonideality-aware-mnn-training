@@ -373,7 +373,6 @@ def annotate_heatmap(
     for i in range(data.shape[0]):
         if norm_rows:
             colors = im.cmap(matplotlib.colors.LogNorm()(data[i, :]))
-            # brightness = 0.2126 * colors[:, 0] + 0.7152 * colors[:, 1] + 0.0722 * colors[:, 2]
             luminance = get_luminance(colors[:, 0], colors[:, 1], colors[:, 2])
         else:
             colors = im.cmap(matplotlib.colors.LogNorm()(data))
