@@ -1,3 +1,4 @@
+import copy
 import os
 from pathlib import Path
 from typing import Union
@@ -6,6 +7,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.transforms as mtransforms
 import numpy as np
+import numpy.ma as ma
 
 
 def _cm_to_in(length: float) -> float:
@@ -324,12 +326,18 @@ def axis_label(var_name: str, prepend: str = None, unit_prefix: str = "") -> str
     return label
 
 
+def get_luminance(r, g, b):
+    """Adapted from <https://stackoverflow.com/a/596243/17322548>."""
+    return 0.299 * r + 0.587 * g + 0.114 * b
+
+
 def annotate_heatmap(
     im: matplotlib.image,
     data: np.array = None,
     valfmt: Union[str, matplotlib.ticker.StrMethodFormatter] = "{x:.2f}",
     textcolors: tuple[str, str] = ("black", "white"),
-    threshold: float = None,
+    threshold: float = 0.5,
+    norm_rows: bool = False,
     **textkw,
 ):
     """Annotate a heatmap. Adapted from
@@ -351,12 +359,6 @@ def annotate_heatmap(
     if not isinstance(data, (list, np.ndarray)):
         data = im.get_array()
 
-    # Normalize the threshold to the images color range.
-    if threshold is not None:
-        threshold = im.norm(threshold)
-    else:
-        threshold = im.norm(data.max()) / 2.0
-
     # Set default alignment to center, but allow it to be overwritten by textkw.
     kw = dict(horizontalalignment="center", verticalalignment="center")
     kw.update(textkw)
@@ -369,19 +371,39 @@ def annotate_heatmap(
     # Change the text's color depending on the data.
     texts = []
     for i in range(data.shape[0]):
+        if norm_rows:
+            colors = im.cmap(matplotlib.colors.LogNorm()(data[i, :]))
+            # brightness = 0.2126 * colors[:, 0] + 0.7152 * colors[:, 1] + 0.0722 * colors[:, 2]
+            luminance = get_luminance(colors[:, 0], colors[:, 1], colors[:, 2])
+        else:
+            colors = im.cmap(matplotlib.colors.LogNorm()(data))
+            luminance = get_luminance(colors[:, :, 0], colors[:, :, 1], colors[:, :, 2])
         for j in range(data.shape[1]):
-            kw.update(color=textcolors[int(im.norm(data[i, j]) > threshold)])
+            if norm_rows:
+                cell_luminance = luminance[j]
+            else:
+                cell_luminance = luminance[i, j]
+            kw.update(color=textcolors[int(cell_luminance > threshold)])
             text = im.axes.text(j, i, valfmt(data[i, j], None), **kw)
             texts.append(text)
 
     return texts
 
 
-def add_heatmap(fig, axis, data, x_ticks=None, y_ticks=None, metric="error"):
+def add_heatmap(fig, axis, data, x_ticks=None, y_ticks=None, metric="error", norm_rows=False):
     if metric in ["accuracy", "error"]:
         data = 100 * data
 
-    image = axis.imshow(data, norm=matplotlib.colors.LogNorm(), cmap="cividis")
+    data = data.to_numpy()
+    if norm_rows:
+        num_rows = data.shape[0]
+        row_indices = np.arange(num_rows)
+        for i in range(num_rows):
+            row_data = ma.array(copy.deepcopy(data))
+            row_data[row_indices != i, :] = ma.masked
+            image = axis.imshow(row_data, norm=matplotlib.colors.LogNorm(), cmap="cividis")
+    else:
+        image = axis.imshow(data, norm=matplotlib.colors.LogNorm(), cmap="cividis")
 
     if x_ticks is not None:
         axis.set_xticks(np.arange(len(x_ticks)))
@@ -393,17 +415,23 @@ def add_heatmap(fig, axis, data, x_ticks=None, y_ticks=None, metric="error"):
         axis.set_yticks(np.arange(len(y_ticks)))
         axis.set_yticklabels(y_ticks)
 
-    cbar = fig.colorbar(image, ax=axis)
-    cbar.ax.set_ylabel(
-        axis_label(metric, prepend="median"),
-        rotation=-90,
-        fontsize=Config.AXIS_LABEL_FONT_SIZE,
-        va="bottom",
-    )
-    cbar.ax.tick_params(axis="both", which="both", labelsize=Config.TICKS_FONT_SIZE)
+    if not norm_rows:
+        cbar = fig.colorbar(image, ax=axis)
+        cbar.ax.set_ylabel(
+            axis_label(metric, prepend="median"),
+            rotation=-90,
+            fontsize=Config.AXIS_LABEL_FONT_SIZE,
+            va="bottom",
+        )
+        cbar.ax.tick_params(axis="both", which="both", labelsize=Config.TICKS_FONT_SIZE)
 
     annotate_heatmap(
-        image, valfmt="{x:.1f}", textcolors=("white", "black"), size=Config.TICKS_FONT_SIZE
+        image,
+        data=data,
+        valfmt="{x:.1f}",
+        textcolors=("white", "black"),
+        size=Config.TICKS_FONT_SIZE,
+        norm_rows=norm_rows,
     )
 
 
