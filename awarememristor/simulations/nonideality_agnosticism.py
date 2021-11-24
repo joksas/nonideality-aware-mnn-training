@@ -1,7 +1,8 @@
 import os
 
-from awarememristor.simulations import (devices, differential_pair_separation,
-                                        ideal, iv_nonlinearity,
+from awarememristor.simulations import (checkpoint_comparison, devices,
+                                        differential_pair_separation, ideal,
+                                        iv_nonlinearity,
                                         iv_nonlinearity_and_stuck_on,
                                         stuck_distribution, stuck_off, utils)
 from awarememristor.training import callbacks
@@ -28,6 +29,7 @@ def get_iterators():
         devices.SiO_x_high_nonlinearity_and_stuck_on(),
         devices.more_uniform_d2d(),
         devices.less_uniform_d2d(),
+        devices.high_magnitude_more_uniform_d2d(),
         devices.HfO2(),
     ]
 
@@ -36,8 +38,9 @@ def get_iterators():
         *iv_nonlinearity.get_nonideal_iterators(),
         *iv_nonlinearity_and_stuck_on.get_nonideal_iterators(),
         *stuck_off.get_nonideal_iterators(),
-        *differential_pair_separation.get_nonideal_iterators()[-3:-1],
+        *differential_pair_separation.get_nonideal_iterators()[-4:],
         *stuck_distribution.get_nonideal_iterators(),
+        checkpoint_comparison.get_nonideal_iterators()[1],
     ]
     inferences = [
         Inference(**utils.get_inference_params(), **inference_setup)
