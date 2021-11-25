@@ -340,8 +340,8 @@ def iv_curves_all(use_cm=False):
 
     fig, axes = utils.fig_init(1, 0.8, fig_shape=(1, 1))
 
-    data = simulations.utils.load_SiO_x_data()
-    voltages, currents = simulations.utils.all_SiO_x_curves(data)
+    data = simulations.data.load_SiO_x()
+    voltages, currents = simulations.data.all_SiO_x_curves(data)
 
     N = 1000
     palette = plt.cm.inferno(np.linspace(0, 1, N))
@@ -351,7 +351,7 @@ def iv_curves_all(use_cm=False):
     for idx in range(voltages.shape[0]):
         voltage_curve = voltages[idx, :]
         current_curve = currents[idx, :]
-        n = simulations.utils.nonlinearity_parameter(current_curve)
+        n = simulations.data.nonlinearity_parameter(current_curve)
         palette_idx = int(np.floor(N * (n - 2) / 2))
         axes.plot(
             voltage_curve,
@@ -381,18 +381,18 @@ def iv_curves_all(use_cm=False):
 
 
 def _SiO_x_panels(fig, axes):
-    data = simulations.utils.load_SiO_x_data()
+    data = simulations.data.load_SiO_x()
 
     N = 1000
     palette = plt.cm.inferno(np.linspace(0, 1, N))
     min_voltage, max_voltage = 0.0, 0.5
 
-    curves = simulations.utils.low_high_n_SiO_x_curves(data)
+    curves = simulations.data.low_high_n_SiO_x_curves(data)
     for axis, (voltages, currents) in zip(axes, curves):
         for idx in range(voltages.shape[0]):
             voltage_curve = voltages[idx, :]
             current_curve = currents[idx, :]
-            n = simulations.utils.nonlinearity_parameter(current_curve)
+            n = simulations.data.nonlinearity_parameter(current_curve)
             palette_idx = int(np.floor(N * (n - 2) / 2))
             axis.plot(
                 voltage_curve,
@@ -421,9 +421,9 @@ def _SiO_x_panels(fig, axes):
 
 
 def _HfO2_panels(fig, axes):
-    data = simulations.utils.load_Ta_HfO2_data()
-    G_min, G_max = simulations.utils.extract_G_off_and_G_on(data)
-    vals, p = simulations.utils.extract_stuck(data, G_min, G_max)
+    data = simulations.data.load_Ta_HfO2()
+    G_min, G_max = simulations.data.extract_G_off_and_G_on(data)
+    vals, p = simulations.data.extract_stuck(data, G_min, G_max)
     median_range = G_max - G_min
     colors = utils.color_dict()
 
@@ -438,7 +438,7 @@ def _HfO2_panels(fig, axes):
     for wl_idx in range(0, shape[3], 16):
         for bl_idx in range(shape[2]):
             curve_data = data[:, bl_idx, wl_idx]
-            if np.max(curve_data) - np.min(curve_data) < simulations.utils.stuck_device_threshold(
+            if np.max(curve_data) - np.min(curve_data) < simulations.data.stuck_device_threshold(
                 median_range
             ):
                 color = colors["vermilion"]

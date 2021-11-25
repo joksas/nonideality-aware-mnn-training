@@ -2,7 +2,7 @@ from awarememristor.crossbar.nonidealities import (D2DLognormal,
                                                    IVNonlinearity, StuckAt,
                                                    StuckAtGOff, StuckAtGOn,
                                                    StuckDistribution)
-from awarememristor.simulations import utils
+from awarememristor.simulations import data
 
 
 def ideal():
@@ -10,16 +10,16 @@ def ideal():
 
 
 def _SiO_x_V_ref() -> dict[str, float]:
-    data = utils.load_SiO_x_data()
-    (voltages, _), (_, _) = utils.low_high_n_SiO_x_curves(data)
+    exp_data = data.load_SiO_x()
+    (voltages, _), (_, _) = data.low_high_n_SiO_x_curves(exp_data)
     V_ref = voltages[0][-1] / 2
 
     return {"V_ref": float(V_ref)}
 
 
 def _SiO_x_G(is_high_nonlinearity: bool) -> dict[str, float]:
-    data = utils.load_SiO_x_data()
-    G_off, G_on, _, _ = utils.low_high_n_SiO_x_vals(data, is_high_nonlinearity)
+    exp_data = data.load_SiO_x()
+    G_off, G_on, _, _ = data.low_high_n_SiO_x_vals(exp_data, is_high_nonlinearity)
     return {
         "G_off": float(G_off),
         "G_on": float(G_on),
@@ -27,8 +27,8 @@ def _SiO_x_G(is_high_nonlinearity: bool) -> dict[str, float]:
 
 
 def _SiO_x_nonidealities(is_high_nonlinearity: bool):
-    data = utils.load_SiO_x_data()
-    _, _, n_avg, n_std = utils.low_high_n_SiO_x_vals(data, is_high_nonlinearity)
+    exp_data = data.load_SiO_x()
+    _, _, n_avg, n_std = data.low_high_n_SiO_x_vals(exp_data, is_high_nonlinearity)
     V_ref = _SiO_x_V_ref()["V_ref"]
     return {
         "nonidealities": [IVNonlinearity(V_ref, float(n_avg), float(n_std))],
@@ -95,10 +95,10 @@ def high_magnitude_more_uniform_d2d():
 
 
 def Ta_HfO2():
-    data = utils.load_Ta_HfO2_data()
-    G_off, G_on = utils.extract_G_off_and_G_on(data)
+    exp_data = data.load_Ta_HfO2()
+    G_off, G_on = data.extract_G_off_and_G_on(exp_data)
     G_off, G_on = float(G_off), float(G_on)
-    vals, p = utils.extract_stuck(data, G_off, G_on)
+    vals, p = data.extract_stuck(exp_data, G_off, G_on)
     return {
         **_SiO_x_V_ref(),
         "G_off": G_off,
