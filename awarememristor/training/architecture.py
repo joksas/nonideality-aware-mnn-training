@@ -176,14 +176,13 @@ class MemristorDense(layers.Layer):
         if current_stage.is_nonideal():
             G_off = current_stage.G_off
             G_on = current_stage.G_on
-            V_ref = current_stage.V_ref
+            k_V = current_stage.k_V()
         else:
             G_off = self.iterator.training.G_off
             G_on = self.iterator.training.G_on
-            V_ref = self.iterator.training.V_ref
+            k_V = self.iterator.training.k_V()
 
         # Mapping inputs onto voltages.
-        k_V = 2 * V_ref
         V = crossbar.map.x_to_V(x, k_V)
 
         # Mapping weights onto conductances.

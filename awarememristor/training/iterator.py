@@ -6,7 +6,9 @@ from typing import Any, Union
 import numpy as np
 import tensorflow as tf
 import tensorflow_datasets as tfds
-from awarememristor.crossbar.nonidealities import Nonideality
+from awarememristor.crossbar.nonidealities import (LinearityNonpreserving,
+                                                   Nonideality)
+from awarememristor.simulations import devices
 from awarememristor.training import callbacks, network, utils
 
 warnings.simplefilter("default")
@@ -17,13 +19,11 @@ class Nonideal:
         self,
         G_off: float = None,
         G_on: float = None,
-        V_ref: float = None,
         nonidealities: list[Nonideality] = [],
         mapping_rule: str = "default",
     ) -> None:
         self.G_off = G_off
         self.G_on = G_on
-        self.V_ref = V_ref
         self.nonidealities = nonidealities
         self.mapping_rule = mapping_rule
 
@@ -31,7 +31,6 @@ class Nonideal:
         return (
             self.G_off == other.G_off
             and self.G_on == other.G_on
-            and self.V_ref == other.V_ref
             and self.nonidealities == other.nonidealities
             and self.mapping_rule == other.mapping_rule
         )
@@ -57,6 +56,16 @@ class Nonideal:
     def is_nonideal(self) -> bool:
         return len(self.nonidealities) > 0
 
+    def k_V(self) -> float:
+        for nonideality in self.nonidealities:
+            if isinstance(nonideality, LinearityNonpreserving):
+                return nonideality.k_V()
+
+        # Except for power consumption, makes no difference for
+        # linearity-preserving nonidealities, thus using the same value as for
+        # SiO_x devices.
+        return devices.SiO_x_V_ref()["V_ref"]
+
 
 class Iterable:
     def __init__(self) -> None:
@@ -76,7 +85,6 @@ class Training(Nonideal, Iterable):
         num_repeats: int = 0,
         G_off: float = None,
         G_on: float = None,
-        V_ref: float = None,
         nonidealities: list[Nonideality] = [],
         force_regular_checkpoint: bool = False,
         memristive_validation_freq: int = None,
@@ -95,7 +103,6 @@ class Training(Nonideal, Iterable):
             self,
             G_off=G_off,
             G_on=G_on,
-            V_ref=V_ref,
             nonidealities=nonidealities,
             mapping_rule=mapping_rule,
         )
@@ -130,7 +137,6 @@ class Inference(Nonideal, Iterable):
         num_repeats: int = 0,
         G_off: float = None,
         G_on: float = None,
-        V_ref: float = None,
         nonidealities: list[Nonideality] = [],
         mapping_rule: str = "default",
     ) -> None:
@@ -139,7 +145,6 @@ class Inference(Nonideal, Iterable):
             self,
             G_off=G_off,
             G_on=G_on,
-            V_ref=V_ref,
             nonidealities=nonidealities,
             mapping_rule=mapping_rule,
         )

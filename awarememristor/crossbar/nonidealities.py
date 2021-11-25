@@ -44,6 +44,10 @@ class LinearityNonpreserving(ABC):
                 conductances in the crossbar array.
         """
 
+    @abstractmethod
+    def k_V(self) -> float:
+        """Return voltage scaling factor."""
+
 
 class IVNonlinearity(Nonideality, LinearityNonpreserving):
     def __init__(self, V_ref: float, n_avg: float, n_std: float) -> None:
@@ -80,6 +84,9 @@ class IVNonlinearity(Nonideality, LinearityNonpreserving):
         I = utils.add_I_BL(I_ind)
 
         return I, I_ind
+
+    def k_V(self):
+        return 2 * self.V_ref
 
 
 class StuckAt(Nonideality, LinearityPreserving):
