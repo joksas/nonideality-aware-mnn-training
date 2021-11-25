@@ -331,7 +331,6 @@ class Iterator:
 
     def _memristive_test_callback_idx(self, inference: Inference) -> int:
         """Number of inferences might not equal the number of memristive test callbacks."""
-        # New method
         label = inference.label()
         for idx, history in enumerate(self.info()["callback_infos"]["memristive_test"]["history"]):
             try:
