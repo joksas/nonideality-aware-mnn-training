@@ -333,14 +333,14 @@ def nonideality_agnosticism_heatmap(metric: str = "error", norm_rows=True):
     utils.save_fig(fig, filename)
 
 
-def iv_curves_all(data_filepath, use_cm=False):
+def iv_curves_all(use_cm=False):
     if use_cm:
         rc("text", usetex=True)
         rc("font", **{"family": "serif", "serif": ["Computer Modern"]})
 
     fig, axes = utils.fig_init(1, 0.8, fig_shape=(1, 1))
 
-    data = simulations.utils.load_iv_data(data_filepath)
+    data = simulations.utils.load_SiO_x_data()
     voltages, currents = simulations.utils.all_SiO_x_curves(data)
 
     N = 1000
@@ -380,8 +380,8 @@ def iv_curves_all(data_filepath, use_cm=False):
     utils.save_fig(fig, "SiO_x-IV-curves-all")
 
 
-def _SiO_x_panels(fig, axes, data_filepath):
-    data = simulations.utils.load_iv_data(data_filepath)
+def _SiO_x_panels(fig, axes):
+    data = simulations.utils.load_SiO_x_data()
 
     N = 1000
     palette = plt.cm.inferno(np.linspace(0, 1, N))

@@ -1,5 +1,9 @@
+import os
+from typing import Optional
+
 import h5py
 import numpy as np
+import requests
 from scipy.io import loadmat
 
 
@@ -17,7 +21,9 @@ def get_inference_params():
     }
 
 
-def load_iv_data(path: str):
+def load_SiO_x_data():
+    path = os.path.join(_create_and_get_data_dir(), "SiO_x-data.mat")
+    _validate_data_path(path, url="https://zenodo.org/record/5728040/files/excelDataCombined.mat")
     data = loadmat(path)["data"]
     data = np.flip(data, axis=2)
     data = np.transpose(data, (1, 2, 0))
@@ -138,3 +144,21 @@ def extract_stuck(data: np.ndarray, G_off: float, G_on: float) -> tuple[list[flo
 
 def stuck_device_threshold(median_range):
     return median_range / 2
+
+
+def _validate_data_path(path: str, url: Optional[str] = None) -> None:
+    if os.path.isfile(path):
+        return
+
+    if url is None:
+        raise ValueError("File does not exist and the URL has not been provided.")
+
+    with open(path, "wb") as file:
+        response = requests.get(url)
+        file.write(response.content)
+
+
+def _create_and_get_data_dir() -> str:
+    dir_name = ".data"
+    os.makedirs(dir_name, exist_ok=True)
+    return dir_name
