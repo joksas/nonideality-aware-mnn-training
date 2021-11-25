@@ -100,20 +100,18 @@ def low_high_n_SiO_x_vals(data, is_high_nonlinearity):
     return G_off, G_on, n_avg, n_std
 
 
-def load_cycling_data(path: str, var_name: str = "G_reads"):
-    """Load cycling data.
-
-    Args:
-        path: Filepath to `MAT` file.
-        var_name: MATLAB variable name.
+def load_Ta_HfO2_data():
+    """Load Ta/HfO2 data.
 
     Returns:
         Array of shape `(num_cycles, num_pulses, num_bit_lines, num_word_lines)`.
             The first half of `num_pulses` denotes potentiation, while the second
             half denotes depression.
     """
+    path = os.path.join(_create_and_get_data_dir(), "Ta_HfO2-data.mat")
+    _validate_data_path(path)
     f = h5py.File(path, "r")
-    data = f.get(var_name)
+    data = f.get("G_reads")
     data = np.array(data)
     return data
 
@@ -151,7 +149,7 @@ def _validate_data_path(path: str, url: Optional[str] = None) -> None:
         return
 
     if url is None:
-        raise ValueError("File does not exist and the URL has not been provided.")
+        raise ValueError(f'Data file "{path}" does not exist and the URL has not been provided.')
 
     with open(path, "wb") as file:
         response = requests.get(url)

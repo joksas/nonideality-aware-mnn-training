@@ -420,8 +420,8 @@ def _SiO_x_panels(fig, axes):
     axes[0].set_ylabel(utils.axis_label("current"))
 
 
-def _HfO2_panels(fig, axes, data_filepath):
-    data = simulations.utils.load_cycling_data(data_filepath)
+def _HfO2_panels(fig, axes):
+    data = simulations.utils.load_Ta_HfO2_data()
     G_min, G_max = simulations.utils.extract_G_off_and_G_on(data)
     vals, p = simulations.utils.extract_stuck(data, G_min, G_max)
     median_range = G_max - G_min
@@ -516,7 +516,7 @@ def _HfO2_panels(fig, axes, data_filepath):
     )
 
 
-def experimental_data(iv_data_filepath, pulsing_data_filepath):
+def experimental_data():
     fig = plt.figure(constrained_layout=True)
     gs = fig.add_gridspec(3, 1, height_ratios=[0.8, 0.08, 1.0])
 
@@ -533,7 +533,7 @@ def experimental_data(iv_data_filepath, pulsing_data_filepath):
     axes[3].sharey(axes[2])
     axes[3].label_outer()
 
-    _SiO_x_panels(fig, axes[[0, 1]], iv_data_filepath)
-    _HfO2_panels(fig, axes[[2, 3]], pulsing_data_filepath)
+    _SiO_x_panels(fig, axes[[0, 1]])
+    _HfO2_panels(fig, axes[[2, 3]])
 
     utils.save_fig(fig, "experimental-data")
