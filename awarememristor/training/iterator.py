@@ -340,16 +340,6 @@ class Iterator:
             except KeyError:
                 break
 
-        # Old method
-        nonideality_label = inference.nonideality_label()
-        for idx, history in enumerate(self.info()["callback_infos"]["memristive_test"]["history"]):
-            if history["nonideality_label"] == nonideality_label:
-                warnings.warn(
-                    "Using the old method of storing memristive test results.",
-                    PendingDeprecationWarning,
-                )
-                return idx
-
         raise ValueError("Index not found.")
 
     def _test_metric_existing(self, inference_idx: int, metric: str = "accuracy") -> np.ndarray:
