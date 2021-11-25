@@ -30,7 +30,7 @@ def get_iterators():
         devices.more_uniform_d2d(),
         devices.less_uniform_d2d(),
         devices.high_magnitude_more_uniform_d2d(),
-        devices.HfO2(),
+        devices.Ta_HfO2(),
     ]
 
     iterators = [

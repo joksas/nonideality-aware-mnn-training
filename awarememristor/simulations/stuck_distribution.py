@@ -13,12 +13,12 @@ def custom_iterator(training_setup, inference_setups):
 
 
 def get_ideal_iterator():
-    return custom_iterator(devices.ideal(), [devices.HfO2()])
+    return custom_iterator(devices.ideal(), [devices.Ta_HfO2()])
 
 
 def get_nonideal_iterators():
     return [
-        custom_iterator(devices.HfO2(), [devices.HfO2()]),
+        custom_iterator(devices.Ta_HfO2(), [devices.Ta_HfO2()]),
     ]
 
 

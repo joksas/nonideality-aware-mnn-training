@@ -94,7 +94,7 @@ def high_magnitude_more_uniform_d2d():
     }
 
 
-def HfO2():
+def Ta_HfO2():
     data = utils.load_Ta_HfO2_data()
     G_off, G_on = utils.extract_G_off_and_G_on(data)
     G_off, G_on = float(G_off), float(G_on)
