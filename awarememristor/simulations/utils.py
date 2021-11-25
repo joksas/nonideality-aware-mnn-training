@@ -26,7 +26,7 @@ def load_SiO_x_data() -> np.ndarray:
 
     Returns:
         Array of shape `(2, num_states, num_points)`. The first dimension
-            combines voltage and current values.
+            combines current and voltage values.
     """
     path = os.path.join(_create_and_get_data_dir(), "SiO_x-data.mat")
     _validate_data_path(path, url="https://zenodo.org/record/5728040/files/excelDataCombined.mat")
