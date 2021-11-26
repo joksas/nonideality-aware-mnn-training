@@ -25,7 +25,8 @@ def get_model(iterator, custom_weights=None, custom_weights_path=None):
         model.add(layers.MaxPooling2D((2, 2)))
         model.add(layers.Conv2D(64, (3, 3), activation="relu"))
         model.add(layers.MaxPooling2D((2, 2)))
-        model.add(layers.Conv2D(64, (3, 3), activation="relu"))
+        # Ensure inputs bounded between 0 and 1 for first memristive layer.
+        model.add(layers.Conv2D(64, (3, 3), activation=tf.keras.layers.ReLU(max_value=1.0)))
 
         # Fully connected layers
         model.add(layers.Flatten())
