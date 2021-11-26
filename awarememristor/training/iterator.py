@@ -7,6 +7,7 @@ import numpy as np
 import tensorflow as tf
 import tensorflow_datasets as tfds
 from awarememristor.crossbar.nonidealities import (LinearityNonpreserving,
+                                                   LinearityPreserving,
                                                    Nonideality)
 from awarememristor.simulations import devices
 from awarememristor.training import callbacks, network, utils
@@ -26,6 +27,7 @@ class Nonideal:
         self.G_on = G_on
         self.nonidealities = nonidealities
         self.mapping_rule = mapping_rule
+        self.validate_nonidealities()
 
     def __eq__(self, other):
         return (
@@ -65,6 +67,24 @@ class Nonideal:
         # linearity-preserving nonidealities, thus using the same value as for
         # SiO_x devices.
         return devices.SiO_x_V_ref()["V_ref"]
+
+    def validate_nonidealities(self) -> None:
+        num_linearity_preserving = 0
+        num_linearity_nonpreserving = 0
+        for nonideality in self.nonidealities:
+            if isinstance(nonideality, LinearityPreserving):
+                num_linearity_preserving += 1
+            elif isinstance(nonideality, LinearityNonpreserving):
+                num_linearity_nonpreserving += 1
+
+        for num, nonideality_type in zip(
+            [num_linearity_preserving, num_linearity_nonpreserving],
+            ["linearity-preserving", "linearity-nonpreserving"],
+        ):
+            if num > 1:
+                raise ValueError(
+                    f"Current implementation does not support more than one {nonideality_type} nonideality."
+                )
 
 
 class Iterable:
