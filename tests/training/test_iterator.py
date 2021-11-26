@@ -46,6 +46,6 @@ nonideality_label_testdata = [
 
 
 @pytest.mark.parametrize("nonideal_instance,expected", nonideality_label_testdata)
-def test_random_bool_tensor(nonideal_instance, expected):
+def test_nonideality_label(nonideal_instance, expected):
     result = nonideal_instance.nonideality_label()
     assert result == expected
