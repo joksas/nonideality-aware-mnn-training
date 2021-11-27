@@ -258,7 +258,7 @@ def checkpoint_comparison_results(metric="error", training_idx=0):
     utils.save_fig(fig, f"checkpoint-results-{metric}")
 
 
-def nonideality_agnosticism_heatmap(metric: str = "error", norm_rows=True):
+def nonideality_agnosticism_heatmap(metric: str = "error", norm_rows=True, include_val_label=True):
     training_labels = {
         "nonreg__64__none_none__ideal": "Ideal",
         "nonreg__64__0.000997_0.00351__IVNL:2.13_0.0953": r"Low $I$-$V$ nonlin. [$\mathrm{SiO}_x$]",
@@ -322,6 +322,8 @@ def nonideality_agnosticism_heatmap(metric: str = "error", norm_rows=True):
     filename = f"nonideality-agnosticism-{metric}"
     if not norm_rows:
         filename += "-not-norm"
+    if not include_val_label:
+        filename += "-without-val-label"
 
     utils.add_heatmap(
         fig, axes, df, x_ticks=df.columns, y_ticks=df.index, metric=metric, norm_rows=norm_rows
@@ -329,6 +331,18 @@ def nonideality_agnosticism_heatmap(metric: str = "error", norm_rows=True):
 
     axes.set_ylabel(utils.axis_label("inference"))
     axes.set_xlabel(utils.axis_label("training"))
+
+    if include_val_label:
+        axes.text(
+            1.05,
+            0.5,
+            utils.axis_label("error", prepend="median"),
+            horizontalalignment="center",
+            verticalalignment="center",
+            rotation=-90,
+            transform=axes.transAxes,
+            fontsize=utils.Config.AXIS_LABEL_FONT_SIZE,
+        )
 
     utils.save_fig(fig, filename)
 
