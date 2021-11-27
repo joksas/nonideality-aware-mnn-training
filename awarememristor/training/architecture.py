@@ -1,11 +1,9 @@
-import math
-
 import numpy as np
 import tensorflow as tf
-from awarememristor import crossbar
 from tensorflow.keras import constraints, layers, models
 
-from . import utils
+from awarememristor import crossbar
+from awarememristor.training import utils
 
 
 def get_model(iterator, custom_weights=None, custom_weights_path=None):

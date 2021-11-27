@@ -1,5 +1,4 @@
 from awarememristor.simulations import devices, utils
-from awarememristor.training import callbacks
 from awarememristor.training.iterator import Inference, Iterator, Training
 
 DATASET = "mnist"

@@ -1,6 +1,6 @@
 from awarememristor.crossbar.nonidealities import (D2DLognormal,
-                                                   IVNonlinearity, StuckAt,
-                                                   StuckAtGOff, StuckAtGOn,
+                                                   IVNonlinearity, StuckAtGOff,
+                                                   StuckAtGOn,
                                                    StuckDistribution)
 from awarememristor.simulations import data
 

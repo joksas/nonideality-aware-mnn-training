@@ -1,11 +1,8 @@
-import os
-
 from awarememristor.simulations import (checkpoint_comparison, devices,
                                         differential_pair_separation, ideal,
                                         iv_nonlinearity,
                                         iv_nonlinearity_and_stuck_on,
                                         stuck_distribution, stuck_off, utils)
-from awarememristor.training import callbacks
 from awarememristor.training.iterator import Inference, Iterator, Training
 
 DATASET = "mnist"

@@ -1,13 +1,12 @@
 import copy
 import os
-from pathlib import Path
 from typing import Union
 
 import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.transforms as mtransforms
 import numpy as np
-import numpy.ma as ma
+from numpy import ma
 
 
 def _cm_to_in(length: float) -> float:

@@ -3,6 +3,7 @@ Tests of functions of training.iterator
 """
 # pylint: disable=missing-function-docstring
 import pytest
+
 from awarememristor.crossbar import nonidealities
 from awarememristor.training import iterator
 

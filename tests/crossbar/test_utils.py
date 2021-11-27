@@ -3,6 +3,7 @@ Tests of functions of crossbar.faulty_devices
 """
 import pytest
 import tensorflow as tf
+
 from awarememristor.crossbar import utils as crossbar_utils
 from tests import utils
 

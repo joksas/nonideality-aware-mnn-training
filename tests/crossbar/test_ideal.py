@@ -3,6 +3,7 @@ Tests of functions of crossbar.nonlinear_IV
 """
 import pytest
 import tensorflow as tf
+
 from awarememristor.crossbar import ideal
 from tests import utils
 

@@ -6,6 +6,7 @@ from typing import Any, Union
 import numpy as np
 import tensorflow as tf
 import tensorflow_datasets as tfds
+
 from awarememristor.crossbar.nonidealities import (LinearityNonpreserving,
                                                    LinearityPreserving,
                                                    Nonideality)

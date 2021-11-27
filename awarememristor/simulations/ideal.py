@@ -4,8 +4,7 @@ from awarememristor.simulations import (checkpoint_comparison,
                                         iv_nonlinearity_and_stuck_on,
                                         iv_nonlinearity_cnn,
                                         stuck_distribution, stuck_off)
-from awarememristor.training import callbacks
-from awarememristor.training.iterator import Inference, Iterator, Training
+from awarememristor.training.iterator import Iterator
 
 
 def get_mnist_iterator():

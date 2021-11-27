@@ -1,5 +1,6 @@
 import pytest
 import tensorflow as tf
+
 from awarememristor.crossbar import nonidealities
 from tests import utils
 

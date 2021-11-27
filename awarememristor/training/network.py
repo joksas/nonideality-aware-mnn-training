@@ -1,12 +1,10 @@
-import copy
 import os
 import pickle
 import sys
 
 import tensorflow as tf
+
 from awarememristor.training.architecture import get_model
-from tensorflow import keras
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 sys.path.insert(0, "..")
 

@@ -1,1 +1,1 @@
-from . import figures
+from awarememristor.plotting import figures
