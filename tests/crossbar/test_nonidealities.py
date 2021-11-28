@@ -63,7 +63,7 @@ def test_d2d_lognormal(args, expected):
 iv_nonlinearity_I_ind_testdata = [
     (
         (
-            nonidealities.IVNonlinearity(1.0, 2.0, 0.0),
+            nonidealities.IVNonlinearity(1.0, 2.0, 1e-10),
             tf.constant(
                 [
                     [1.0, 2.0, 3.0, 4.0],
@@ -87,7 +87,7 @@ iv_nonlinearity_I_ind_testdata = [
     ),
     (
         (
-            nonidealities.IVNonlinearity(2.0, 2.0, 0.0),
+            nonidealities.IVNonlinearity(2.0, 2.0, 1e-10),
             tf.constant(
                 [
                     [1.0, 2.0, 3.0, 4.0],
@@ -111,7 +111,7 @@ iv_nonlinearity_I_ind_testdata = [
     ),
     (
         (
-            nonidealities.IVNonlinearity(0.5, 4.0, 0.0),
+            nonidealities.IVNonlinearity(0.5, 4.0, 1e-10),
             tf.constant(
                 [
                     [1.0, 2.0, 3.0, 4.0],
@@ -140,7 +140,7 @@ iv_nonlinearity_I_ind_testdata = [
     ),
     (
         (
-            nonidealities.IVNonlinearity(0.2, 3.0, 0.0),
+            nonidealities.IVNonlinearity(0.2, 3.0, 1e-10),
             tf.constant(
                 [
                     [1.0, 2.0, 3.0, 4.0],
@@ -184,7 +184,7 @@ iv_nonlinearity_I_ind_testdata = [
     ),
     (
         (
-            nonidealities.IVNonlinearity(0.5, 5.0, 0.0),
+            nonidealities.IVNonlinearity(0.5, 5.0, 1e-10),
             tf.constant(
                 [
                     [1.0, 2.0, 3.0, 4.0],
@@ -239,7 +239,7 @@ def test_iv_nonlinearity_I_ind(args, expected):
 iv_nonlinearity_I_testdata = [
     (
         (
-            nonidealities.IVNonlinearity(5.0, 2.0, 0.0),
+            nonidealities.IVNonlinearity(5.0, 2.0, 1e-10),
             tf.constant(
                 [
                     [1.0, 2.0, 3.0, 4.0],

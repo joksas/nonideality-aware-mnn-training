@@ -69,18 +69,23 @@ class IVNonlinearity(Nonideality, LinearityNonpreserving):
         generated amount of current equals the expected amount described by
         Ohm's law, i.e. `I = V*G`.
         """
-        n = tf.random.normal(G.get_shape().as_list(), mean=self.n_avg, stddev=self.n_std)
         # n <= 1 would produce unrealistic behaviour, while 1 < n < 2 is not typical in I-V curves
-        n = tf.clip_by_value(n, 2.0, math.inf)
+        distribution = tfd.TruncatedNormal(
+            loc=self.n_avg,
+            scale=self.n_std,
+            low=2.0,
+            high=np.inf,
+        )
+        n = distribution.sample(sample_shape=G.get_shape().as_list())
 
-        ohmic_current = self.V_ref * tf.expand_dims(G, axis=0)
+        sign = tf.expand_dims(tf.sign(V), axis=-1)
+        ohmic_current = sign * self.V_ref * tf.expand_dims(G, axis=0)
         # Take absolute value of V to prevent negative numbers from being raised to
         # a negative power. We assume symmetrical behaviour with negative voltages.
         ratio = tf.expand_dims(tf.abs(V) / self.V_ref, axis=-1)
         exponent = utils.tf_log2(n)
-        sign = tf.expand_dims(tf.sign(V), axis=-1)
 
-        I_ind = sign * ohmic_current * ratio ** exponent
+        I_ind = ohmic_current * ratio ** exponent
 
         I = utils.add_I_BL(I_ind)
 
