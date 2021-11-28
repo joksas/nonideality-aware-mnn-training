@@ -65,6 +65,16 @@ def color_dict() -> dict[str, str]:
     return colors
 
 
+def get_linestyles():
+    return [
+        "solid",
+        "dotted",
+        "dashed",
+        "dashdot",
+        (0, (1, 10)),  # "loosely dotted"
+    ]
+
+
 def fig_init(
     width_num_cols: int,
     height_frac: float,
@@ -128,40 +138,81 @@ def add_subfigure_label(
     )
 
 
-def plot_training_curves(fig, axis, iterator, subfigure_idx=None, metric="error", inference_idx=0):
+def plot_training_curves(
+    fig,
+    axis,
+    iterator,
+    subfigure_idx=None,
+    metric="error",
+    inference_idx=0,
+    linestyle="solid",
+    is_many=False,
+):
     colors = color_dict()
 
     # Training curve.
     x_training, y_training = iterator.training_curves(metric)
-    plot_curve(axis, x_training, y_training, colors["orange"], metric=metric)
+    plot_curve(
+        axis,
+        x_training,
+        y_training,
+        colors["orange"],
+        metric=metric,
+        linestyle=linestyle,
+        is_many=is_many,
+    )
 
     # Validation curve.
     x_validation, y_validation = iterator.validation_curves(metric)
-    plot_curve(axis, x_validation, y_validation, colors["sky-blue"], metric=metric)
+    plot_curve(
+        axis,
+        x_validation,
+        y_validation,
+        colors["sky-blue"],
+        metric=metric,
+        linestyle=linestyle,
+        is_many=is_many,
+    )
 
     # Testing (during training) curve.
     x_training_testing, y_training_testing = iterator.training_testing_curves(
         metric, iterator.inferences[inference_idx]
     )
     plot_curve(
-        axis, x_training_testing, y_training_testing, colors["reddish-purple"], metric=metric
+        axis,
+        x_training_testing,
+        y_training_testing,
+        colors["reddish-purple"],
+        metric=metric,
+        linestyle=linestyle,
+        is_many=is_many,
     )
 
     axis.set_yscale("log")
     axis.set_xlim([0, len(x_training)])
 
 
-def plot_curve(axis, x, y, color, metric="error"):
+def plot_curve(axis, x, y, color, metric="error", linestyle="solid", is_many=False):
     if metric in ["accuracy", "error"]:
         y = 100 * y
+    lw = Config.LINEWIDTH
+    if is_many:
+        lw /= 2
     if len(y.shape) > 1:
+        alpha = 0.25
+        if is_many:
+            alpha /= 2
         y_min = np.min(y, axis=1)
         y_max = np.max(y, axis=1)
         y_median = np.median(y, axis=1)
-        axis.fill_between(x, y_min, y_max, color=color, alpha=0.25, linewidth=0)
-        axis.plot(x, y_median, color=color, linewidth=Config.LINEWIDTH / 2)
+        axis.fill_between(x, y_min, y_max, color=color, alpha=alpha, linewidth=0)
+        axis.plot(x, y_median, color=color, linewidth=lw / 2, linestyle=linestyle)
     else:
-        axis.plot(x, y, color=color, linewidth=Config.LINEWIDTH)
+        if is_many:
+            x = np.concatenate((x[::20], [x[-1]]))
+            y = np.concatenate((y[::20], [y[-1]]))
+            lw /= 2  # Make all curves the same linewidth.
+        axis.plot(x, y, color=color, linewidth=lw, linestyle=linestyle)
 
 
 def numpify(x):
@@ -270,9 +321,11 @@ def add_legend(
         line.set_linewidth(linewidth)
 
 
-def save_fig(fig, name: str):
+def save_fig(fig, name: str, is_supporting: bool = False):
     dir_name = "plots"
     os.makedirs(dir_name, exist_ok=True)
+    if is_supporting:
+        name = f"supporting-information--{name}"
     path = os.path.join(dir_name, f"{name}.pdf")
     fig.savefig(path, bbox_inches="tight", transparent=True)
 
