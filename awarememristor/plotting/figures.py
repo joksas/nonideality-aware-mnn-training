@@ -256,9 +256,9 @@ def nonideality_agnosticism_heatmap(metric: str = "error", norm_rows=True, inclu
     training_labels = {
         "nonreg__64__none_none__ideal": "Ideal",
         "nonreg__64__0.000997_0.00351__IVNL:2.13_0.0953": r"Low $I$-$V$ nonlin. [$\mathrm{SiO}_x$]",
-        "reg__64__0.000997_0.00351__IVNL:2.13_0.0953": r"Low $I$-$V$ nonlin. (reg.) [$\mathrm{SiO}_x$]",
+        "reg__64__0.000997_0.00351__IVNL:2.13_0.0953": r"Low $I$-$V$ nonlin. [$\mathrm{SiO}_x$] (reg.)",
         "nonreg__64__7.72e-07_2.73e-06__IVNL:2.99_0.369": r"High $I$-$V$ nonlin. [$\mathrm{SiO}_x$]",
-        "reg__64__7.72e-07_2.73e-06__IVNL:2.99_0.369": r"High $I$-$V$ nonlin. (reg.) [$\mathrm{SiO}_x$]",
+        "reg__64__7.72e-07_2.73e-06__IVNL:2.99_0.369": r"High $I$-$V$ nonlin. [$\mathrm{SiO}_x$] (reg.)",
         "nonreg__64__7.72e-07_2.73e-06__StuckOff:0.05": r"Stuck at $G_\mathrm{off}$",
         "nonreg__64__4.36e-05_0.000978__StuckDistr:0.101_1.77e-05": r"Stuck [$\mathrm{Ta/HfO}_2$]",
         "nonreg__64__7.72e-07_2.73e-06__D2DLN:0.25_0.25": "More uniform D2D var.",
