@@ -105,6 +105,7 @@ def stuck_distribution_training(metric="error"):
         iterators,
         metric,
         "stuck-distribution",
+        y_lim=95,
     )
 
 
