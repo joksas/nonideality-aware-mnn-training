@@ -171,12 +171,14 @@ class MemristorDense(layers.Layer):
     def memristive_outputs(self, x, weights):
         current_stage = self.iterator.current_stage()
 
-        # Handle case when training is aware, but inference assumes no nonidealities.
         if current_stage.is_nonideal():
             G_off = current_stage.G_off
             G_on = current_stage.G_on
             k_V = current_stage.k_V()
         else:
+            # Handle case when training is aware, but inference assumes no
+            # nonidealities. This will not affect accuracy, but will affect
+            # power consumption.
             G_off = self.iterator.training.G_off
             G_on = self.iterator.training.G_on
             k_V = self.iterator.training.k_V()
