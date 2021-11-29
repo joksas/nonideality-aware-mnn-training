@@ -394,20 +394,24 @@ def _HfO2_panels(fig, axes):
     num_bl = shape[2]
     num_wl = shape[3]
     pulsing_step_size = 10
-    wl_step_size = 16
+    random_proportion = 0.01
     x = [i + 1 for i in range(0, num_pulses, pulsing_step_size)]
     data = np.reshape(data, (num_pulses, num_bl, num_wl))
-    for wl_idx in range(0, shape[3], wl_step_size):
-        for bl_idx in range(shape[2]):
-            curve_data = data[:, bl_idx, wl_idx]
-            if np.max(curve_data) - np.min(curve_data) < simulations.data.stuck_device_threshold(
-                median_range
-            ):
-                color = colors["vermilion"]
-            else:
-                color = colors["bluish-green"]
-            y = curve_data[::pulsing_step_size]
-            axis.plot(x, 1000 * y, color=color, lw=utils.Config.LINEWIDTH / 3, alpha=1 / 3)
+    num_devices = num_wl * num_bl
+    num_reduced_devices = int(random_proportion * num_devices)
+    np.random.seed(0)
+    random_idxs = np.random.choice(num_devices, num_reduced_devices)
+    bl_idxs, wl_idxs = np.unravel_index(random_idxs, (num_bl, num_wl))
+    for bl_idx, wl_idx in zip(bl_idxs, wl_idxs):
+        curve_data = data[:, bl_idx, wl_idx]
+        if np.max(curve_data) - np.min(curve_data) < simulations.data.stuck_device_threshold(
+            median_range
+        ):
+            color = colors["vermilion"]
+        else:
+            color = colors["bluish-green"]
+        y = curve_data[::pulsing_step_size]
+        axis.plot(x, 1000 * y, color=color, lw=utils.Config.LINEWIDTH / 2, alpha=1 / 3)
 
     for G in [G_min, G_max]:
         axis.axhline(
