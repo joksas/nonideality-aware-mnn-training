@@ -39,7 +39,7 @@ def iv_nonlinearity_training(metric="error"):
     utils.save_fig(fig, f"iv-nonlinearity-training-{metric}")
 
 
-def iv_nonlinearity_test(metric="error"):
+def iv_nonlinearity_inference(metric="error"):
     fig, axes = utils.fig_init(1, 0.8)
 
     iterators = simulations.iv_nonlinearity.get_iterators()
@@ -65,9 +65,9 @@ def iv_nonlinearity_test(metric="error"):
     )
 
     plt.xlabel(utils.axis_label("power-consumption"))
-    plt.ylabel(utils.axis_label(metric, prepend="test"))
+    plt.ylabel(utils.axis_label(metric))
 
-    utils.save_fig(fig, f"iv-nonlinearity-test-{metric}")
+    utils.save_fig(fig, f"iv-nonlinearity-inference-{metric}")
 
 
 def iv_nonlinearity_cnn_results(metric="error"):
