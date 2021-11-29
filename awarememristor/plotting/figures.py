@@ -70,7 +70,7 @@ def iv_nonlinearity_inference(metric="error"):
     utils.save_fig(fig, f"iv-nonlinearity-inference-{metric}")
 
 
-def iv_nonlinearity_cnn_results(metric="error"):
+def iv_nonlinearity_cnn(metric="error"):
     fig, axes = utils.fig_init(2, 1 / 3, fig_shape=(1, 3), sharey=True)
 
     colors = utils.color_dict()
@@ -102,7 +102,7 @@ def iv_nonlinearity_cnn_results(metric="error"):
         bbox_to_anchor=(0.35, 1.05),
     )
 
-    utils.save_fig(fig, f"iv-nonlinearity-cnn-results-{metric}")
+    utils.save_fig(fig, f"iv-nonlinearity-cnn-{metric}")
 
 
 def weight_implementation(metric="error"):
@@ -170,8 +170,7 @@ def weight_implementation(metric="error"):
     axes[-1].sharex(axes[-2])
     axes[-1].label_outer()
 
-    filename = "weight-implementation"
-    utils.save_fig(fig, filename)
+    utils.save_fig(fig, f"weight-implementation-{metric}")
 
 
 def memristive_validation_results(metric="error"):
