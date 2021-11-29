@@ -1,5 +1,9 @@
 # Adjusting Training to Enable Accurate Low-Power Memristive Neural Networks
 
+## Requirements
+
+Python 3.9 and the packages listed in [requirements.txt](/requirements.txt).
+
 ## Repository structure
 
 `awarememristor/crossbar`: memristor nonidealities and mapping onto crossbar arrays.
