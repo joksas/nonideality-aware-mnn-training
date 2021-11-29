@@ -205,7 +205,7 @@ def memristive_validation_results(metric="error"):
         bbox_to_anchor=(0.35, 1.05),
     )
 
-    utils.save_fig(fig, f"checkpoint-results-{metric}")
+    utils.save_fig(fig, f"memristive-validation-{metric}")
 
 
 def nonideality_agnosticism(metric: str = "error", norm_rows=True, include_val_label=True):
