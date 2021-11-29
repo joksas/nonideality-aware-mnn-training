@@ -36,7 +36,7 @@ def iv_nonlinearity_training(metric="error"):
         bbox_to_anchor=(0.5, 1.03),
     )
 
-    utils.save_fig(fig, f"iv-nonlinearity-training-{metric}")
+    utils.save_fig(fig, "iv-nonlinearity-training", metric=metric)
 
 
 def iv_nonlinearity_inference(metric="error"):
@@ -67,7 +67,7 @@ def iv_nonlinearity_inference(metric="error"):
     plt.xlabel(utils.axis_label("power-consumption"))
     plt.ylabel(utils.axis_label(metric))
 
-    utils.save_fig(fig, f"iv-nonlinearity-inference-{metric}")
+    utils.save_fig(fig, "iv-nonlinearity-inference", metric=metric)
 
 
 def iv_nonlinearity_cnn(metric="error"):
@@ -102,7 +102,7 @@ def iv_nonlinearity_cnn(metric="error"):
         bbox_to_anchor=(0.35, 1.05),
     )
 
-    utils.save_fig(fig, f"iv-nonlinearity-cnn-{metric}")
+    utils.save_fig(fig, "iv-nonlinearity-cnn", metric=metric)
 
 
 def weight_implementation(metric="error"):
@@ -170,10 +170,10 @@ def weight_implementation(metric="error"):
     axes[-1].sharex(axes[-2])
     axes[-1].label_outer()
 
-    utils.save_fig(fig, f"weight-implementation-{metric}")
+    utils.save_fig(fig, "weight-implementation", metric=metric)
 
 
-def memristive_validation_results(metric="error"):
+def memristive_validation(metric="error"):
     fig, axes = utils.fig_init(2, 1 / 3, fig_shape=(1, 3), sharey=True)
 
     iterators = simulations.memristive_validation.get_nonideal_iterators()
@@ -204,10 +204,10 @@ def memristive_validation_results(metric="error"):
         bbox_to_anchor=(0.35, 1.05),
     )
 
-    utils.save_fig(fig, f"memristive-validation-{metric}")
+    utils.save_fig(fig, "memristive-validation", metric=metric)
 
 
-def nonideality_agnosticism(metric: str = "error", norm_rows=True, include_val_label=True):
+def nonideality_agnosticism(metric: str = "error", norm_rows=True, include_val_label=False):
     training_labels = {
         "nonreg__64__none_none__ideal": "Ideal",
         "nonreg__64__0.000997_0.00351__IVNL:2.13_0.0953": r"Low $I$-$V$ nonlin. [$\mathrm{SiO}_x$]",
@@ -268,7 +268,7 @@ def nonideality_agnosticism(metric: str = "error", norm_rows=True, include_val_l
 
     fig, axes = utils.fig_init(2, 0.5)
 
-    filename = f"nonideality-agnosticism-{metric}"
+    filename = "nonideality-agnosticism"
     if not norm_rows:
         filename += "-not-norm"
     if not include_val_label:
@@ -293,7 +293,7 @@ def nonideality_agnosticism(metric: str = "error", norm_rows=True, include_val_l
             fontsize=utils.Config.AXIS_LABEL_FONT_SIZE,
         )
 
-    utils.save_fig(fig, filename)
+    utils.save_fig(fig, filename, metric=metric)
 
 
 def _SiO_x_panels(fig, axes):

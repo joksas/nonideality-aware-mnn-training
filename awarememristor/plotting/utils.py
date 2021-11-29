@@ -330,9 +330,11 @@ def add_legend(
         line.set_linewidth(linewidth)
 
 
-def save_fig(fig, name: str, is_supporting: bool = False):
+def save_fig(fig, name: str, is_supporting: bool = False, metric: str = "error"):
     dir_name = "plots"
     os.makedirs(dir_name, exist_ok=True)
+    if metric != "error":
+        name += f"-{metric}"
     if is_supporting:
         name = f"supporting-information--{name}"
     path = os.path.join(dir_name, f"{name}.pdf")

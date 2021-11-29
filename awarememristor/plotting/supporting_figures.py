@@ -163,7 +163,7 @@ def _training_curves_multiple_panels(
         bbox_to_anchor=(0.5, 1.03),
     )
 
-    utils.save_fig(fig, f"{figure_name}-training-{metric}", is_supporting=True)
+    utils.save_fig(fig, f"{figure_name}-training", is_supporting=True, metric=metric)
 
 
 def iv_curves_all():
