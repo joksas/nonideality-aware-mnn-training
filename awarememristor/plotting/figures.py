@@ -393,10 +393,11 @@ def _HfO2_panels(fig, axes):
     num_pulses = shape[0] * shape[1]
     num_bl = shape[2]
     num_wl = shape[3]
-    step_size = 10
-    x = [i + 1 for i in range(0, num_pulses, step_size)]
+    pulsing_step_size = 10
+    wl_step_size = 16
+    x = [i + 1 for i in range(0, num_pulses, pulsing_step_size)]
     data = np.reshape(data, (num_pulses, num_bl, num_wl))
-    for wl_idx in range(0, shape[3], 16):
+    for wl_idx in range(0, shape[3], wl_step_size):
         for bl_idx in range(shape[2]):
             curve_data = data[:, bl_idx, wl_idx]
             if np.max(curve_data) - np.min(curve_data) < simulations.data.stuck_device_threshold(
@@ -405,7 +406,7 @@ def _HfO2_panels(fig, axes):
                 color = colors["vermilion"]
             else:
                 color = colors["bluish-green"]
-            y = curve_data[::step_size]
+            y = curve_data[::pulsing_step_size]
             axis.plot(x, 1000 * y, color=color, lw=utils.Config.LINEWIDTH / 3, alpha=1 / 3)
 
     for G in [G_min, G_max]:
