@@ -1,8 +1,8 @@
-from awarememristor.simulations import (checkpoint_comparison, devices,
-                                        differential_pair_separation, ideal,
-                                        iv_nonlinearity,
+from awarememristor.simulations import (devices, ideal, iv_nonlinearity,
                                         iv_nonlinearity_and_stuck_on,
-                                        stuck_distribution, stuck_off, utils)
+                                        memristive_validation,
+                                        stuck_distribution, stuck_off, utils,
+                                        weight_implementation)
 from awarememristor.training.iterator import Inference, Iterator, Training
 
 DATASET = "mnist"
@@ -35,9 +35,9 @@ def get_iterators():
         *iv_nonlinearity.get_nonideal_iterators(),
         *iv_nonlinearity_and_stuck_on.get_nonideal_iterators(),
         *stuck_off.get_nonideal_iterators(),
-        *differential_pair_separation.get_nonideal_iterators()[-4:],
+        *weight_implementation.get_nonideal_iterators()[-4:],
         *stuck_distribution.get_nonideal_iterators(),
-        checkpoint_comparison.get_nonideal_iterators()[1],
+        memristive_validation.get_nonideal_iterators()[1],
     ]
     inferences = [
         Inference(**utils.get_inference_params(), **inference_setup)

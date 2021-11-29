@@ -1,9 +1,9 @@
-from awarememristor.simulations import (checkpoint_comparison,
-                                        differential_pair_separation,
-                                        iv_nonlinearity,
+from awarememristor.simulations import (iv_nonlinearity,
                                         iv_nonlinearity_and_stuck_on,
                                         iv_nonlinearity_cnn,
-                                        stuck_distribution, stuck_off)
+                                        memristive_validation,
+                                        stuck_distribution, stuck_off,
+                                        weight_implementation)
 from awarememristor.training.iterator import Iterator
 
 
@@ -13,8 +13,8 @@ def get_mnist_iterator():
         stuck_off.get_ideal_iterator(),
         iv_nonlinearity_and_stuck_on.get_ideal_iterator(),
         stuck_distribution.get_ideal_iterator(),
-        differential_pair_separation.get_ideal_iterator(),
-        checkpoint_comparison.get_ideal_iterator(),
+        weight_implementation.get_ideal_iterator(),
+        memristive_validation.get_ideal_iterator(),
     ]
 
     return Iterator(

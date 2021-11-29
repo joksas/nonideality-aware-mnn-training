@@ -5,7 +5,7 @@ from awarememristor import simulations
 from awarememristor.plotting import utils
 
 
-def iv_nonlinearity_training_curves(metric="error"):
+def iv_nonlinearity_training(metric="error"):
     iterators = simulations.iv_nonlinearity.get_iterators()
     # Same training, different inference.
     iterators.insert(3, iterators[0])
@@ -22,8 +22,8 @@ def iv_nonlinearity_training_curves(metric="error"):
     )
 
 
-def differential_pair_separation_standard_weights_training_curves(metric="error"):
-    iterators = simulations.differential_pair_separation.get_nonideal_iterators()[:4]
+def weight_implementation_standard_weights_training(metric="error"):
+    iterators = simulations.weight_implementation.get_nonideal_iterators()[:4]
 
     _training_curves_multiple_panels(
         (2, 3),
@@ -31,14 +31,14 @@ def differential_pair_separation_standard_weights_training_curves(metric="error"
         (2, 2),
         iterators,
         metric,
-        "d2d-uniformity-standard-weights",
+        "weight-implementation-standard-weights",
     )
 
 
-def differential_pair_separation_double_weights_training_curves(metric="error"):
+def weight_implementation_double_weights_training(metric="error"):
     iterators = [
-        simulations.differential_pair_separation.get_ideal_iterator()
-    ] + simulations.differential_pair_separation.get_nonideal_iterators()[4:]
+        simulations.weight_implementation.get_ideal_iterator()
+    ] + simulations.weight_implementation.get_nonideal_iterators()[4:]
     # Same training, different inference.
     iterators.insert(3, iterators[0])
     inference_idxs = [0, 0, 0, 1, 0, 0]
@@ -49,14 +49,14 @@ def differential_pair_separation_double_weights_training_curves(metric="error"):
         (2, 3),
         iterators,
         metric,
-        "d2d-uniformity-double-weights",
+        "weight-implementation-double-weights",
         inference_idxs=inference_idxs,
         y_lim=95,
     )
 
 
-def checkpoint_comparison_training(metric="error"):
-    iterators = simulations.checkpoint_comparison.get_iterators()
+def memristive_validation_training(metric="error"):
+    iterators = simulations.memristive_validation.get_iterators()
 
     _training_curves_multiple_panels(
         2,
@@ -64,7 +64,7 @@ def checkpoint_comparison_training(metric="error"):
         (1, 3),
         iterators,
         metric,
-        "checkpoint-comparison",
+        "memristive-validation",
         y_lim=95,
     )
 
@@ -78,7 +78,7 @@ def stuck_off_training(metric="error"):
         (1, 2),
         iterators,
         metric,
-        "stuck-distribution",
+        "stuck-off",
     )
 
 
@@ -104,7 +104,7 @@ def stuck_distribution_training(metric="error"):
         (1, 2),
         iterators,
         metric,
-        "stuck-off",
+        "stuck-distribution",
     )
 
 

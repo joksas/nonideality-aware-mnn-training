@@ -10,7 +10,7 @@ from awarememristor.plotting import utils
 from awarememristor.training import architecture
 
 
-def iv_nonlinearity_training_curves(metric="error", training_idx=0):
+def iv_nonlinearity_training(metric="error", training_idx=0):
     fig, axes = utils.fig_init(2, 0.55, fig_shape=(2, 3), sharex=True, sharey=True)
 
     iterators = simulations.iv_nonlinearity.get_iterators()
@@ -109,7 +109,7 @@ def iv_nonlinearity_cnn_results(metric="error", training_idx=0):
     utils.save_fig(fig, f"iv-nonlinearity-cnn-results-{metric}")
 
 
-def d2d_uniformity_pos_neg_conductance_scatterplots(metric="error"):
+def weight_implementation(metric="error"):
     fig = plt.figure(constrained_layout=True)
     gs = fig.add_gridspec(2, 1)
 
@@ -128,7 +128,7 @@ def d2d_uniformity_pos_neg_conductance_scatterplots(metric="error"):
         axis.label_outer()
         axis.set_aspect("equal", adjustable="box")
 
-    iterators = simulations.differential_pair_separation.get_iterators()[1:]
+    iterators = simulations.weight_implementation.get_iterators()[1:]
     colors = [
         utils.color_dict()[key] for key in ["vermilion", "reddish-purple", "blue", "bluish-green"]
     ]
@@ -174,7 +174,7 @@ def d2d_uniformity_pos_neg_conductance_scatterplots(metric="error"):
     axes[-1].sharex(axes[-2])
     axes[-1].label_outer()
 
-    filename = "d2d-uniformity-G-scatter"
+    filename = "weight-implementation"
     utils.save_fig(fig, filename)
 
 
@@ -215,10 +215,10 @@ def iv_nonlinearity_and_stuck_results(metric="error", training_idx=0):
     utils.save_fig(fig, f"iv-nonlinearity-and-stuck-results-{metric}")
 
 
-def checkpoint_comparison_results(metric="error", training_idx=0):
+def memristive_validation_results(metric="error", training_idx=0):
     fig, axes = utils.fig_init(2, 1 / 3, fig_shape=(1, 3), sharey=True)
 
-    iterators = simulations.checkpoint_comparison.get_nonideal_iterators()
+    iterators = simulations.memristive_validation.get_nonideal_iterators()
     for i in range(len(iterators)):
         iterators[i].training.repeat_idx = training_idx
 
@@ -231,7 +231,6 @@ def checkpoint_comparison_results(metric="error", training_idx=0):
 
     # Box plots
     axis = axes[-1]
-    boxplots = []
     colors = [utils.color_dict()[key] for key in ["vermilion", "blue"]]
 
     for idx, (iterator, color) in enumerate(zip(iterators, colors)):
@@ -252,7 +251,7 @@ def checkpoint_comparison_results(metric="error", training_idx=0):
     utils.save_fig(fig, f"checkpoint-results-{metric}")
 
 
-def nonideality_agnosticism_heatmap(metric: str = "error", norm_rows=True, include_val_label=True):
+def nonideality_agnosticism(metric: str = "error", norm_rows=True, include_val_label=True):
     training_labels = {
         "nonreg__64__none_none__ideal": "Ideal",
         "nonreg__64__0.000997_0.00351__IVNL:2.13_0.0953": r"Low $I$-$V$ nonlin. [$\mathrm{SiO}_x$]",
