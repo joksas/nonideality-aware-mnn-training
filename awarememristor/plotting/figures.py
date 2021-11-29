@@ -10,12 +10,10 @@ from awarememristor.plotting import utils
 from awarememristor.training import architecture
 
 
-def iv_nonlinearity_training(metric="error", training_idx=0):
+def iv_nonlinearity_training(metric="error"):
     fig, axes = utils.fig_init(2, 0.55, fig_shape=(2, 3), sharex=True, sharey=True)
 
     iterators = simulations.iv_nonlinearity.get_iterators()
-    for i in range(len(iterators)):
-        iterators[i].training.repeat_idx = training_idx
     # Same training, different inference.
     iterators.insert(3, iterators[0])
     inference_idxs = [0, 0, 0, 1, 0, 0]
@@ -72,14 +70,12 @@ def iv_nonlinearity_test(metric="error"):
     utils.save_fig(fig, f"iv-nonlinearity-test-{metric}")
 
 
-def iv_nonlinearity_cnn_results(metric="error", training_idx=0):
+def iv_nonlinearity_cnn_results(metric="error"):
     fig, axes = utils.fig_init(2, 1 / 3, fig_shape=(1, 3), sharey=True)
 
     colors = utils.color_dict()
 
     iterators = simulations.iv_nonlinearity_cnn.get_iterators()
-    for i in range(len(iterators)):
-        iterators[i].training.repeat_idx = training_idx
 
     axes[0].set_ylabel(utils.axis_label(metric))
 
@@ -178,49 +174,10 @@ def weight_implementation(metric="error"):
     utils.save_fig(fig, filename)
 
 
-def iv_nonlinearity_and_stuck_results(metric="error", training_idx=0):
-    fig, axes = utils.fig_init(2, 1 / 3, fig_shape=(1, 3), sharey=True)
-
-    iterators = simulations.iv_nonlinearity_and_stuck.get_iterators()
-    for i in range(len(iterators)):
-        iterators[i].training.repeat_idx = training_idx
-
-    axes[0].set_ylabel(utils.axis_label(metric))
-
-    # Curves
-    for idx, (iterator, axis) in enumerate(zip(iterators, axes)):
-        utils.plot_training_curves(fig, axis, iterator, metric=metric)
-        axis.set_xlabel(utils.axis_label("epoch"))
-
-    # Box plots
-    axis = axes[-1]
-    boxplots = []
-    colors = [utils.color_dict()[key] for key in ["vermilion", "blue"]]
-
-    for idx, (iterator, color) in enumerate(zip(iterators, colors)):
-        y = iterator.test_metric(metric)
-        _ = utils.plot_boxplot(axis, y, color, x=idx, metric=metric, linewidth_scaling=2 / 3)
-
-    axis.set_xticks([0, 1])
-    axis.set_xticklabels(["Standard", "Nonideality-aware"])
-    axis.set_xlabel(utils.axis_label("training"))
-
-    utils.add_legend(
-        fig,
-        labels=["Training", "Validation", "Test (nonideal)"],
-        ncol=len(axes),
-        bbox_to_anchor=(0.35, 1.05),
-    )
-
-    utils.save_fig(fig, f"iv-nonlinearity-and-stuck-results-{metric}")
-
-
-def memristive_validation_results(metric="error", training_idx=0):
+def memristive_validation_results(metric="error"):
     fig, axes = utils.fig_init(2, 1 / 3, fig_shape=(1, 3), sharey=True)
 
     iterators = simulations.memristive_validation.get_nonideal_iterators()
-    for i in range(len(iterators)):
-        iterators[i].training.repeat_idx = training_idx
 
     axes[0].set_ylabel(utils.axis_label(metric))
 
