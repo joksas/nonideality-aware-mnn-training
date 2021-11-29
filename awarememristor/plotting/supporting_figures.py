@@ -91,7 +91,7 @@ def high_iv_nonlinearity_and_stuck_on_training(metric="error"):
         (1, 2),
         iterators,
         metric,
-        "iv-nonlinearity-and-stuck-on",
+        "high-iv-nonlinearity-and-stuck-on",
     )
 
 
