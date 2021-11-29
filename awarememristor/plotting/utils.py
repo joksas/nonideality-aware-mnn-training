@@ -234,7 +234,7 @@ def plot_scatter(axis, x, y, color, alpha=1.0, random_proportion=None):
     if random_proportion:
         np.random.seed(0)
         num_points = x.size
-        num_reduced_points = int(random_proportion * num_points)
+        num_reduced_points = int(np.around(random_proportion * num_points))
         random_idxs = np.random.choice(num_points, num_reduced_points)
         x = x[random_idxs]
         y = y[random_idxs]

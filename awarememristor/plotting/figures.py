@@ -353,7 +353,7 @@ def _HfO2_panels(fig, axes):
     x = [i + 1 for i in range(0, num_pulses, pulsing_step_size)]
     data = np.reshape(data, (num_pulses, num_bl, num_wl))
     num_devices = num_wl * num_bl
-    num_reduced_devices = int(random_proportion * num_devices)
+    num_reduced_devices = int(np.around(random_proportion * num_devices))
     np.random.seed(0)
     random_idxs = np.random.choice(num_devices, num_reduced_devices)
     bl_idxs, wl_idxs = np.unravel_index(random_idxs, (num_bl, num_wl))
