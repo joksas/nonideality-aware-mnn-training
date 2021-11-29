@@ -193,7 +193,7 @@ def test_ideal_dpe(args, expected, G_off, G_on, V_ref, is_ideal):
     if is_ideal:
         I = crossbar.ideal.compute_I(V, G)
     else:
-        nonideality = crossbar.nonidealities.IVNonlinearity(V_ref, 2.0, 0.0)
+        nonideality = crossbar.nonidealities.IVNonlinearity(V_ref, 2.0, 1e-10)
         I, _ = nonideality.compute_I(V, G)
 
     y = crossbar.map.I_to_y(I, k_V, max_weight, G_on, G_off)
