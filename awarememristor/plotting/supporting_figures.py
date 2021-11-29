@@ -60,7 +60,7 @@ def memristive_validation_training(metric="error"):
 
     _training_curves_multiple_panels(
         2,
-        0.3,
+        0.32,
         (1, 3),
         iterators,
         metric,
