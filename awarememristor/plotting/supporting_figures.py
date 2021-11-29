@@ -6,20 +6,134 @@ from awarememristor.plotting import utils
 
 
 def iv_nonlinearity_training_curves(metric="error"):
-    fig, axes = utils.fig_init(2, 0.55, fig_shape=(2, 3), sharex=True, sharey=True)
-
     iterators = simulations.iv_nonlinearity.get_iterators()
     # Same training, different inference.
     iterators.insert(3, iterators[0])
     inference_idxs = [0, 0, 0, 1, 0, 0]
+
+    _training_curves_multiple_panels(
+        2,
+        0.55,
+        (2, 3),
+        iterators,
+        metric,
+        "iv-nonlinearity",
+        inference_idxs=inference_idxs,
+    )
+
+
+def differential_pair_separation_standard_weights_training_curves(metric="error"):
+    iterators = simulations.differential_pair_separation.get_nonideal_iterators()[:4]
+
+    _training_curves_multiple_panels(
+        (2, 3),
+        0.77,
+        (2, 2),
+        iterators,
+        metric,
+        "d2d-uniformity-standard-weights",
+    )
+
+
+def differential_pair_separation_double_weights_training_curves(metric="error"):
+    iterators = [
+        simulations.differential_pair_separation.get_ideal_iterator()
+    ] + simulations.differential_pair_separation.get_nonideal_iterators()[4:]
+    # Same training, different inference.
+    iterators.insert(3, iterators[0])
+    inference_idxs = [0, 0, 0, 1, 0, 0]
+
+    _training_curves_multiple_panels(
+        2,
+        0.55,
+        (2, 3),
+        iterators,
+        metric,
+        "d2d-uniformity-double-weights",
+        inference_idxs=inference_idxs,
+        y_lim=95,
+    )
+
+
+def checkpoint_comparison_training(metric="error"):
+    iterators = simulations.checkpoint_comparison.get_iterators()
+
+    _training_curves_multiple_panels(
+        2,
+        0.3,
+        (1, 3),
+        iterators,
+        metric,
+        "checkpoint-comparison",
+        y_lim=95,
+    )
+
+
+def stuck_off_training(metric="error"):
+    iterators = simulations.stuck_off.get_iterators()
+
+    _training_curves_multiple_panels(
+        (2, 3),
+        0.45,
+        (1, 2),
+        iterators,
+        metric,
+        "stuck-distribution",
+    )
+
+
+def high_iv_nonlinearity_and_stuck_on_training(metric="error"):
+    iterators = simulations.iv_nonlinearity_and_stuck_on.get_iterators()
+
+    _training_curves_multiple_panels(
+        (2, 3),
+        0.45,
+        (1, 2),
+        iterators,
+        metric,
+        "iv-nonlinearity-and-stuck-on",
+    )
+
+
+def stuck_distribution_training(metric="error"):
+    iterators = simulations.stuck_distribution.get_iterators()
+
+    _training_curves_multiple_panels(
+        (2, 3),
+        0.45,
+        (1, 2),
+        iterators,
+        metric,
+        "stuck-off",
+    )
+
+
+def _training_curves_multiple_panels(
+    width_num_cols,
+    height_frac,
+    fig_shape,
+    iterators,
+    metric,
+    figure_name,
+    inference_idxs=None,
+    y_lim=None,
+):
+    fig, axes = utils.fig_init(
+        width_num_cols, height_frac, fig_shape=fig_shape, sharex=True, sharey=True
+    )
+    if inference_idxs is None:
+        inference_idxs = [0 for _ in range(len(iterators))]
 
     for training_idx, linestyle in enumerate(utils.get_linestyles()):
         for i in range(len(iterators)):
             iterators[i].training.repeat_idx = training_idx
 
         for idx, (iterator, inference_idx) in enumerate(zip(iterators, inference_idxs)):
-            i, j = np.unravel_index(idx, axes.shape)
-            axis = axes[i, j]
+            if len(axes.shape) == 1:
+                axis = axes[idx]
+            else:
+                i, j = np.unravel_index(idx, axes.shape)
+                axis = axes[i, j]
             utils.plot_training_curves(
                 fig,
                 axis,
@@ -30,19 +144,26 @@ def iv_nonlinearity_training_curves(metric="error"):
                 linestyle=linestyle,
                 is_many=True,
             )
-            if i + 1 == axes.shape[0]:
+            if len(axes.shape) == 1:
                 axis.set_xlabel(utils.axis_label("epoch"))
-            if j == 0:
-                axis.set_ylabel(utils.axis_label(metric))
+                if idx == 0:
+                    axis.set_ylabel(utils.axis_label(metric))
+            else:
+                if i + 1 == axes.shape[0]:
+                    axis.set_xlabel(utils.axis_label("epoch"))
+                if j == 0:
+                    axis.set_ylabel(utils.axis_label(metric))
+            if y_lim is not None:
+                axis.set_ylim(top=y_lim)
 
     utils.add_legend(
         fig,
         labels=["Training", "Validation", "Test (nonideal)"],
-        ncol=axes.shape[1],
+        ncol=3,
         bbox_to_anchor=(0.5, 1.03),
     )
 
-    utils.save_fig(fig, f"iv-nonlinearity-training-{metric}", is_supporting=True)
+    utils.save_fig(fig, f"{figure_name}-training-{metric}", is_supporting=True)
 
 
 def iv_curves_all():

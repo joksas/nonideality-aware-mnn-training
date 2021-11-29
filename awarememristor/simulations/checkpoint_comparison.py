@@ -36,7 +36,10 @@ def get_nonideal_iterators():
 
 
 def get_iterators():
-    return get_nonideal_iterators()
+    return [
+        get_ideal_iterator(),
+        *get_nonideal_iterators(),
+    ]
 
 
 def main():

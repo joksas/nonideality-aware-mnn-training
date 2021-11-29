@@ -22,12 +22,14 @@ class Config:
     MARKER_SIZE: float = 0.5
     BOXPLOT_LINEWIDTH: float = 0.75
     # Advanced Science
-    COL_WIDTHS: dict[int, float] = {
-        1: _cm_to_in(8.5),
-        2: _cm_to_in(17.8),
-    }
     ONE_COLUMN_WIDTH: float = _cm_to_in(8.5)
     TWO_COLUMNS_WIDTH: float = _cm_to_in(17.8)
+    TWO_THIRDS_COLUMN_WIDTH: float = 2 / 3 * TWO_COLUMNS_WIDTH
+    COL_WIDTHS: dict[Union[int, tuple[int, int]], float] = {
+        1: ONE_COLUMN_WIDTH,
+        2: TWO_COLUMNS_WIDTH,
+        (2, 3): TWO_THIRDS_COLUMN_WIDTH,
+    }
 
 
 def color_list() -> list[str]:
@@ -76,7 +78,7 @@ def get_linestyles():
 
 
 def fig_init(
-    width_num_cols: int,
+    width_num_cols: Union[int, tuple[int, int]],
     height_frac: float,
     fig_shape: tuple[int, int] = (1, 1),
     sharex=False,
