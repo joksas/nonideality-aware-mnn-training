@@ -411,7 +411,7 @@ def _HfO2_panels(fig, axes):
         else:
             color = colors["bluish-green"]
         y = curve_data[::pulsing_step_size]
-        axis.plot(x, 1000 * y, color=color, lw=utils.Config.LINEWIDTH / 2, alpha=1 / 3)
+        axis.plot(x, 1000 * y, color=color, lw=utils.Config.LINEWIDTH / 2, alpha=1 / 2)
 
     for G in [G_min, G_max]:
         axis.axhline(
