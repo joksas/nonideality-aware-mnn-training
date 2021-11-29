@@ -128,7 +128,7 @@ def d2d_uniformity_pos_neg_conductance_scatterplots(metric="error"):
         axis.label_outer()
         axis.set_aspect("equal", adjustable="box")
 
-    iterators = simulations.differential_pair_separation.get_iterators()
+    iterators = simulations.differential_pair_separation.get_iterators()[1:]
     colors = [
         utils.color_dict()[key] for key in ["vermilion", "reddish-purple", "blue", "bluish-green"]
     ]
@@ -151,7 +151,7 @@ def d2d_uniformity_pos_neg_conductance_scatterplots(metric="error"):
             G, _ = crossbar.map.w_to_G(weights, G_off, G_on, mapping_rule=inference.mapping_rule)
 
         G = 1e6 * G
-        utils.plot_scatter(axis, G[:, ::2], G[:, 1::2], color)
+        utils.plot_scatter(axis, G[:, ::2], G[:, 1::2], color, random_proportion=0.1)
 
         axis.xaxis.set_ticks(np.arange(1.0, 3.0, 0.5))
         axis.yaxis.set_ticks(np.arange(1.0, 3.0, 0.5))
