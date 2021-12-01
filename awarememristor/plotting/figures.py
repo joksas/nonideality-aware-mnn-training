@@ -141,8 +141,8 @@ def weight_implementation(metric="error"):
         G_off = inference.G_off
         G_on = inference.G_on
 
-        if iterator.training.uses_weight_params():
-            G, _ = crossbar.map.w_params_to_G(weights, G_off, G_on)
+        if iterator.training.uses_double_weights():
+            G, _ = crossbar.map.double_w_to_G(weights, G_off, G_on)
         else:
             G, _ = crossbar.map.w_to_G(weights, G_off, G_on, mapping_rule=inference.mapping_rule)
 

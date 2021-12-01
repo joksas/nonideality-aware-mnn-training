@@ -148,7 +148,7 @@ class Training(Nonideal, Iterable):
     def network_label(self) -> str:
         return f"network-{self.repeat_idx}"
 
-    def uses_weight_params(self) -> bool:
+    def uses_double_weights(self) -> bool:
         return self.is_nonideal() and not self.force_standard_w
 
 

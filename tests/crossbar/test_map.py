@@ -7,10 +7,10 @@ import tensorflow as tf
 from awarememristor import crossbar
 from tests import utils
 
-w_params_to_G_testdata = [
+double_w_to_G_testdata = [
     (
         {
-            "weight_params": tf.constant(
+            "double_w": tf.constant(
                 [
                     [3.75, 2.5, 5.0, 2.5],
                     [2.5, 0.0, 0.0, 1.25],
@@ -31,7 +31,7 @@ w_params_to_G_testdata = [
     ),
     (
         {
-            "weight_params": tf.constant(
+            "double_w": tf.constant(
                 [
                     [8.0, 0.0],
                     [2.0, 0.0],
@@ -53,10 +53,10 @@ w_params_to_G_testdata = [
 ]
 
 
-@pytest.mark.parametrize("args,expected", w_params_to_G_testdata)
-def test_w_params_to_G(args, expected):
+@pytest.mark.parametrize("args,expected", double_w_to_G_testdata)
+def test_double_w_to_G(args, expected):
     G_exp, max_weight_exp = expected
-    G, max_weight = crossbar.map.w_params_to_G(**args)
+    G, max_weight = crossbar.map.double_w_to_G(**args)
     utils.assert_tf_approx(G, G_exp)
     utils.assert_tf_approx(max_weight, max_weight_exp)
 

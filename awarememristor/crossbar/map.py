@@ -82,11 +82,11 @@ def x_to_V(x: tf.Tensor, k_V: float) -> tf.Tensor:
     return k_V * x
 
 
-def w_params_to_G(weight_params: tf.Tensor, G_off: float, G_on: float) -> tf.Tensor:
-    """Map weight parameters onto conductances.
+def double_w_to_G(double_w: tf.Tensor, G_off: float, G_on: float) -> tf.Tensor:
+    """Map double weights onto conductances.
 
     Args:
-        weight_params: Nonnegative weight parameters of shape `m x 2n`. These are used to train
+        double_w: Double weights of shape `m x 2n`. These are used to train
             each conductance (instead of pair of conductances) directly.
         G_off: Memristor conductance in OFF state.
         G_on: Memristor conductance in ON state.
@@ -95,9 +95,9 @@ def w_params_to_G(weight_params: tf.Tensor, G_off: float, G_on: float) -> tf.Ten
         G: Conductances of shape `m x 2n`.
         max_weight: Assumed maximum weight.
     """
-    max_weight = tf.math.reduce_max(weight_params)
+    max_weight = tf.math.reduce_max(double_w)
     k_G = compute_k_G(max_weight, G_on, G_off)
-    G = k_G * weight_params + G_off
+    G = k_G * double_w + G_off
 
     return G, max_weight
 

@@ -77,7 +77,7 @@ class MemristorDense(layers.Layer):
             reg_gamma = 1e-4
             kwargs["regularizer"] = tf.keras.regularizers.l1(reg_gamma)
 
-        if self.iterator.training.uses_weight_params():
+        if self.iterator.training.uses_double_weights():
             self.w_pos = self.add_weight(
                 shape=(self.n_in, self.n_out),
                 initializer=tf.keras.initializers.RandomNormal(mean=0.5, stddev=stdv),
@@ -131,7 +131,7 @@ class MemristorDense(layers.Layer):
             )
 
     def combined_weights(self):
-        if self.iterator.training.uses_weight_params():
+        if self.iterator.training.uses_double_weights():
             b_pos = tf.expand_dims(self.b_pos, axis=0)
             b_neg = tf.expand_dims(self.b_neg, axis=0)
             combined_weights_pos = tf.concat([self.w_pos, b_pos], 0)
@@ -156,7 +156,7 @@ class MemristorDense(layers.Layer):
 
     def call(self, x, mask=None):
         if (
-            not self.iterator.training.uses_weight_params()
+            not self.iterator.training.uses_double_weights()
             and not self.iterator.current_stage().is_nonideal()
         ):
             return tf.tensordot(x, self.w, axes=1) + self.b
@@ -187,8 +187,8 @@ class MemristorDense(layers.Layer):
         V = crossbar.map.x_to_V(x, k_V)
 
         # Mapping weights onto conductances.
-        if self.iterator.training.uses_weight_params():
-            G, max_weight = crossbar.map.w_params_to_G(weights, G_off, G_on)
+        if self.iterator.training.uses_double_weights():
+            G, max_weight = crossbar.map.double_w_to_G(weights, G_off, G_on)
         else:
             G, max_weight = crossbar.map.w_to_G(weights, G_off, G_on, current_stage.mapping_rule)
 
