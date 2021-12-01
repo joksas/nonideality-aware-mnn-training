@@ -1,4 +1,4 @@
-# Adjusting Training to Enable Accurate Low-Power Memristive Neural Networks
+# Adjusting Training to Enable Accurate and Robust Low-Power Memristive Neural Networks
 
 ## Requirements
 
