@@ -10,6 +10,170 @@ from awarememristor.plotting import utils
 from awarememristor.training import architecture
 
 
+def _SiO_x_panels(fig, axes):
+    data = simulations.data.load_SiO_x()
+
+    N = 1000
+    palette = plt.cm.inferno(np.linspace(0, 1, N))
+    min_voltage, max_voltage = 0.0, 0.5
+
+    curves = simulations.data.low_high_n_SiO_x_curves(data)
+    for axis, (voltages, currents) in zip(axes, curves):
+        for idx in range(voltages.shape[0]):
+            voltage_curve = voltages[idx, :]
+            current_curve = currents[idx, :]
+            n = simulations.data.nonlinearity_parameter(current_curve)
+            palette_idx = int(np.floor(N * (n - 2) / 2))
+            axis.plot(
+                voltage_curve,
+                current_curve,
+                color=palette[palette_idx],
+                linewidth=utils.Config.LINEWIDTH,
+            )
+
+        axis.set_xlim([min_voltage, max_voltage])
+        axis.set_ylim(bottom=0)
+        axis.set_xlabel(utils.axis_label("voltage"))
+        axis.ticklabel_format(axis="y", scilimits=(-1, 1))
+        axis.yaxis.get_offset_text().set_fontsize(utils.Config.TICKS_FONT_SIZE)
+
+    sm = plt.cm.ScalarMappable(cmap="inferno", norm=plt.Normalize(vmin=2, vmax=4))
+    cbar = fig.colorbar(sm, ax=axes)
+    cbar.set_label(
+        label=utils.axis_label("nonlinearity-parameter"),
+        fontsize=utils.Config.AXIS_LABEL_FONT_SIZE,
+        rotation=-90,
+        va="bottom",
+    )
+    cbar.ax.tick_params(axis="both", which="both", labelsize=utils.Config.TICKS_FONT_SIZE)
+
+    axes[0].set_ylabel(utils.axis_label("current"))
+
+
+def _HfO2_panels(fig, axes):
+    data = simulations.data.load_Ta_HfO2()
+    G_min, G_max = simulations.data.extract_G_off_and_G_on(data)
+    vals, p = simulations.data.extract_stuck(data, G_min, G_max)
+    median_range = G_max - G_min
+    colors = utils.color_dict()
+
+    axis = axes[0]
+    shape = data.shape
+    num_pulses = shape[0] * shape[1]
+    num_bl = shape[2]
+    num_wl = shape[3]
+    pulsing_step_size = 10
+    random_proportion = 0.01
+    x = [i + 1 for i in range(0, num_pulses, pulsing_step_size)]
+    data = np.reshape(data, (num_pulses, num_bl, num_wl))
+    num_devices = num_wl * num_bl
+    num_reduced_devices = int(np.around(random_proportion * num_devices))
+    np.random.seed(0)
+    random_idxs = np.random.choice(num_devices, num_reduced_devices)
+    bl_idxs, wl_idxs = np.unravel_index(random_idxs, (num_bl, num_wl))
+    for bl_idx, wl_idx in zip(bl_idxs, wl_idxs):
+        curve_data = data[:, bl_idx, wl_idx]
+        if np.max(curve_data) - np.min(curve_data) < simulations.data.stuck_device_threshold(
+            median_range
+        ):
+            color = colors["vermilion"]
+        else:
+            color = colors["bluish-green"]
+        y = curve_data[::pulsing_step_size]
+        axis.plot(x, 1000 * y, color=color, lw=utils.Config.LINEWIDTH / 2, alpha=1 / 2)
+
+    for G in [G_min, G_max]:
+        axis.axhline(
+            1000 * G,
+            0,
+            1,
+            color=colors["blue"],
+            lw=utils.Config.LINEWIDTH,
+            linestyle="dashed",
+            zorder=10,
+        )
+
+    axis.set_xlabel(utils.axis_label("pulse-number"))
+    axis.set_ylabel(utils.axis_label("conductance", unit_prefix="m"))
+
+    axis.set_xlim([0, x[-1]])
+    axis.set_ylim(bottom=0.0)
+
+    handles = [
+        Line2D([0], [0], color=colors["vermilion"], label="Stuck devices"),
+        Line2D([0], [0], color=colors["bluish-green"], label="Other devices"),
+        Line2D(
+            [0],
+            [0],
+            color=colors["blue"],
+            linestyle="dashed",
+            label=r"$G_\mathrm{off}, G_\mathrm{on}$",
+        ),
+    ]
+
+    # Distribution
+    axis = axes[1]
+    distribution = StuckDistribution(vals, p).distribution
+    x = np.linspace(0.0, 1.5e-3, int(1e4))
+    y = distribution.prob(x)
+    y = y / 1000
+    x = 1000 * x
+
+    axis.plot(y, x, lw=0.5, color=colors["vermilion"])
+    axis.scatter(
+        np.zeros_like(vals),
+        [1000 * val for val in vals],
+        marker="_",
+        alpha=0.1,
+        lw=utils.Config.LINEWIDTH / 2,
+        color=colors["vermilion"],
+    )
+    for G in [G_min, G_max]:
+        axis.axhline(
+            1000 * G,
+            0,
+            1,
+            color=colors["blue"],
+            lw=utils.Config.LINEWIDTH,
+            linestyle="dashed",
+            zorder=10,
+        )
+
+    axis.set_xlabel(r"Probability density ($\mathrm{mS}^{-1}$)")
+
+    axis.set_xlim(left=0.0)
+
+    utils.add_legend(
+        fig,
+        ncol=3,
+        bbox_to_anchor=(0.5, 0.54),
+        handles=handles,
+    )
+
+
+def experimental_data():
+    fig = plt.figure(constrained_layout=True)
+    gs = fig.add_gridspec(3, 1, height_ratios=[0.8, 0.08, 1.0])
+
+    gs_top = gs[0].subgridspec(1, 2, wspace=0.03)
+    gs_bottom = gs[2].subgridspec(1, 2, wspace=0.03)
+
+    subplots = list(gs_top) + list(gs_bottom)
+    for subplot in subplots:
+        fig.add_subplot(subplot)
+
+    fig, axes = utils.fig_init(2, 1.0, custom_fig=fig)
+
+    axes[1].sharex(axes[0])
+    axes[3].sharey(axes[2])
+    axes[3].label_outer()
+
+    _SiO_x_panels(fig, axes[[0, 1]])
+    _HfO2_panels(fig, axes[[2, 3]])
+
+    utils.save_fig(fig, "experimental-data")
+
+
 def iv_nonlinearity_training(metric="error"):
     fig, axes = utils.fig_init(2, 0.55, fig_shape=(2, 3), sharex=True, sharey=True)
 
@@ -294,167 +458,3 @@ def nonideality_agnosticism(metric: str = "error", norm_rows=True, include_val_l
         )
 
     utils.save_fig(fig, filename, metric=metric)
-
-
-def _SiO_x_panels(fig, axes):
-    data = simulations.data.load_SiO_x()
-
-    N = 1000
-    palette = plt.cm.inferno(np.linspace(0, 1, N))
-    min_voltage, max_voltage = 0.0, 0.5
-
-    curves = simulations.data.low_high_n_SiO_x_curves(data)
-    for axis, (voltages, currents) in zip(axes, curves):
-        for idx in range(voltages.shape[0]):
-            voltage_curve = voltages[idx, :]
-            current_curve = currents[idx, :]
-            n = simulations.data.nonlinearity_parameter(current_curve)
-            palette_idx = int(np.floor(N * (n - 2) / 2))
-            axis.plot(
-                voltage_curve,
-                current_curve,
-                color=palette[palette_idx],
-                linewidth=utils.Config.LINEWIDTH,
-            )
-
-        axis.set_xlim([min_voltage, max_voltage])
-        axis.set_ylim(bottom=0)
-        axis.set_xlabel(utils.axis_label("voltage"))
-        axis.ticklabel_format(axis="y", scilimits=(-1, 1))
-        axis.yaxis.get_offset_text().set_fontsize(utils.Config.TICKS_FONT_SIZE)
-
-    sm = plt.cm.ScalarMappable(cmap="inferno", norm=plt.Normalize(vmin=2, vmax=4))
-    cbar = fig.colorbar(sm, ax=axes)
-    cbar.set_label(
-        label=utils.axis_label("nonlinearity-parameter"),
-        fontsize=utils.Config.AXIS_LABEL_FONT_SIZE,
-        rotation=-90,
-        va="bottom",
-    )
-    cbar.ax.tick_params(axis="both", which="both", labelsize=utils.Config.TICKS_FONT_SIZE)
-
-    axes[0].set_ylabel(utils.axis_label("current"))
-
-
-def _HfO2_panels(fig, axes):
-    data = simulations.data.load_Ta_HfO2()
-    G_min, G_max = simulations.data.extract_G_off_and_G_on(data)
-    vals, p = simulations.data.extract_stuck(data, G_min, G_max)
-    median_range = G_max - G_min
-    colors = utils.color_dict()
-
-    axis = axes[0]
-    shape = data.shape
-    num_pulses = shape[0] * shape[1]
-    num_bl = shape[2]
-    num_wl = shape[3]
-    pulsing_step_size = 10
-    random_proportion = 0.01
-    x = [i + 1 for i in range(0, num_pulses, pulsing_step_size)]
-    data = np.reshape(data, (num_pulses, num_bl, num_wl))
-    num_devices = num_wl * num_bl
-    num_reduced_devices = int(np.around(random_proportion * num_devices))
-    np.random.seed(0)
-    random_idxs = np.random.choice(num_devices, num_reduced_devices)
-    bl_idxs, wl_idxs = np.unravel_index(random_idxs, (num_bl, num_wl))
-    for bl_idx, wl_idx in zip(bl_idxs, wl_idxs):
-        curve_data = data[:, bl_idx, wl_idx]
-        if np.max(curve_data) - np.min(curve_data) < simulations.data.stuck_device_threshold(
-            median_range
-        ):
-            color = colors["vermilion"]
-        else:
-            color = colors["bluish-green"]
-        y = curve_data[::pulsing_step_size]
-        axis.plot(x, 1000 * y, color=color, lw=utils.Config.LINEWIDTH / 2, alpha=1 / 2)
-
-    for G in [G_min, G_max]:
-        axis.axhline(
-            1000 * G,
-            0,
-            1,
-            color=colors["blue"],
-            lw=utils.Config.LINEWIDTH,
-            linestyle="dashed",
-            zorder=10,
-        )
-
-    axis.set_xlabel(utils.axis_label("pulse-number"))
-    axis.set_ylabel(utils.axis_label("conductance", unit_prefix="m"))
-
-    axis.set_xlim([0, x[-1]])
-    axis.set_ylim(bottom=0.0)
-
-    handles = [
-        Line2D([0], [0], color=colors["vermilion"], label="Stuck devices"),
-        Line2D([0], [0], color=colors["bluish-green"], label="Other devices"),
-        Line2D(
-            [0],
-            [0],
-            color=colors["blue"],
-            linestyle="dashed",
-            label=r"$G_\mathrm{off}, G_\mathrm{on}$",
-        ),
-    ]
-
-    # Distribution
-    axis = axes[1]
-    distribution = StuckDistribution(vals, p).distribution
-    x = np.linspace(0.0, 1.5e-3, int(1e4))
-    y = distribution.prob(x)
-    y = y / 1000
-    x = 1000 * x
-
-    axis.plot(y, x, lw=0.5, color=colors["vermilion"])
-    axis.scatter(
-        np.zeros_like(vals),
-        [1000 * val for val in vals],
-        marker="_",
-        alpha=0.1,
-        lw=utils.Config.LINEWIDTH / 2,
-        color=colors["vermilion"],
-    )
-    for G in [G_min, G_max]:
-        axis.axhline(
-            1000 * G,
-            0,
-            1,
-            color=colors["blue"],
-            lw=utils.Config.LINEWIDTH,
-            linestyle="dashed",
-            zorder=10,
-        )
-
-    axis.set_xlabel(r"Probability density ($\mathrm{mS}^{-1}$)")
-
-    axis.set_xlim(left=0.0)
-
-    utils.add_legend(
-        fig,
-        ncol=3,
-        bbox_to_anchor=(0.5, 0.54),
-        handles=handles,
-    )
-
-
-def experimental_data():
-    fig = plt.figure(constrained_layout=True)
-    gs = fig.add_gridspec(3, 1, height_ratios=[0.8, 0.08, 1.0])
-
-    gs_top = gs[0].subgridspec(1, 2, wspace=0.03)
-    gs_bottom = gs[2].subgridspec(1, 2, wspace=0.03)
-
-    subplots = list(gs_top) + list(gs_bottom)
-    for subplot in subplots:
-        fig.add_subplot(subplot)
-
-    fig, axes = utils.fig_init(2, 1.0, custom_fig=fig)
-
-    axes[1].sharex(axes[0])
-    axes[3].sharey(axes[2])
-    axes[3].label_outer()
-
-    _SiO_x_panels(fig, axes[[0, 1]])
-    _HfO2_panels(fig, axes[[2, 3]])
-
-    utils.save_fig(fig, "experimental-data")
