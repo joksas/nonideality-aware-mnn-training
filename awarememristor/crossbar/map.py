@@ -115,7 +115,7 @@ def w_to_G(
         mapping_rule: One of `("default", "avg")`.
 
     Returns:
-        G: Conductances of shape `m x n`.
+        G: Conductances of shape `m x 2n`.
         max_weight: Assumed maximum weight.
     """
     max_weight = tf.math.reduce_max(tf.math.abs(weights))
