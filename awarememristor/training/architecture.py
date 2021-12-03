@@ -211,7 +211,7 @@ class MemristorDense(layers.Layer):
             else:
                 I, I_ind = crossbar.ideal.compute_I_all(V, G)
 
-        if not self.iterator.is_training and not self.iterator.is_callback:
+        if self.iterator.compute_power:
             power_path = self.iterator.power_path()
             P_avg = utils.compute_avg_crossbar_power(V, I_ind)
             with open(power_path, mode="a", encoding="utf-8"):

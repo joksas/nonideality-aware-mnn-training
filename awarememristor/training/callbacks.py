@@ -10,7 +10,6 @@ from awarememristor.training import architecture
 class MemristiveCallback(tf.keras.callbacks.Callback):
     def __init__(self, iterator):
         self.iterator = copy.copy(iterator)
-        self.iterator.is_callback = True
         self.validation_freq = 20
         if iterator.training.memristive_validation_freq is not None:
             self.validation_freq = iterator.training.memristive_validation_freq

@@ -296,7 +296,6 @@ def weight_implementation(metric="error"):
     temp_iterators = [iterators[idx] for idx in [0, 1, 4, 5, 2, 3, 6, 7]]
     for idx, (axis, iterator, color) in enumerate(zip(axes, temp_iterators, colors + colors)):
         iterator.is_training = False
-        iterator.is_callback = True
         iterator.inference_idx = 0
         model = architecture.get_model(iterator, custom_weights_path=iterator.weights_path())
         weights = model.layers[1].combined_weights()

@@ -187,7 +187,7 @@ class Iterator:
         self.dataset = dataset
         self.training = training
         self.inferences = inferences
-        self.is_callback = False
+        self.compute_power = False
         self.is_training = False
         self.inference_idx = 0
         self.test_batch_size = 100  # divisor of the size of the test set
@@ -429,6 +429,7 @@ class Iterator:
 
     def infer(self) -> None:
         self.is_training = False
+        self.compute_power = True
         for idx in range(len(self.inferences)):
             self.inference_idx = idx
             if os.path.isdir(self.inference_nonideality_dir()):
@@ -447,3 +448,4 @@ class Iterator:
 
             self.training.repeat_idx = 0
         self.inference_idx = 0
+        self.compute_power = False
