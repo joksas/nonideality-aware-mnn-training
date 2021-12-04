@@ -12,9 +12,9 @@ def _compute_device_power(V: tf.Tensor, I_ind: tf.Tensor) -> tf.Tensor:
     Returns:
         Power in shape `p x m x n`.
     """
-    # $P = VI$ for individual devices. All devices in the same word
-    # line of the crossbar (row of G) are applied with the same voltage.
-    P_ind = tf.einsum("ij,ijk->ijk", V, I_ind)
+    # $P = |V| |I|$ for individual devices. All devices in the same word line
+    # of the crossbar (row of G) are applied with the same voltage.
+    P_ind = tf.einsum("ij,ijk->ijk", tf.math.abs(V), tf.math.abs(I_ind))
 
     return P_ind
 
