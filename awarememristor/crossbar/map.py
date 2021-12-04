@@ -34,13 +34,13 @@ def I_total_to_y(
     Returns:
         Outputs of shape `p x n` of a synaptic layer implemented using memristive crossbars.
     """
-    k_G = compute_k_G(max_weight, G_on, G_off)
-    k_I = compute_k_I(k_V, k_G)
+    k_G = _compute_k_G(max_weight, G_on, G_off)
+    k_I = _compute_k_I(k_V, k_G)
     y = I_total / k_I
     return y
 
 
-def compute_k_G(max_weight: float, G_on: float, G_off: float) -> float:
+def _compute_k_G(max_weight: float, G_on: float, G_off: float) -> float:
     """Compute conductance scaling factor.
 
     Args:
@@ -56,7 +56,7 @@ def compute_k_G(max_weight: float, G_on: float, G_off: float) -> float:
     return k_G
 
 
-def compute_k_I(k_V: float, k_G: float) -> float:
+def _compute_k_I(k_V: float, k_G: float) -> float:
     """Compute current scaling factor.
 
     Args:
@@ -96,7 +96,7 @@ def double_w_to_G(double_w: tf.Tensor, G_off: float, G_on: float) -> tf.Tensor:
         max_weight: Assumed maximum weight.
     """
     max_weight = tf.math.reduce_max(double_w)
-    k_G = compute_k_G(max_weight, G_on, G_off)
+    k_G = _compute_k_G(max_weight, G_on, G_off)
     G = k_G * double_w + G_off
 
     return G, max_weight
@@ -120,7 +120,7 @@ def w_to_G(
     """
     max_weight = tf.math.reduce_max(tf.math.abs(weights))
 
-    k_G = compute_k_G(max_weight, G_on, G_off)
+    k_G = _compute_k_G(max_weight, G_on, G_off)
     G_eff = k_G * weights
 
     if mapping_rule == "default":

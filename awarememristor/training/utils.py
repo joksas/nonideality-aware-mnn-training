@@ -1,7 +1,7 @@
 import tensorflow as tf
 
 
-def compute_device_power(V: tf.Tensor, I_ind: tf.Tensor) -> tf.Tensor:
+def _compute_device_power(V: tf.Tensor, I_ind: tf.Tensor) -> tf.Tensor:
     """Compute power dissipated by individual devices in a crossbar.
 
     Args:
@@ -30,7 +30,7 @@ def compute_avg_crossbar_power(V: tf.constant, I_ind: tf.constant) -> float:
     Returns:
         Average power dissipated by a crossbar.
     """
-    P = compute_device_power(V, I_ind)
+    P = _compute_device_power(V, I_ind)
     P_sum = tf.math.reduce_sum(P)
     # To get average power consumption **per crossbar** we divide by number of examples.
     P_avg = P_sum / tf.cast(tf.shape(V)[0], tf.float32)

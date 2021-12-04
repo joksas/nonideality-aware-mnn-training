@@ -217,7 +217,7 @@ def plot_curve(axis, x, y, color, metric="error", linestyle="solid", is_many=Fal
         axis.plot(x, y, color=color, linewidth=lw, linestyle=linestyle)
 
 
-def numpify(x):
+def _numpify(x):
     try:  # In case `tf.Tensor`
         x = x.numpy()
     except AttributeError:
@@ -227,8 +227,8 @@ def numpify(x):
 
 
 def plot_scatter(axis, x, y, color, alpha=1.0, random_proportion=None):
-    x = numpify(x)
-    y = numpify(y)
+    x = _numpify(x)
+    y = _numpify(y)
     x = x.flatten()
     y = y.flatten()
     if random_proportion:
@@ -389,12 +389,12 @@ def axis_label(var_name: str, prepend: str = None, unit_prefix: str = "") -> str
     return label
 
 
-def get_luminance(r, g, b):
+def _get_luminance(r, g, b):
     """Adapted from <https://stackoverflow.com/a/596243/17322548>."""
     return 0.299 * r + 0.587 * g + 0.114 * b
 
 
-def annotate_heatmap(
+def _annotate_heatmap(
     im: matplotlib.image,
     data: np.array = None,
     valfmt: Union[str, matplotlib.ticker.StrMethodFormatter] = "{x:.2f}",
@@ -436,10 +436,10 @@ def annotate_heatmap(
     for i in range(data.shape[0]):
         if norm_rows:
             colors = im.cmap(matplotlib.colors.LogNorm()(data[i, :]))
-            luminance = get_luminance(colors[:, 0], colors[:, 1], colors[:, 2])
+            luminance = _get_luminance(colors[:, 0], colors[:, 1], colors[:, 2])
         else:
             colors = im.cmap(matplotlib.colors.LogNorm()(data))
-            luminance = get_luminance(colors[:, :, 0], colors[:, :, 1], colors[:, :, 2])
+            luminance = _get_luminance(colors[:, :, 0], colors[:, :, 1], colors[:, :, 2])
         for j in range(data.shape[1]):
             if norm_rows:
                 cell_luminance = luminance[j]
@@ -487,7 +487,7 @@ def add_heatmap(fig, axis, data, x_ticks=None, y_ticks=None, metric="error", nor
         )
         cbar.ax.tick_params(axis="both", which="both", labelsize=Config.TICKS_FONT_SIZE)
 
-    annotate_heatmap(
+    _annotate_heatmap(
         image,
         data=data,
         valfmt="{x:.1f}",

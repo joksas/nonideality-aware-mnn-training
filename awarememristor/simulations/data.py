@@ -128,12 +128,12 @@ def extract_stuck(data: np.ndarray, G_off: float, G_on: float) -> tuple[list[flo
     maxs = np.max(data, axis=0)
     ranges = maxs - mins
     means = np.mean(data, axis=0)
-    stuck_values = means[np.where(ranges < stuck_device_threshold(median_range))]
+    stuck_values = means[np.where(ranges < _stuck_device_threshold(median_range))]
     probability_stuck = stuck_values.shape[0] / means.shape[0]
     return stuck_values.tolist(), probability_stuck
 
 
-def stuck_device_threshold(median_range):
+def _stuck_device_threshold(median_range):
     return median_range / 2
 
 
