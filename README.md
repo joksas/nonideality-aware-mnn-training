@@ -14,6 +14,15 @@ Python ≥3.9 and the packages listed in [requirements.txt](/requirements.txt).
 
 `awarememristor/plotting`: figures presented in the manuscript.
 
+## Reproducing results
+
+To reproduce the simulations presented in the manuscript, execute
+```text
+python reproduce_paper.py
+```
+
+This might take a long time to finish, so you may want to split this file up in order to, for example, perform the simulations on multiple machines.
+
 ## Testing
 
 To run unit tests, execute
