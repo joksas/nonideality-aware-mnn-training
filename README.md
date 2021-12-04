@@ -13,3 +13,10 @@ Python ≥3.9 and the packages listed in [requirements.txt](/requirements.txt).
 `awarememristor/simulations`: simulations presented in the manuscript.
 
 `awarememristor/plotting`: figures presented in the manuscript.
+
+## Testing
+
+To run unit tests, execute
+```text
+pytest tests
+```
