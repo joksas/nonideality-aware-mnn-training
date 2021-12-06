@@ -146,14 +146,14 @@ def _HfO2_panels(fig, axes):
     utils.add_legend(
         fig,
         ncol=3,
-        bbox_to_anchor=(0.5, 0.54),
+        bbox_to_anchor=(0.5, 0.515),
         handles=handles,
     )
 
 
 def experimental_data():
     fig = plt.figure(constrained_layout=True)
-    gs = fig.add_gridspec(3, 1, height_ratios=[0.8, 0.08, 1.0])
+    gs = fig.add_gridspec(3, 1, height_ratios=[1.0, 0.08, 1.1])
 
     gs_top = gs[0].subgridspec(1, 2, wspace=0.03)
     gs_bottom = gs[2].subgridspec(1, 2, wspace=0.03)
@@ -162,7 +162,7 @@ def experimental_data():
     for subplot in subplots:
         fig.add_subplot(subplot)
 
-    fig, axes = utils.fig_init(2, 1.0, custom_fig=fig)
+    fig, axes = utils.fig_init(2, 0.9, custom_fig=fig)
 
     axes[1].sharex(axes[0])
     axes[3].sharey(axes[2])
