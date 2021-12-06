@@ -194,21 +194,25 @@ class StuckDistribution(Nonideality, LinearityPreserving):
 
 
 class D2DLognormal(Nonideality, LinearityPreserving):
-    def __init__(self, G_off: float, G_on: float, R_on_std: float, R_off_std: float) -> None:
+    def __init__(
+        self, G_off: float, G_on: float, R_on_log_std: float, R_off_log_std: float
+    ) -> None:
         """
         Args:
-            R_on_std: Standard deviation of the (lognormal distribution's) underlying normal
+            G_on: Memristor conductance in ON state.
+            G_off: Memristor conductance in OFF state.
+            R_on_log_std: Standard deviation of the (lognormal distribution's) underlying normal
                 distribution associated with R_on (i.e. 1/G_on).
-            R_off_std: Standard deviation of the (lognormal distribution's) underlying normal
+            R_off_log_std: Standard deviation of the (lognormal distribution's) underlying normal
                 distribution associated with R_off (i.e. 1/G_off).
         """
         self.G_off = G_off
         self.G_on = G_on
-        self.R_on_std = R_on_std
-        self.R_off_std = R_off_std
+        self.R_on_log_std = R_on_log_std
+        self.R_off_log_std = R_off_log_std
 
     def label(self):
-        return f"D2DLN:{self.R_on_std:.3g}_{self.R_off_std:.3g}"
+        return f"D2DLN:{self.R_on_log_std:.3g}_{self.R_off_log_std:.3g}"
 
     def disturb_G(self, G):
         """Disturb conductances lognormally."""
@@ -216,15 +220,18 @@ class D2DLognormal(Nonideality, LinearityPreserving):
         R_on = 1 / self.G_on
         R_off = 1 / self.G_off
 
-        # Piece-wise linear interpolation
-        std_ref = [self.R_on_std, self.R_off_std]
-        R_std = tfp.math.interp_regular_1d_grid(R, R_on, R_off, std_ref)
+        # Piece-wise linear interpolation.
+        log_std_ref = [self.R_on_log_std, self.R_off_log_std]
+        log_std = tfp.math.interp_regular_1d_grid(R, R_on, R_off, log_std_ref)
 
-        # Lognormal modelling
-        R2 = tf.math.pow(R, 2)
-        R_std2 = tf.math.pow(R_std, 2)
-        R_mu = tf.math.log(R2 / tf.math.sqrt(R2 + R_std2))
-        R = tfd.LogNormal(R_mu, R_std, validate_args=True).sample()
+        # Lognormal modelling.
+        R_squared = tf.math.pow(R, 2)
+        log_var = tf.math.pow(log_std, 2)
+        # Because $\sigma = \ln ( 1 + \frac{\sigma_X^2}{\mu_X^2} )$,
+        # $\sigma_X^2 = \mu_X^2 (e^{\sigma^2} - 1)$.
+        R_var = R_squared * (tf.math.exp(log_var) - 1.0)
+        log_mu = tf.math.log(R_squared / tf.math.sqrt(R_squared + R_var))
+        R = tfd.LogNormal(log_mu, log_std, validate_args=True).sample()
 
         G = 1 / R
 
