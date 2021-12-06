@@ -434,8 +434,8 @@ def nonideality_agnosticism(metric: str = "error", norm_rows=True, include_val_l
     filename = "nonideality-agnosticism"
     if not norm_rows:
         filename += "-not-norm"
-    if not include_val_label:
-        filename += "-without-val-label"
+    if include_val_label:
+        filename += "-with-val-label"
 
     utils.add_heatmap(
         fig, axes, df, x_ticks=df.columns, y_ticks=df.index, metric=metric, norm_rows=norm_rows
