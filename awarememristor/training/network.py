@@ -4,6 +4,7 @@ import sys
 
 import tensorflow as tf
 
+import awarememristor.training.callbacks as callbacks_
 from awarememristor.training.architecture import get_model
 
 sys.path.insert(0, "..")
@@ -12,13 +13,16 @@ sys.path.insert(0, "..")
 def train(iterator, callbacks=[]):
     os.makedirs(iterator.network_dir(), exist_ok=True)
 
-    callback_names = [callback.name() for callback in callbacks]
-    if sum(x in ["standard_checkpoint", "memristive_checkpoint"] for x in callback_names) != 1:
-        raise ValueError("One checkpoint callback must be supplied during training!")
-
     validation_data = None
-    if "standard_checkpoint" in callback_names:
-        validation_data = iterator.data("validation")
+    num_checkpoint_callbacks = 0
+    for callback in callbacks:
+        if isinstance(callback, (callbacks_.StandardCheckpoint, callbacks_.MemristiveCheckpoint)):
+            num_checkpoint_callbacks += 1
+            if isinstance(callback, callbacks_.StandardCheckpoint):
+                validation_data = iterator.data("validation")
+
+    if num_checkpoint_callbacks != 1:
+        raise ValueError("One checkpoint callback must be supplied during training!")
 
     model = get_model(iterator)
 
