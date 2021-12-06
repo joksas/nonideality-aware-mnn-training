@@ -271,7 +271,7 @@ def iv_nonlinearity_cnn(metric="error"):
 
 def weight_implementation(metric="error"):
     fig = plt.figure(constrained_layout=True)
-    gs = fig.add_gridspec(2, 1)
+    gs = fig.add_gridspec(2, 1, height_ratios=[1.0, 0.8])
 
     gs_top = gs[0].subgridspec(2, 4)
     gs_bottom = gs[1].subgridspec(1, 2)
@@ -280,7 +280,7 @@ def weight_implementation(metric="error"):
     for subplot in subplots:
         fig.add_subplot(subplot)
 
-    fig, axes = utils.fig_init(2, 1.1, custom_fig=fig)
+    fig, axes = utils.fig_init(2, 1.0, custom_fig=fig)
 
     for axis in axes[:8]:
         axis.sharex(axes[4])
