@@ -159,7 +159,9 @@ class StuckDistribution(Nonideality, LinearityPreserving):
         for mean in means:
             distr_means.append(mean)
             prob_neg = tfd.Normal(loc=mean, scale=bandwidth).cdf(0.0)
-            if prob_neg > 1e-8:  # Only include reflection if numerically stable.
+            # To ensure numerical stability, only include reflection if it will
+            # have a non-negligible effect.
+            if prob_neg > 1e-8:
                 distr_means.append(-mean)
                 prob_pos = 1.0 - prob_neg
                 weights.extend([prob_pos, prob_neg])
