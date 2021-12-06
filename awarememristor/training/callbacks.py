@@ -134,7 +134,7 @@ class MemristiveCheckpoint(MemristiveCallback):
         return "memristive_checkpoint"
 
 
-class RegularCheckpoint(tf.keras.callbacks.ModelCheckpoint):
+class StandardCheckpoint(tf.keras.callbacks.ModelCheckpoint):
     def __init__(self, iterator):
         tf.keras.callbacks.ModelCheckpoint.__init__(
             self,
@@ -144,4 +144,4 @@ class RegularCheckpoint(tf.keras.callbacks.ModelCheckpoint):
         )
 
     def name(self):
-        return "regular_checkpoint"
+        return "standard_checkpoint"

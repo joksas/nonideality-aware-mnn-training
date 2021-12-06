@@ -107,7 +107,7 @@ class Training(Nonideal, Iterable):
         G_off: float = None,
         G_on: float = None,
         nonidealities: list[Nonideality] = [],
-        force_regular_checkpoint: bool = False,
+        force_standard_validation: bool = False,
         memristive_validation_freq: int = None,
         mapping_rule: str = "default",
         force_standard_w: bool = False,
@@ -117,7 +117,7 @@ class Training(Nonideal, Iterable):
         self.num_repeats = num_repeats
         self.is_regularized = is_regularized
         self.validation_split = validation_split
-        self.force_regular_checkpoint = force_regular_checkpoint
+        self.force_standard_validation = force_standard_validation
         self.memristive_validation_freq = memristive_validation_freq
         self.force_standard_w = force_standard_w
         Nonideal.__init__(
@@ -137,8 +137,8 @@ class Training(Nonideal, Iterable):
 
     def label(self) -> str:
         l = f"{self.regularized_label()}__{self.batch_size}__{Nonideal.label(self)}"
-        if self.force_regular_checkpoint:
-            l += "__rc"
+        if self.force_standard_validation:
+            l += "__standard_val"
         if self.memristive_validation_freq is not None:
             l += f"__val_freq_{self.memristive_validation_freq}"
         if self.force_standard_w:
@@ -417,8 +417,8 @@ class Iterator:
             train_callbacks = []
             if use_test_callback:
                 train_callbacks.append(callbacks.TestCallback(self))
-            if not self.training.is_nonideal() or self.training.force_regular_checkpoint:
-                train_callbacks.append(callbacks.RegularCheckpoint(self))
+            if not self.training.is_nonideal() or self.training.force_standard_validation:
+                train_callbacks.append(callbacks.StandardCheckpoint(self))
             else:
                 train_callbacks.append(callbacks.MemristiveCheckpoint(self))
 

@@ -4,12 +4,12 @@ from awarememristor.training.iterator import Inference, Iterator, Training
 DATASET = "mnist"
 
 
-def custom_iterator(training_setup, inference_setups, force_regular):
+def custom_iterator(training_setup, inference_setups, force_standard):
     inferences = [Inference(**utils.get_inference_params(), **setup) for setup in inference_setups]
     training = Training(
         **utils.get_training_params(),
         is_regularized=False,
-        force_regular_checkpoint=force_regular,
+        force_standard_validation=force_standard,
         **training_setup
     )
 

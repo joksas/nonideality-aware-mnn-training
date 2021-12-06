@@ -13,11 +13,11 @@ def train(iterator, callbacks=[]):
     os.makedirs(iterator.network_dir(), exist_ok=True)
 
     callback_names = [callback.name() for callback in callbacks]
-    if sum(x in ["regular_checkpoint", "memristive_checkpoint"] for x in callback_names) != 1:
+    if sum(x in ["standard_checkpoint", "memristive_checkpoint"] for x in callback_names) != 1:
         raise ValueError("One checkpoint callback must be supplied during training!")
 
     validation_data = None
-    if "regular_checkpoint" in callback_names:
+    if "standard_checkpoint" in callback_names:
         validation_data = iterator.data("validation")
 
     model = get_model(iterator)
