@@ -67,7 +67,7 @@ class Nonideal:
         # Except for power consumption, makes no difference for
         # linearity-preserving nonidealities, thus using the same value as for
         # SiO_x devices.
-        return devices.SiO_x_V_ref()["V_ref"]
+        return 2 * devices.SiO_x_V_ref()["V_ref"]
 
     def validate_nonidealities(self) -> None:
         num_linearity_preserving = 0
