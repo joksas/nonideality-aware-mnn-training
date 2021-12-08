@@ -31,7 +31,6 @@ class MemristiveCallback(tf.keras.callbacks.Callback):
 
         accuracy = []
         loss = []
-        data = self.iterator.data("testing")
 
         start_time = time.time()
         for _ in range(num_repeats):
