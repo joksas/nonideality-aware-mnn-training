@@ -16,7 +16,14 @@ def train(iterator, callbacks=[]):
     validation_data = None
     num_checkpoint_callbacks = 0
     for callback in callbacks:
-        if isinstance(callback, (callbacks_.StandardCheckpoint, callbacks_.MemristiveCheckpoint)):
+        if isinstance(
+            callback,
+            (
+                callbacks_.StandardCheckpoint,
+                callbacks_.MemristiveCheckpoint,
+                callbacks_.CombinedCheckpoint,
+            ),
+        ):
             num_checkpoint_callbacks += 1
             if isinstance(callback, callbacks_.StandardCheckpoint):
                 validation_data = iterator.data("validation")

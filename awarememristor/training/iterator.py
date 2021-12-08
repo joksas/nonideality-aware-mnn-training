@@ -107,7 +107,7 @@ class Training(Nonideal, Iterable):
         G_off: float = None,
         G_on: float = None,
         nonidealities: list[Nonideality] = [],
-        force_standard_validation: bool = False,
+        use_combined_validation: bool = False,
         memristive_validation_freq: int = None,
         mapping_rule: str = "default",
         force_standard_w: bool = False,
@@ -117,7 +117,7 @@ class Training(Nonideal, Iterable):
         self.num_repeats = num_repeats
         self.is_regularized = is_regularized
         self.validation_split = validation_split
-        self.force_standard_validation = force_standard_validation
+        self.use_combined_validation = use_combined_validation
         self.memristive_validation_freq = memristive_validation_freq
         self.force_standard_w = force_standard_w
         Nonideal.__init__(
@@ -137,8 +137,8 @@ class Training(Nonideal, Iterable):
 
     def label(self) -> str:
         l = f"{self.regularized_label()}__{self.batch_size}__{Nonideal.label(self)}"
-        if self.force_standard_validation:
-            l += "__standard_val"
+        if self.use_combined_validation:
+            l += "__combined_val"
         if self.memristive_validation_freq is not None:
             l += f"__val_freq_{self.memristive_validation_freq}"
         if self.force_standard_w:
@@ -258,8 +258,12 @@ class Iterator:
     def network_dir(self) -> str:
         return os.path.join(self.training_dir(), self.training.network_label())
 
-    def weights_path(self) -> str:
-        return os.path.join(self.network_dir(), "model.h5")
+    def weights_path(self, label: str = None) -> str:
+        name = "model"
+        if label is not None:
+            name += f"-{label}"
+        filename = f"{name}.h5"
+        return os.path.join(self.network_dir(), filename)
 
     def info_path(self) -> str:
         return os.path.join(self.network_dir(), "info.pkl")
@@ -415,9 +419,13 @@ class Iterator:
                 continue
             # New callbacks in each iteration because iterator changes.
             train_callbacks = []
+
             if use_test_callback:
                 train_callbacks.append(callbacks.TestCallback(self))
-            if not self.training.is_nonideal() or self.training.force_standard_validation:
+
+            if self.training.use_combined_validation:
+                train_callbacks.append(callbacks.CombinedCheckpoint(self))
+            elif not self.training.is_nonideal():
                 train_callbacks.append(callbacks.StandardCheckpoint(self))
             else:
                 train_callbacks.append(callbacks.MemristiveCheckpoint(self))

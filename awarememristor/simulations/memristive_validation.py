@@ -4,12 +4,12 @@ from awarememristor.training.iterator import Inference, Iterator, Training
 DATASET = "mnist"
 
 
-def custom_iterator(training_setup, inference_setups, force_standard):
+def custom_iterator(training_setup, inference_setups, use_combined_validation):
     inferences = [Inference(**utils.get_inference_params(), **setup) for setup in inference_setups]
     training = Training(
         **utils.get_training_params(),
         is_regularized=False,
-        force_standard_validation=force_standard,
+        use_combined_validation=use_combined_validation,
         **training_setup
     )
 
@@ -26,11 +26,6 @@ def get_nonideal_iterators():
             devices.high_magnitude_more_uniform_d2d(),
             [devices.high_magnitude_more_uniform_d2d()],
             True,
-        ),
-        custom_iterator(
-            devices.high_magnitude_more_uniform_d2d(),
-            [devices.high_magnitude_more_uniform_d2d()],
-            False,
         ),
     ]
 

@@ -25,6 +25,60 @@ class MemristiveCallback(tf.keras.callbacks.Callback):
         if epoch != 0 and (epoch + 1) % freq != 0:
             return True
 
+    def evaluate(self, model, data, num_repeats: int = None):
+        if num_repeats is None:
+            num_repeats = self.num_repeats
+
+        accuracy = []
+        loss = []
+        data = self.iterator.data("testing")
+
+        start_time = time.time()
+        for _ in range(num_repeats):
+            single_loss, single_accuracy = model.evaluate(data, verbose=0)
+            loss.append(single_loss)
+            accuracy.append(single_accuracy)
+        num_total_batches = data.cardinality().numpy() * self.num_repeats
+
+        end_time = time.time()
+        duration = int(end_time - start_time)
+        if num_repeats == 1:
+            loss = loss[0]
+            accuracy = accuracy[0]
+
+        return loss, accuracy, duration, num_total_batches
+
+    def evaluation_results_str(
+        self,
+        num_total_batches: int,
+        duration: int,
+        loss: float,
+        accuracy: float,
+        prepend_metrics: str = None,
+        label: str = None,
+    ):
+        str_ = f"{num_total_batches}/{num_total_batches}"
+        str_ += f" - {duration}s - "
+        if prepend_metrics:
+            str_ += f"{prepend_metrics}_"
+        str_ += f"loss: {loss:.4f} - "
+        if prepend_metrics:
+            str_ += f"{prepend_metrics}_"
+        str_ += f"accuracy: {accuracy:.4f}"
+        if label is not None:
+            str_ += f" [{label}]"
+
+        return str_
+
+    def saving_weights_str(
+        self, accuracy: float, previous_best_accuracy: float, prepend: str = None
+    ):
+        str_ = ""
+        if prepend is not None:
+            str_ += f"{prepend}_"
+        str_ += f"accuracy ({accuracy:.4f}) improved over previous best result ({previous_best_accuracy:.4f}). Saving weights..."
+        return str_
+
     def info(self):
         return {
             "history": self.history,
@@ -54,31 +108,24 @@ class TestCallback(MemristiveCallback):
         model_weights = self.model.get_weights()
 
         for inference_idx, inference in enumerate(self.iterator.inferences):
-            start_time = time.time()
             self.iterator.inference_idx = inference_idx
-            callback_model = architecture.get_model(self.iterator, custom_weights=model_weights)
-            accuracy = []
-            loss = []
             data = self.iterator.data("testing")
-            for _ in range(self.num_repeats):
-                score = callback_model.evaluate(data, verbose=0)
-                loss.append(score[0])
-                accuracy.append(score[1])
+            callback_model = architecture.get_model(self.iterator, custom_weights=model_weights)
+            loss, accuracy, duration, num_total_batches = self.evaluate(callback_model, data)
             self.history[inference_idx]["loss"].append(loss)
             self.history[inference_idx]["accuracy"].append(accuracy)
             self.history[inference_idx]["epoch_no"].append(epoch + 1)
-            num_total_batches = data.cardinality().numpy() * self.num_repeats
-            end_time = time.time()
-            duration = int(end_time - start_time)
-            print(
-                f"{num_total_batches}/{num_total_batches} - "
-                f"{duration}s - "
-                f"median_test_loss: {np.median(loss):.4f} - "
-                f"median_test_accuracy: {np.median(accuracy):.4f} "
-                f"[{inference.nonideality_label()}]"
+            results_str = self.evaluation_results_str(
+                num_total_batches,
+                duration,
+                np.median(loss),
+                np.median(accuracy),
+                prepend_metrics="median_test",
+                label=inference.nonideality_label(),
             )
+            print(results_str)
 
-        self.iterator.inference_idx = None
+        self.iterator.inference_idx = 0
 
     def name(self):
         return "memristive_test"
@@ -99,33 +146,30 @@ class MemristiveCheckpoint(MemristiveCallback):
         if self.should_skip_epoch(epoch, is_validation=True):
             return
 
-        accuracy = []
-        loss = []
-        start_time = time.time()
         data = self.iterator.data("validation")
-        for _ in range(self.num_repeats):
-            score = self.model.evaluate(data, verbose=0)
-            loss.append(score[0])
-            accuracy.append(score[1])
+        loss, accuracy, duration, num_total_batches = self.evaluate(self.model, data)
+
         self.history["loss"].append(loss)
         self.history["accuracy"].append(accuracy)
         self.history["epoch_no"].append(epoch + 1)
 
-        median_val_accuracy = np.median(accuracy)
         median_val_loss = np.median(loss)
-        num_total_batches = data.cardinality().numpy() * self.num_repeats
-        end_time = time.time()
-        duration = int(end_time - start_time)
+        median_val_accuracy = np.median(accuracy)
         print(
-            f"{num_total_batches}/{num_total_batches} - "
-            f"{duration}s - "
-            f"median_val_loss: {np.median(loss):.4f} - "
-            f"median_val_accuracy: {np.median(accuracy):.4f}"
+            self.evaluation_results_str(
+                num_total_batches,
+                duration,
+                median_val_loss,
+                median_val_accuracy,
+                prepend_metrics="median_val",
+            )
         )
+
         if median_val_accuracy > self.best_median_val_accuracy:
             print(
-                f"median_val_accuracy ({median_val_accuracy:.4f}) improved over "
-                f"previous best result ({self.best_median_val_accuracy:.4f}). Saving weights..."
+                self.saving_weights_str(
+                    median_val_accuracy, self.best_median_val_accuracy, prepend="median_val"
+                )
             )
             self.best_median_val_accuracy = median_val_accuracy
             self.model.save_weights(self.iterator.weights_path())
@@ -145,3 +189,87 @@ class StandardCheckpoint(tf.keras.callbacks.ModelCheckpoint):
 
     def name(self):
         return "standard_checkpoint"
+
+
+class CombinedCheckpoint(MemristiveCallback):
+    def __init__(self, iterator):
+        MemristiveCallback.__init__(self, iterator)
+        self.iterator.is_training = True
+        self.best_median_val_accuracy = 0.0
+        self.best_standard_val_accuracy = 0.0
+        self.history = {
+            "epoch_no": [],
+            "loss": [],
+            "accuracy": [],
+            "standard_epoch_no": [],
+            "standard_loss": [],
+            "standard_accuracy": [],
+        }
+
+    def on_epoch_end(self, epoch, logs=None):
+        data = self.iterator.data("validation")
+
+        if self.should_skip_epoch(epoch, is_validation=True):
+            single_loss, single_accuracy, duration, num_total_batches = self.evaluate(
+                self.model,
+                data,
+                num_repeats=1,
+            )
+            self.history["standard_loss"].append(single_loss)
+            self.history["standard_accuracy"].append(single_accuracy)
+            self.history["standard_epoch_no"].append(epoch + 1)
+            print(
+                self.evaluation_results_str(
+                    num_total_batches, duration, single_loss, single_accuracy, prepend_metrics="val"
+                )
+            )
+        else:
+            loss, accuracy, duration, num_total_batches = self.evaluate(self.model, data)
+
+            self.history["loss"].append(loss)
+            self.history["accuracy"].append(accuracy)
+            self.history["epoch_no"].append(epoch + 1)
+
+            median_val_loss = np.median(loss)
+            median_val_accuracy = np.median(accuracy)
+            print(
+                self.evaluation_results_str(
+                    num_total_batches,
+                    duration,
+                    median_val_loss,
+                    median_val_accuracy,
+                    prepend_metrics="median_val",
+                )
+            )
+
+            single_loss = loss[0]
+            single_accuracy = accuracy[0]
+            self.history["standard_loss"].append(single_loss)
+            self.history["standard_accuracy"].append(single_accuracy)
+            self.history["standard_epoch_no"].append(epoch + 1)
+            print(
+                self.evaluation_results_str(
+                    0, 0, single_loss, single_accuracy, prepend_metrics="val"
+                )
+            )
+
+            if median_val_accuracy > self.best_median_val_accuracy:
+                print(
+                    self.saving_weights_str(
+                        median_val_accuracy, self.best_median_val_accuracy, prepend="median_val"
+                    )
+                )
+                self.best_median_val_accuracy = median_val_accuracy
+                self.model.save_weights(self.iterator.weights_path())
+
+        if single_accuracy > self.best_standard_val_accuracy:
+            print(
+                self.saving_weights_str(
+                    single_accuracy, self.best_standard_val_accuracy, prepend="val"
+                )
+            )
+            self.best_standard_val_accuracy = single_accuracy
+            self.model.save_weights(self.iterator.weights_path(label="standard_val"))
+
+    def name(self):
+        return "combined_checkpoint"
