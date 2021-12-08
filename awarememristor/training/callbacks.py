@@ -37,7 +37,7 @@ class MemristiveCallback(tf.keras.callbacks.Callback):
             single_loss, single_accuracy = model.evaluate(data, verbose=0)
             loss.append(single_loss)
             accuracy.append(single_accuracy)
-        num_total_batches = data.cardinality().numpy() * self.num_repeats
+        num_total_batches = data.cardinality().numpy() * num_repeats
 
         end_time = time.time()
         duration = int(end_time - start_time)
