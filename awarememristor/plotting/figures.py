@@ -290,7 +290,7 @@ def weight_implementation(metric="error"):
 
     iterators = simulations.weight_implementation.get_iterators()[1:]
     colors = [
-        utils.color_dict()[key] for key in ["vermilion", "reddish-purple", "blue", "bluish-green"]
+        utils.color_dict()[key] for key in ["reddish-purple", "vermilion", "blue", "bluish-green"]
     ]
 
     temp_iterators = [iterators[idx] for idx in [0, 1, 4, 5, 2, 3, 6, 7]]

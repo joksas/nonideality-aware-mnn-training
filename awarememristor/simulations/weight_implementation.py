@@ -40,23 +40,23 @@ def get_nonideal_iterators():
             devices.more_uniform_d2d(),
             [devices.more_uniform_d2d()],
             force_standard_w=True,
+            mapping_rule="avg",
         ),
         custom_iterator(
             devices.more_uniform_d2d(),
             [devices.more_uniform_d2d()],
             force_standard_w=True,
-            mapping_rule="avg",
-        ),
-        custom_iterator(
-            devices.less_uniform_d2d(),
-            [devices.less_uniform_d2d()],
-            force_standard_w=True,
         ),
         custom_iterator(
             devices.less_uniform_d2d(),
             [devices.less_uniform_d2d()],
             force_standard_w=True,
             mapping_rule="avg",
+        ),
+        custom_iterator(
+            devices.less_uniform_d2d(),
+            [devices.less_uniform_d2d()],
+            force_standard_w=True,
         ),
         custom_iterator(devices.more_uniform_d2d(), [devices.more_uniform_d2d()]),
         custom_iterator(
