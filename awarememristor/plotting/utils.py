@@ -18,6 +18,7 @@ class Config:
     LEGEND_FONT_SIZE: float = 8
     TICKS_FONT_SIZE: float = 8
     SUBPLOT_LABEL_SIZE: float = 12
+    TEXT_LABEL_SIZE: float = 10
     LINEWIDTH: float = 0.75
     MARKER_SIZE: float = 0.5
     BOXPLOT_LINEWIDTH: float = 0.75
@@ -126,17 +127,30 @@ def add_subfigure_label(
     fontsize: float = Config.SUBPLOT_LABEL_SIZE,
     is_lowercase: bool = True,
 ):
-    trans = mtransforms.ScaledTranslation(*scaled_translation, fig.dpi_scale_trans)
     ascii_idx = 65 + letter_idx
     if is_lowercase:
         ascii_idx += 32
+    add_text(fig, axis, chr(ascii_idx), scaled_translation, fontsize=fontsize, fontweight="bold")
+
+
+def add_text(
+    fig,
+    axis,
+    text: str,
+    scaled_translation: tuple[float, float],
+    fontsize: float,
+    fontweight: str = "normal",
+    color: str = None,
+):
+    trans = mtransforms.ScaledTranslation(*scaled_translation, fig.dpi_scale_trans)
     axis.text(
         0.0,
         1.0,
-        chr(ascii_idx),
+        text,
         transform=axis.transAxes + trans,
-        fontweight="bold",
+        fontweight=fontweight,
         fontsize=fontsize,
+        color=color,
     )
 
 
@@ -504,3 +518,37 @@ def add_histogram(axis, values: np.ndarray, color: str, bins: int = 100, alpha: 
         pass
     values = values.flatten()
     axis.hist(values, bins=bins, color=color, alpha=alpha)
+
+
+def add_arrow(
+    line,
+    start_idx: int,
+    direction: str = "right",
+    size: float = 15,
+    color: str = None,
+    linewidth: float = None,
+):
+    """Adds arrow to a curve.
+
+    Adapted from <https://stackoverflow.com/a/34018322/17322548>.
+    """
+    if color is None:
+        color = line.get_color()
+    if linewidth is None:
+        linewidth = line.get_linewidth()
+
+    xdata = line.get_xdata()
+    ydata = line.get_ydata()
+
+    if direction == "right":
+        end_idx = start_idx + 1
+    else:
+        end_idx = start_idx - 1
+
+    line.axes.annotate(
+        "",
+        xytext=(xdata[start_idx], ydata[start_idx]),
+        xy=(xdata[end_idx], ydata[end_idx]),
+        arrowprops=dict(linewidth=linewidth, arrowstyle="->", color=color),
+        size=size,
+    )

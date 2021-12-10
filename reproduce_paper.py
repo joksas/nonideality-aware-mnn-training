@@ -32,6 +32,7 @@ figures.nonideality_agnosticism()
 
 # Figures in the Supporting Information
 supporting_figures.all_iv_curves_full_range()
+supporting_figures.switching()
 supporting_figures.iv_nonlinearity_training()
 supporting_figures.weight_implementation_standard_weights_training()
 supporting_figures.weight_implementation_double_weights_training()

@@ -8,7 +8,7 @@ from awarememristor.plotting import utils
 def all_iv_curves_full_range():
     fig, axes = utils.fig_init(2, 0.6, fig_shape=(1, 1))
 
-    data = simulations.data.load_SiO_x()
+    data = simulations.data.load_SiO_x_multistate()
     voltages, currents = simulations.data.all_SiO_x_curves(data, max_voltage=5.0)
 
     colors = utils.color_list()[:-1]
@@ -32,6 +32,44 @@ def all_iv_curves_full_range():
     axes.set_yscale("log")
 
     utils.save_fig(fig, "all-SiO_x-IV-curves-full-range", is_supporting=True)
+
+
+def switching():
+    fig, axes = utils.fig_init(2, 0.5, fig_shape=(1, 1))
+
+    data = simulations.data.load_SiO_x_switching()
+    data[:, 0, :] = np.abs(data[:, 0, :])
+
+    colors = [utils.color_dict()[color_name] for color_name in ["blue", "orange"]]
+    labels = ["SET", "RESET"]
+    labels_x = [0.85, 5.15]
+    for idx, (color, label, label_x) in enumerate(zip(colors, labels, labels_x)):
+        voltage_curve = data[:, 1, idx]
+        current_curve = np.abs(data[:, 0, idx])
+        line = axes.plot(
+            voltage_curve,
+            current_curve,
+            linewidth=utils.Config.LINEWIDTH,
+            color=color,
+        )
+        utils.add_arrow(line[0], 60)
+        utils.add_arrow(line[0], -60)
+        utils.add_text(
+            fig,
+            axes,
+            label,
+            (label_x, -0.4),
+            fontsize=utils.Config.TEXT_LABEL_SIZE,
+            color=color,
+        )
+
+    axes.set_xlabel(utils.axis_label("voltage"))
+
+    axes.set_ylabel(utils.axis_label("current", prepend="absolute"))
+    axes.set_ylim(bottom=5e-8, top=5e-3)
+    axes.set_yscale("log")
+
+    utils.save_fig(fig, "SiO_x-switching", is_supporting=True)
 
 
 def _training_curves_multiple_panels(
