@@ -118,6 +118,7 @@ class Training(Nonideal, Iterable):
         self.is_regularized = is_regularized
         self.validation_split = validation_split
         self.use_combined_validation = use_combined_validation
+        self.is_standard_validation_mode = False
         self.memristive_validation_freq = memristive_validation_freq
         self.force_standard_w = force_standard_w
         Nonideal.__init__(
@@ -258,18 +259,22 @@ class Iterator:
     def network_dir(self) -> str:
         return os.path.join(self.training_dir(), self.training.network_label())
 
-    def weights_path(self, label: str = None) -> str:
-        name = "model"
-        if label is not None:
-            name += f"-{label}"
-        filename = f"{name}.h5"
-        return os.path.join(self.network_dir(), filename)
+    def weights_dir(self) -> str:
+        if self.training.use_combined_validation:
+            if self.training.is_standard_validation_mode:
+                return os.path.join(self.network_dir(), "standard-validation")
+            return os.path.join(self.network_dir(), "memristive-validation")
+        return self.network_dir()
+
+    def weights_path(self) -> str:
+        filename = "model.h5"
+        return os.path.join(self.weights_dir(), filename)
 
     def info_path(self) -> str:
         return os.path.join(self.network_dir(), "info.pkl")
 
     def inference_nonideality_dir(self) -> str:
-        return os.path.join(self.network_dir(), self.inferences[self.inference_idx].label())
+        return os.path.join(self.weights_dir(), self.inferences[self.inference_idx].label())
 
     def inference_repeat_dir(self) -> str:
         return os.path.join(

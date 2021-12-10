@@ -1,4 +1,5 @@
 import copy
+import os
 import time
 
 import numpy as np
@@ -256,6 +257,8 @@ class CombinedCheckpoint(MemristiveCallback):
             )
 
             if median_val_accuracy > self.best_median_val_accuracy:
+                self.iterator.training.is_standard_validation_mode = True
+                os.makedirs(self.iterator.weights_dir(), exist_ok=True)
                 print(
                     self.saving_weights_str(
                         median_val_accuracy, self.best_median_val_accuracy, prepend="median_val"
@@ -265,13 +268,15 @@ class CombinedCheckpoint(MemristiveCallback):
                 self.model.save_weights(self.iterator.weights_path())
 
         if single_accuracy > self.best_standard_val_accuracy:
+            self.iterator.training.is_standard_validation_mode = False
+            os.makedirs(self.iterator.weights_dir(), exist_ok=True)
             print(
                 self.saving_weights_str(
                     single_accuracy, self.best_standard_val_accuracy, prepend="val"
                 )
             )
             self.best_standard_val_accuracy = single_accuracy
-            self.model.save_weights(self.iterator.weights_path(label="standard_val"))
+            self.model.save_weights(self.iterator.weights_path())
 
     @staticmethod
     def name():

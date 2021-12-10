@@ -40,4 +40,7 @@ def get_iterators():
 def main():
     for iterator in get_nonideal_iterators():
         iterator.train(use_test_callback=True)
+        iterator.training.is_standard_validation_mode = False
+        iterator.infer()
+        iterator.training.is_standard_validation_mode = True
         iterator.infer()

@@ -11,7 +11,7 @@ sys.path.insert(0, "..")
 
 
 def train(iterator, callbacks=[]):
-    os.makedirs(iterator.network_dir(), exist_ok=True)
+    os.makedirs(iterator.weights_dir(), exist_ok=True)
 
     validation_data = None
     num_checkpoint_callbacks = 0
