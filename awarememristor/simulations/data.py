@@ -3,23 +3,50 @@ from typing import Optional
 
 import h5py
 import numpy as np
+import openpyxl
+import pandas as pd
 import requests
 from scipy.io import loadmat
 
 
 def load_SiO_x_multistate() -> np.ndarray:
-    """Load SiO_x data.
+    """Load SiO_x data from multiple conductance states.
 
     Returns:
         Array of shape `(2, num_states, num_points)`. The first dimension
             combines current and voltage values.
     """
-    path = os.path.join(_create_and_get_data_dir(), "SiO_x-data.mat")
+    path = os.path.join(_create_and_get_data_dir(), "SiO_x-multistate-data.mat")
     _validate_data_path(path, url="https://zenodo.org/record/5762184/files/excelDataCombined.mat")
     data = loadmat(path)["data"]
     data = np.flip(data, axis=2)
     data = np.transpose(data, (1, 2, 0))
     data = data[:2, :, :]
+    return data
+
+
+def _workbook_sheet_to_ndarray(workbook, sheet_name: str):
+    sheet = workbook[sheet_name]
+    return pd.DataFrame(sheet.values).to_numpy()[1:, :]
+
+
+def load_SiO_x_switching() -> np.ndarray:
+    """Load SiO_x switching data.
+
+    Returns:
+        Array of shape `(num_points, 2, 2)`. The second dimension combines
+            current and voltage values, while the third combined SET and RESET
+            modes.
+    """
+    path = os.path.join(_create_and_get_data_dir(), "SiO_x-switching-data.xlsx")
+    _validate_data_path(
+        path,
+        url="https://zenodo.org/record/5762184/files/Ordinary%20I-V%20data%20%28full%20cycle%29.xlsx",
+    )
+    worksheet = openpyxl.load_workbook(filename=path)
+    set_data = _workbook_sheet_to_ndarray(worksheet, "SET")[:, :2]
+    reset_data = _workbook_sheet_to_ndarray(worksheet, "RESET")[:, :2]
+    data = np.stack([set_data, reset_data], axis=-1)
     return data
 
 
