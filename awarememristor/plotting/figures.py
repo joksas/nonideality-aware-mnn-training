@@ -11,7 +11,7 @@ from awarememristor.training import architecture
 
 
 def _SiO_x_panels(fig, axes):
-    data = simulations.data.load_SiO_x()
+    data = simulations.data.load_SiO_x_multistate()
 
     N = 1000
     palette = plt.cm.inferno(np.linspace(0, 1, N))
