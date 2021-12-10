@@ -311,22 +311,47 @@ class Iterator:
 
         return x, y
 
-    def validation_curves(self, metric: str) -> tuple[np.ndarray, np.ndarray]:
-        try:
+    def _checkpoint_from_info(self) -> str:
+        info = self.info()
+        if "val_accuracy" in info["history"]:
+            return callbacks.StandardCheckpoint.name()
+        if callbacks.MemristiveCheckpoint.name() in info["callback_infos"]:
+            return callbacks.MemristiveCheckpoint.name()
+        if callbacks.CombinedCheckpoint.name() in info["callback_infos"]:
+            return callbacks.CombinedCheckpoint.name()
+        raise ValueError("Could not determine the checkpoint.")
+
+    def validation_curves(
+        self, metric: str, is_standard: bool = False
+    ) -> tuple[np.ndarray, np.ndarray]:
+        checkpoint_name = self._checkpoint_from_info()
+        info = self.info()
+        if checkpoint_name == callbacks.StandardCheckpoint.name():
             if metric == "error":
-                y = self.info()["history"]["val_accuracy"]
+                y = info["history"]["val_accuracy"]
             else:
-                y = self.info()["history"]["val_" + metric]
+                y = info["history"]["val_" + metric]
             num_epochs = len(y)
             x = np.arange(1, num_epochs + 1)
-        except KeyError:
-            history = self.info()["callback_infos"]["memristive_checkpoint"]["history"]
+        elif checkpoint_name == callbacks.MemristiveCheckpoint.name():
+            history = info["callback_infos"][callbacks.MemristiveCheckpoint.name()]["history"]
             x = history["epoch_no"]
             x = np.array(x)
             if metric == "error":
                 y = history["accuracy"]
             else:
                 y = history[metric]
+        elif checkpoint_name == callbacks.CombinedCheckpoint.name():
+            prepend = ""
+            if is_standard:
+                prepend = "standard_"
+            history = info["callback_infos"][callbacks.CombinedCheckpoint.name()]["history"]
+            x = history[f"{prepend}epoch_no"]
+            x = np.array(x)
+            if metric == "error":
+                y = history[f"{prepend}accuracy"]
+            else:
+                y = history[f"{prepend}{metric}"]
 
         y = np.array(y)
         if metric == "error":

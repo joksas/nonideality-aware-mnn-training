@@ -126,7 +126,8 @@ class TestCallback(MemristiveCallback):
 
         self.iterator.inference_idx = 0
 
-    def name(self):
+    @staticmethod
+    def name():
         return "memristive_test"
 
 
@@ -173,7 +174,8 @@ class MemristiveCheckpoint(MemristiveCallback):
             self.best_median_val_accuracy = median_val_accuracy
             self.model.save_weights(self.iterator.weights_path())
 
-    def name(self):
+    @staticmethod
+    def name():
         return "memristive_checkpoint"
 
 
@@ -186,7 +188,8 @@ class StandardCheckpoint(tf.keras.callbacks.ModelCheckpoint):
             save_best_only=True,
         )
 
-    def name(self):
+    @staticmethod
+    def name():
         return "standard_checkpoint"
 
 
@@ -270,5 +273,6 @@ class CombinedCheckpoint(MemristiveCallback):
             self.best_standard_val_accuracy = single_accuracy
             self.model.save_weights(self.iterator.weights_path(label="standard_val"))
 
-    def name(self):
+    @staticmethod
+    def name():
         return "combined_checkpoint"
