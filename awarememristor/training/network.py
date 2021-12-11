@@ -1,13 +1,10 @@
 import os
 import pickle
-import sys
 
 import tensorflow as tf
 
 import awarememristor.training.callbacks as callbacks_
 from awarememristor.training.architecture import get_model
-
-sys.path.insert(0, "..")
 
 
 def train(iterator, callbacks: list[callbacks_.Callback] = []):
