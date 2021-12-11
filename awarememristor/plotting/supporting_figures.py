@@ -55,7 +55,6 @@ def switching():
         utils.add_arrow(line[0], 60)
         utils.add_arrow(line[0], -60)
         utils.add_text(
-            fig,
             axes,
             label,
             (label_x, 0.88),
