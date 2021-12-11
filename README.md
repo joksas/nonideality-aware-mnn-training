@@ -1,4 +1,4 @@
-# Adjusting Training to Enable Accurate and Robust Low-Power Memristive Neural Networks
+# Nonideality-Aware Training for Accurate and Robust Low-Power Memristive Neural Networks
 
 ## Requirements
 
