@@ -138,8 +138,6 @@ class Training(Nonideal, Iterable):
 
     def label(self) -> str:
         l = f"{self.regularized_label()}__{self.batch_size}__{Nonideal.label(self)}"
-        if self.use_combined_validation:
-            l += "__combined_val"
         if self.memristive_validation_freq is not None:
             l += f"__val_freq_{self.memristive_validation_freq}"
         if self.force_standard_w:
