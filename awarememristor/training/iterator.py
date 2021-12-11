@@ -324,9 +324,7 @@ class Iterator:
             return callbacks.CombinedCheckpoint.name()
         raise ValueError("Could not determine the checkpoint.")
 
-    def validation_curves(
-        self, metric: str, is_standard: bool = False
-    ) -> tuple[np.ndarray, np.ndarray]:
+    def validation_curves(self, metric: str) -> tuple[np.ndarray, np.ndarray]:
         checkpoint_name = self._checkpoint_from_info()
         info = self.info()
         if checkpoint_name == callbacks.StandardCheckpoint.name():
@@ -346,7 +344,7 @@ class Iterator:
                 y = history[metric]
         elif checkpoint_name == callbacks.CombinedCheckpoint.name():
             prepend = ""
-            if is_standard:
+            if self.training.is_standard_validation_mode:
                 prepend = "standard_"
             history = info["callback_infos"][callbacks.CombinedCheckpoint.name()]["history"]
             x = history[f"{prepend}epoch_no"]
