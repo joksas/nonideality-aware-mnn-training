@@ -153,10 +153,8 @@ def add_text(
 
 
 def plot_training_curves(
-    fig,
     axis,
     iterator,
-    subfigure_idx=None,
     metric="error",
     inference_idx=0,
     linestyle="solid",

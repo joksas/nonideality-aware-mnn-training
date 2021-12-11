@@ -99,10 +99,8 @@ def _training_curves_multiple_panels(
                 i, j = np.unravel_index(idx, axes.shape)
                 axis = axes[i, j]
             utils.plot_training_curves(
-                fig,
                 axis,
                 iterator,
-                subfigure_idx=idx,
                 metric=metric,
                 inference_idx=inference_idx,
                 linestyle=linestyle,

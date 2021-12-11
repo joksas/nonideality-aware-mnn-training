@@ -185,9 +185,7 @@ def iv_nonlinearity_training(metric="error"):
     for idx, (iterator, inference_idx) in enumerate(zip(iterators, inference_idxs)):
         i, j = np.unravel_index(idx, axes.shape)
         axis = axes[i, j]
-        utils.plot_training_curves(
-            fig, axis, iterator, subfigure_idx=idx, metric=metric, inference_idx=inference_idx
-        )
+        utils.plot_training_curves(axis, iterator, metric=metric, inference_idx=inference_idx)
         if i + 1 == axes.shape[0]:
             axis.set_xlabel(utils.axis_label("epoch"))
         if j == 0:
@@ -245,7 +243,7 @@ def iv_nonlinearity_cnn(metric="error"):
 
     # Error curves.
     for axis, iterator in zip(axes, iterators):
-        utils.plot_training_curves(fig, axis, iterator, metric=metric)
+        utils.plot_training_curves(axis, iterator, metric=metric)
         axis.set_xlabel(utils.axis_label("epoch"))
 
     # Box plots.
@@ -346,7 +344,7 @@ def memristive_validation(metric="error"):
     # Curves
     for idx, (standard_mode, axis) in enumerate(zip([True, False], axes)):
         iterator.training.is_standard_validation_mode = standard_mode
-        utils.plot_training_curves(fig, axis, iterator, metric=metric)
+        utils.plot_training_curves(axis, iterator, metric=metric)
         axis.set_xlabel(utils.axis_label("epoch"))
 
     # Box plots
