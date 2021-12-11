@@ -1,7 +1,7 @@
 import os
 import pickle
 import warnings
-from typing import Any, Union
+from typing import Any
 
 import numpy as np
 import tensorflow as tf
@@ -16,19 +16,30 @@ from awarememristor.training import callbacks, network, utils
 warnings.simplefilter("default")
 
 
-class Stage:
+class Iterable:
+    def __init__(self, num_repeats: int) -> None:
+        self.repeat_idx = 0
+        self.num_repeats = num_repeats
+
+    def __eq__(self, other):
+        return self.repeat_idx == other.repeat_idx and self.num_repeats == other.num_repeats
+
+
+class Stage(Iterable):
     def __init__(
         self,
         G_off: float = None,
         G_on: float = None,
         nonidealities: list[Nonideality] = [],
         mapping_rule: str = "default",
+        num_repeats: int = 0,
     ) -> None:
         self.G_off = G_off
         self.G_on = G_on
         self.nonidealities = nonidealities
         self.mapping_rule = mapping_rule
         self.validate_nonidealities()
+        Iterable.__init__(self, num_repeats)
 
     def __eq__(self, other):
         return (
@@ -36,6 +47,7 @@ class Stage:
             and self.G_on == other.G_on
             and self.nonidealities == other.nonidealities
             and self.mapping_rule == other.mapping_rule
+            and Iterable.__eq__(self, other)
         )
 
     def conductance_label(self) -> str:
@@ -88,14 +100,6 @@ class Stage:
                 )
 
 
-class Iterable:
-    def __init__(self) -> None:
-        self.repeat_idx = 0
-
-    def __eq__(self, other):
-        return self.repeat_idx == other.repeat_idx
-
-
 class Training(Stage, Iterable):
     def __init__(
         self,
@@ -114,7 +118,6 @@ class Training(Stage, Iterable):
     ) -> None:
         self.batch_size = batch_size
         self.num_epochs = num_epochs
-        self.num_repeats = num_repeats
         self.is_regularized = is_regularized
         self.validation_split = validation_split
         self.use_combined_validation = use_combined_validation
@@ -127,8 +130,8 @@ class Training(Stage, Iterable):
             G_on=G_on,
             nonidealities=nonidealities,
             mapping_rule=mapping_rule,
+            num_repeats=num_repeats,
         )
-        Iterable.__init__(self)
 
     def regularized_label(self) -> str:
         if self.is_regularized:
@@ -151,7 +154,7 @@ class Training(Stage, Iterable):
         return self.is_nonideal() and not self.force_standard_w
 
 
-class Inference(Stage, Iterable):
+class Inference(Stage):
     def __init__(
         self,
         num_repeats: int = 0,
@@ -167,18 +170,11 @@ class Inference(Stage, Iterable):
             G_on=G_on,
             nonidealities=nonidealities,
             mapping_rule=mapping_rule,
+            num_repeats=num_repeats,
         )
-        Iterable.__init__(self)
 
     def repeat_label(self) -> str:
         return f"repeat-{self.repeat_idx}"
-
-    def __eq__(self, other):
-        return (
-            self.num_repeats == other.num_repeats
-            and Stage.__eq__(self, other)
-            and Iterable.__eq__(self, other)
-        )
 
 
 class Iterator:
@@ -293,11 +289,10 @@ class Iterator:
         with open(self.info_path(), "rb") as pickle_file:
             return pickle.load(pickle_file)
 
-    def current_stage(self) -> Union[Training, Inference]:
+    def current_stage(self) -> Stage:
         if self.is_training:
             return self.training
-        else:
-            return self.inferences[self.inference_idx]
+        return self.inferences[self.inference_idx]
 
     def training_curves(self, metric: str) -> tuple[np.ndarray, np.ndarray]:
         if metric == "error":
