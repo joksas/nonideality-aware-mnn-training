@@ -5,9 +5,14 @@ DATASET = "mnist"
 
 
 def custom_iterator(training_setup, inference_setups, use_combined_validation):
+    training_params = utils.get_training_params()
+    # Validation is utilized during training, so to evaluate the effectiveness
+    # of different methods, we need to increase the sample size of trained
+    # networks.
+    training_params["num_repeats"] = 100
     inferences = [Inference(**utils.get_inference_params(), **setup) for setup in inference_setups]
     training = Training(
-        **utils.get_training_params(),
+        **training_params,
         is_regularized=False,
         use_combined_validation=use_combined_validation,
         **training_setup

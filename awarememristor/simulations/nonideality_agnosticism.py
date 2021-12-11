@@ -37,7 +37,7 @@ def get_iterators():
         *stuck_off.get_nonideal_iterators(),
         *weight_implementation.get_nonideal_iterators()[-4:],
         *stuck_distribution.get_nonideal_iterators(),
-        memristive_validation.get_nonideal_iterators()[1],
+        memristive_validation.get_nonideal_iterators()[0],
     ]
     inferences = [
         Inference(**utils.get_inference_params(), **inference_setup)
@@ -45,6 +45,8 @@ def get_iterators():
     ]
 
     for idx, iterator in enumerate(iterators):
+        # Use the same number of repeats for all training setups.
+        iterator.training.num_repeats = utils.get_training_params()["num_repeats"]
         for inference in inferences:
             if inference not in iterator.inferences:
                 iterators[idx].inferences.append(inference)
