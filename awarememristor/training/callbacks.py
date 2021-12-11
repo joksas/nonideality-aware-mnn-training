@@ -2,6 +2,7 @@ import copy
 import os
 import time
 from abc import ABC, abstractmethod
+from typing import Any
 
 import numpy as np
 import tensorflow as tf
@@ -17,26 +18,27 @@ class Callback(ABC):
 
 
 class Checkpoint:
-    pass
+    """Used only to mark certain callbacks as checkpoint callbacks."""
 
 
 class MemristiveCallback(tf.keras.callbacks.Callback):
-    def __init__(self, iterator):
+    def __init__(self, iterator, history=None) -> None:
         self.iterator = copy.copy(iterator)
         self.validation_freq = 20
         if iterator.training.memristive_validation_freq is not None:
             self.validation_freq = iterator.training.memristive_validation_freq
         self.testing_freq = 20
         self.num_repeats = 20
-        self.history = None
+        self.history = history
 
-    def should_skip_epoch(self, epoch, is_validation=False):
+    def should_skip_epoch(self, epoch, is_validation=False) -> bool:
         freq = self.testing_freq
         if is_validation:
             freq = self.validation_freq
         # Will evaluate on first epoch and then every `freq` epochs.
         if epoch != 0 and (epoch + 1) % freq != 0:
             return True
+        return False
 
     def evaluate(self, model, data, num_repeats: int = None):
         if num_repeats is None:
@@ -68,7 +70,7 @@ class MemristiveCallback(tf.keras.callbacks.Callback):
         accuracy: float,
         prepend_metrics: str = None,
         label: str = None,
-    ):
+    ) -> str:
         str_ = f"{num_total_batches}/{num_total_batches}"
         str_ += f" - {duration}s - "
         if prepend_metrics:
@@ -84,14 +86,14 @@ class MemristiveCallback(tf.keras.callbacks.Callback):
 
     def saving_weights_str(
         self, accuracy: float, previous_best_accuracy: float, prepend: str = None
-    ):
+    ) -> str:
         str_ = ""
         if prepend is not None:
             str_ += f"{prepend}_"
         str_ += f"accuracy ({accuracy:.4f}) improved over previous best result ({previous_best_accuracy:.4f}). Saving weights..."
         return str_
 
-    def info(self):
+    def info(self) -> dict[str, Any]:
         return {
             "history": self.history,
         }
@@ -100,7 +102,7 @@ class MemristiveCallback(tf.keras.callbacks.Callback):
 class TestCallback(MemristiveCallback, Callback):
     """Compute test accuracy for all inference setups during training."""
 
-    def __init__(self, iterator):
+    def __init__(self, iterator) -> None:
         MemristiveCallback.__init__(self, iterator)
         self.iterator.is_training = False
         self.history = [
@@ -149,7 +151,7 @@ class MemristiveCheckpoint(MemristiveCallback, Callback, Checkpoint):
     learning progress.
     """
 
-    def __init__(self, iterator):
+    def __init__(self, iterator) -> None:
         MemristiveCallback.__init__(self, iterator)
         self.iterator.is_training = True
         self.best_median_val_accuracy = 0.0
@@ -193,7 +195,7 @@ class MemristiveCheckpoint(MemristiveCallback, Callback, Checkpoint):
 
 
 class StandardCheckpoint(tf.keras.callbacks.ModelCheckpoint, Callback, Checkpoint):
-    def __init__(self, iterator):
+    def __init__(self, iterator) -> None:
         tf.keras.callbacks.ModelCheckpoint.__init__(
             self,
             iterator.weights_path(),
@@ -207,7 +209,7 @@ class StandardCheckpoint(tf.keras.callbacks.ModelCheckpoint, Callback, Checkpoin
 
 
 class CombinedCheckpoint(MemristiveCallback, Callback, Checkpoint):
-    def __init__(self, iterator):
+    def __init__(self, iterator) -> None:
         MemristiveCallback.__init__(self, iterator)
         self.iterator.is_training = True
         self.best_median_val_accuracy = 0.0

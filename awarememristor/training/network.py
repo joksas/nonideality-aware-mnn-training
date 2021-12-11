@@ -48,7 +48,7 @@ def train(iterator, callbacks: list[callbacks_.Callback]) -> None:
         pickle.dump(info, handle)
 
 
-def infer(iterator):
+def infer(iterator) -> None:
     """Performs inference using iterator settings and saves metrics to separate files."""
     os.makedirs(iterator.inference_repeat_dir(), exist_ok=True)
 

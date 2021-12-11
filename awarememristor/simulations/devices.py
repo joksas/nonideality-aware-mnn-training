@@ -1,11 +1,13 @@
+from typing import Any
+
 from awarememristor.crossbar.nonidealities import (D2DLognormal,
-                                                   IVNonlinearity, StuckAtGOff,
-                                                   StuckAtGOn,
+                                                   IVNonlinearity, Nonideality,
+                                                   StuckAtGOff, StuckAtGOn,
                                                    StuckDistribution)
 from awarememristor.simulations import data
 
 
-def ideal():
+def ideal() -> dict[str, Any]:
     return {"G_off": None, "G_on": None, "nonidealities": []}
 
 
@@ -26,7 +28,7 @@ def _SiO_x_G(is_high_nonlinearity: bool) -> dict[str, float]:
     }
 
 
-def _SiO_x_nonidealities(is_high_nonlinearity: bool):
+def _SiO_x_nonidealities(is_high_nonlinearity: bool) -> dict[str, list[Nonideality]]:
     exp_data = data.load_SiO_x_multistate()
     _, _, n_avg, n_std = data.low_high_n_SiO_x_vals(exp_data, is_high_nonlinearity)
     V_ref = SiO_x_V_ref()["V_ref"]
@@ -35,14 +37,14 @@ def _SiO_x_nonidealities(is_high_nonlinearity: bool):
     }
 
 
-def SiO_x(is_high_nonlinearity: bool):
+def SiO_x(is_high_nonlinearity: bool) -> dict[str, Any]:
     return {
         **_SiO_x_G(is_high_nonlinearity),
         **_SiO_x_nonidealities(is_high_nonlinearity),
     }
 
 
-def stuck_off():
+def stuck_off() -> dict[str, Any]:
     G = _SiO_x_G(True)
     return {
         **G,
@@ -52,7 +54,7 @@ def stuck_off():
     }
 
 
-def SiO_x_high_nonlinearity_and_stuck_on():
+def SiO_x_high_nonlinearity_and_stuck_on() -> dict[str, Any]:
     is_high_nonlinearity = True
     G = _SiO_x_G(is_high_nonlinearity)
     nonidealities = _SiO_x_nonidealities(is_high_nonlinearity)["nonidealities"] + [
@@ -64,7 +66,7 @@ def SiO_x_high_nonlinearity_and_stuck_on():
     }
 
 
-def more_uniform_d2d():
+def more_uniform_d2d() -> dict[str, Any]:
     G = _SiO_x_G(True)
     return {
         **G,
@@ -72,7 +74,7 @@ def more_uniform_d2d():
     }
 
 
-def less_uniform_d2d():
+def less_uniform_d2d() -> dict[str, Any]:
     G = _SiO_x_G(True)
     return {
         **G,
@@ -80,7 +82,7 @@ def less_uniform_d2d():
     }
 
 
-def high_magnitude_more_uniform_d2d():
+def high_magnitude_more_uniform_d2d() -> dict[str, Any]:
     G = _SiO_x_G(True)
     return {
         **G,
@@ -88,7 +90,7 @@ def high_magnitude_more_uniform_d2d():
     }
 
 
-def Ta_HfO2():
+def Ta_HfO2() -> dict[str, Any]:
     exp_data = data.load_Ta_HfO2()
     G_off, G_on = data.extract_G_off_and_G_on(exp_data)
     G_off, G_on = float(G_off), float(G_on)
