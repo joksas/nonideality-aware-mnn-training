@@ -10,20 +10,13 @@ from awarememristor.training.architecture import get_model
 sys.path.insert(0, "..")
 
 
-def train(iterator, callbacks=[]):
+def train(iterator, callbacks: list[callbacks_.Callback] = []):
     os.makedirs(iterator.weights_dir(), exist_ok=True)
 
     validation_data = None
     num_checkpoint_callbacks = 0
     for callback in callbacks:
-        if isinstance(
-            callback,
-            (
-                callbacks_.StandardCheckpoint,
-                callbacks_.MemristiveCheckpoint,
-                callbacks_.CombinedCheckpoint,
-            ),
-        ):
+        if isinstance(callback, callbacks_.Checkpoint):
             num_checkpoint_callbacks += 1
             if isinstance(callback, callbacks_.StandardCheckpoint):
                 validation_data = iterator.data("validation")
@@ -48,12 +41,10 @@ def train(iterator, callbacks=[]):
         "callback_infos": {},
     }
     for callback in callbacks:
-        try:
+        if isinstance(callback, callbacks_.MemristiveCallback):
             if callback.name() in info["callback_infos"]:
                 raise KeyError(f'Callback "{callback.name()}" already exists!')
             info["callback_infos"][callback.name()] = callback.info()
-        except AttributeError:
-            pass
 
     with open(iterator.info_path(), "wb") as handle:
         pickle.dump(info, handle)

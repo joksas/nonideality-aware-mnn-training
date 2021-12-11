@@ -315,14 +315,11 @@ class Iterator:
         return x, y
 
     def _checkpoint_from_info(self) -> str:
-        info = self.info()
-        if "val_accuracy" in info["history"]:
+        if not self.training.is_nonideal():
             return callbacks.StandardCheckpoint.name()
-        if callbacks.MemristiveCheckpoint.name() in info["callback_infos"]:
-            return callbacks.MemristiveCheckpoint.name()
-        if callbacks.CombinedCheckpoint.name() in info["callback_infos"]:
+        if self.training.use_combined_validation:
             return callbacks.CombinedCheckpoint.name()
-        raise ValueError("Could not determine the checkpoint.")
+        return callbacks.MemristiveCheckpoint.name()
 
     def validation_curves(self, metric: str) -> tuple[np.ndarray, np.ndarray]:
         checkpoint_name = self._checkpoint_from_info()
@@ -444,7 +441,7 @@ class Iterator:
                 self.training.repeat_idx += 1
                 continue
             # New callbacks in each iteration because iterator changes.
-            train_callbacks = []
+            train_callbacks: list[callbacks.Callback] = []
 
             if use_test_callback:
                 train_callbacks.append(callbacks.TestCallback(self))

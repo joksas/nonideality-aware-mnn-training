@@ -1,11 +1,23 @@
 import copy
 import os
 import time
+from abc import ABC, abstractmethod
 
 import numpy as np
 import tensorflow as tf
 
 from awarememristor.training import architecture
+
+
+class Callback(ABC):
+    @staticmethod
+    @abstractmethod
+    def name() -> str:
+        """Returns name of the callback."""
+
+
+class Checkpoint:
+    pass
 
 
 class MemristiveCallback(tf.keras.callbacks.Callback):
@@ -85,7 +97,7 @@ class MemristiveCallback(tf.keras.callbacks.Callback):
         }
 
 
-class TestCallback(MemristiveCallback):
+class TestCallback(MemristiveCallback, Callback):
     """Compute test accuracy for all inference setups during training."""
 
     def __init__(self, iterator):
@@ -132,7 +144,7 @@ class TestCallback(MemristiveCallback):
         return "memristive_test"
 
 
-class MemristiveCheckpoint(MemristiveCallback):
+class MemristiveCheckpoint(MemristiveCallback, Callback, Checkpoint):
     """Evaluate accuracy on validation set multiple times to provide a more reliable measure of
     learning progress.
     """
@@ -180,7 +192,7 @@ class MemristiveCheckpoint(MemristiveCallback):
         return "memristive_checkpoint"
 
 
-class StandardCheckpoint(tf.keras.callbacks.ModelCheckpoint):
+class StandardCheckpoint(tf.keras.callbacks.ModelCheckpoint, Callback, Checkpoint):
     def __init__(self, iterator):
         tf.keras.callbacks.ModelCheckpoint.__init__(
             self,
@@ -194,7 +206,7 @@ class StandardCheckpoint(tf.keras.callbacks.ModelCheckpoint):
         return "standard_checkpoint"
 
 
-class CombinedCheckpoint(MemristiveCallback):
+class CombinedCheckpoint(MemristiveCallback, Callback, Checkpoint):
     def __init__(self, iterator):
         MemristiveCallback.__init__(self, iterator)
         self.iterator.is_training = True
