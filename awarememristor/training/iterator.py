@@ -76,7 +76,7 @@ class Stage(Iterable):
             if isinstance(nonideality, LinearityNonpreserving):
                 return nonideality.k_V()
 
-        # Except for power consumption, makes no difference for
+        # Except for power consumption, `k_V` makes no difference for
         # linearity-preserving nonidealities, thus using the same value as for
         # SiO_x devices.
         return 2 * devices.SiO_x_V_ref()["V_ref"]
