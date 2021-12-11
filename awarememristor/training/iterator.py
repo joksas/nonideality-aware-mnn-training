@@ -30,12 +30,14 @@ class Stage(Iterable):
         self,
         G_off: float = None,
         G_on: float = None,
-        nonidealities: list[Nonideality] = [],
+        nonidealities: list[Nonideality] = None,
         mapping_rule: str = "default",
         num_repeats: int = 0,
     ) -> None:
         self.G_off = G_off
         self.G_on = G_on
+        if nonidealities is None:
+            nonidealities = []
         self.nonidealities = nonidealities
         self.mapping_rule = mapping_rule
         self.validate_nonidealities()
@@ -110,7 +112,7 @@ class Training(Stage, Iterable):
         num_repeats: int = 0,
         G_off: float = None,
         G_on: float = None,
-        nonidealities: list[Nonideality] = [],
+        nonidealities: list[Nonideality] = None,
         use_combined_validation: bool = False,
         memristive_validation_freq: int = None,
         mapping_rule: str = "default",
@@ -160,7 +162,7 @@ class Inference(Stage):
         num_repeats: int = 0,
         G_off: float = None,
         G_on: float = None,
-        nonidealities: list[Nonideality] = [],
+        nonidealities: list[Nonideality] = None,
         mapping_rule: str = "default",
     ) -> None:
         self.num_repeats = num_repeats
@@ -448,7 +450,7 @@ class Iterator:
             else:
                 train_callbacks.append(callbacks.MemristiveCheckpoint(self))
 
-            network.train(self, callbacks=train_callbacks)
+            network.train(self, train_callbacks)
             self.training.repeat_idx += 1
 
         self.training.repeat_idx = 0
