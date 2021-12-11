@@ -16,7 +16,7 @@ from awarememristor.training import callbacks, network, utils
 warnings.simplefilter("default")
 
 
-class Nonideal:
+class Stage:
     def __init__(
         self,
         G_off: float = None,
@@ -96,7 +96,7 @@ class Iterable:
         return self.repeat_idx == other.repeat_idx
 
 
-class Training(Nonideal, Iterable):
+class Training(Stage, Iterable):
     def __init__(
         self,
         batch_size: int = 1,
@@ -121,7 +121,7 @@ class Training(Nonideal, Iterable):
         self.is_standard_validation_mode = False
         self.memristive_validation_freq = memristive_validation_freq
         self.force_standard_w = force_standard_w
-        Nonideal.__init__(
+        Stage.__init__(
             self,
             G_off=G_off,
             G_on=G_on,
@@ -137,7 +137,7 @@ class Training(Nonideal, Iterable):
             return "nonreg"
 
     def label(self) -> str:
-        l = f"{self.regularized_label()}__{self.batch_size}__{Nonideal.label(self)}"
+        l = f"{self.regularized_label()}__{self.batch_size}__{Stage.label(self)}"
         if self.memristive_validation_freq is not None:
             l += f"__val_freq_{self.memristive_validation_freq}"
         if self.force_standard_w:
@@ -151,7 +151,7 @@ class Training(Nonideal, Iterable):
         return self.is_nonideal() and not self.force_standard_w
 
 
-class Inference(Nonideal, Iterable):
+class Inference(Stage, Iterable):
     def __init__(
         self,
         num_repeats: int = 0,
@@ -161,7 +161,7 @@ class Inference(Nonideal, Iterable):
         mapping_rule: str = "default",
     ) -> None:
         self.num_repeats = num_repeats
-        Nonideal.__init__(
+        Stage.__init__(
             self,
             G_off=G_off,
             G_on=G_on,
@@ -176,7 +176,7 @@ class Inference(Nonideal, Iterable):
     def __eq__(self, other):
         return (
             self.num_repeats == other.num_repeats
-            and Nonideal.__eq__(self, other)
+            and Stage.__eq__(self, other)
             and Iterable.__eq__(self, other)
         )
 

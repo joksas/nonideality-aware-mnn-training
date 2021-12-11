@@ -9,23 +9,23 @@ from awarememristor.training import iterator
 
 nonideality_label_testdata = [
     (
-        iterator.Nonideal(),
+        iterator.Stage(),
         "ideal",
     ),
     (
-        iterator.Nonideal(
+        iterator.Stage(
             nonidealities=[nonidealities.IVNonlinearity(0.25, 1.53, 0.625)],
         ),
         "IVNL:1.53_0.625",
     ),
     (
-        iterator.Nonideal(
+        iterator.Stage(
             nonidealities=[nonidealities.StuckAt(1.20, 0.6341)],
         ),
         "Stuck:1.2_0.634",
     ),
     (
-        iterator.Nonideal(
+        iterator.Stage(
             nonidealities=[
                 nonidealities.IVNonlinearity(0.25, 1.530, 0.123),
                 nonidealities.StuckAt(1.2344, 0.06341),
@@ -64,6 +64,6 @@ nonidealities_exception_testdata = [
 @pytest.mark.parametrize("nonidealities_input,error_msg", nonidealities_exception_testdata)
 def test_nonidealities_exception(nonidealities_input, error_msg):
     with pytest.raises(Exception) as exc:
-        _ = iterator.Nonideal(nonidealities=nonidealities_input)
+        _ = iterator.Stage(nonidealities=nonidealities_input)
     assert error_msg in str(exc.value)
     assert exc.type == ValueError
