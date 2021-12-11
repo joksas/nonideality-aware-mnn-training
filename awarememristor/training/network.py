@@ -7,7 +7,8 @@ import awarememristor.training.callbacks as callbacks_
 from awarememristor.training.architecture import get_model
 
 
-def train(iterator, callbacks: list[callbacks_.Callback] = []):
+def train(iterator, callbacks: list[callbacks_.Callback] = []) -> None:
+    """Trains using iterator settings and saves information once done."""
     os.makedirs(iterator.weights_dir(), exist_ok=True)
 
     validation_data = None
@@ -48,6 +49,7 @@ def train(iterator, callbacks: list[callbacks_.Callback] = []):
 
 
 def infer(iterator):
+    """Performs inference using iterator settings and saves metrics to separate files."""
     os.makedirs(iterator.inference_repeat_dir(), exist_ok=True)
 
     model = get_model(iterator)
