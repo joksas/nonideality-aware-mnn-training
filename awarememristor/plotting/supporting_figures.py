@@ -178,8 +178,13 @@ def weight_implementation_double_weights_training(metric="error"):
 
 
 def memristive_validation_training(metric="error"):
-    iterators = simulations.memristive_validation.get_iterators()
+    iterators = [
+        *simulations.memristive_validation.get_iterators(),
+        simulations.memristive_validation.get_iterators()[1],
+    ]
+    iterators[1].training.is_standard_validation_mode = True
 
+    # Only first five will be plotted.
     _training_curves_multiple_panels(
         2,
         0.32,
