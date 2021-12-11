@@ -17,6 +17,8 @@ warnings.simplefilter("default")
 
 
 class Iterable:
+    """Used to keep track of training or inference repeats."""
+
     def __init__(self, num_repeats: int) -> None:
         self.repeat_idx = 0
         self.num_repeats = num_repeats
@@ -26,6 +28,8 @@ class Iterable:
 
 
 class Stage(Iterable):
+    """Used for training and inference."""
+
     def __init__(
         self,
         G_off: float = None,
@@ -103,6 +107,8 @@ class Stage(Iterable):
 
 
 class Training(Stage, Iterable):
+    """Training configuration."""
+
     def __init__(
         self,
         batch_size: int = 1,
@@ -157,6 +163,8 @@ class Training(Stage, Iterable):
 
 
 class Inference(Stage):
+    """Inference configuration."""
+
     def __init__(
         self,
         num_repeats: int = 0,
@@ -180,6 +188,11 @@ class Inference(Stage):
 
 
 class Iterator:
+    """A helper class used in simulations of memristive neural networks.
+
+    It is used to combine different training and inference setups.
+    """
+
     def __init__(self, dataset: str, training: Training, inferences: list[Inference]) -> None:
         self.dataset = dataset
         self.training = training
