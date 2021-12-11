@@ -42,7 +42,7 @@ def switching():
 
     colors = [utils.color_dict()[color_name] for color_name in ["blue", "orange"]]
     labels = ["SET", "RESET"]
-    labels_x = [0.85, 5.15]
+    labels_x = [0.15, 1 - 0.15]
     for idx, (color, label, label_x) in enumerate(zip(colors, labels, labels_x)):
         voltage_curve = data[:, 1, idx]
         current_curve = np.abs(data[:, 0, idx])
@@ -58,7 +58,7 @@ def switching():
             fig,
             axes,
             label,
-            (label_x, -0.4),
+            (label_x, 0.88),
             fontsize=utils.Config.TEXT_LABEL_SIZE,
             color=color,
         )
