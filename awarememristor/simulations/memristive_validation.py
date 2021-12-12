@@ -4,12 +4,12 @@ from awarememristor.training.iterator import Inference, Iterator, Training
 DATASET = "mnist"
 
 
-def custom_iterator(training_setup, inference_setups, use_combined_validation):
+def custom_iterator(
+    training_setup, inference_setups, use_combined_validation, num_training_repeats: int = None
+):
     training_params = utils.get_training_params()
-    # Validation is utilized during training, so to evaluate the effectiveness
-    # of different methods, we need to increase the sample size of trained
-    # networks.
-    training_params["num_repeats"] = 100
+    if num_training_repeats is not None:
+        training_params["num_repeats"] = num_training_repeats
     inferences = [Inference(**utils.get_inference_params(), **setup) for setup in inference_setups]
     training = Training(
         **training_params,
@@ -31,6 +31,10 @@ def get_nonideal_iterators():
             devices.high_magnitude_more_uniform_d2d(),
             [devices.high_magnitude_more_uniform_d2d()],
             True,
+            # Validation is utilized during training, so to evaluate the
+            # effectiveness of different methods, we need to increase the
+            # sample size of trained networks.
+            num_training_repeats=100,
         ),
     ]
 
