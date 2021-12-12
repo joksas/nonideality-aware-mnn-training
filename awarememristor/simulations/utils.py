@@ -16,10 +16,9 @@ def get_energy_efficiency(
     avg_power: float,
     num_neurons_lst: list[int] = [784, 25, 10],
     read_time: float = 50e-9,
-    num_bits: int = 8,
 ):
     num_synapses = get_num_synapses(num_neurons_lst)
-    energy_efficiency = (2 * num_synapses) / (num_bits * read_time * avg_power)
+    energy_efficiency = (2 * num_synapses) / (read_time * avg_power)
     return energy_efficiency
 
 
