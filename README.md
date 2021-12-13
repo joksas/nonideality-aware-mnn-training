@@ -16,7 +16,9 @@ Python ≥3.9 and the packages listed in [requirements.txt](/requirements.txt).
 
 ## Reproducing results
 
-To reproduce the simulations and plots presented in the manuscript, execute
+Script [reproduce_paper.py](/reproduce_paper.py) can be used to reproduce the simulations and plots presented in the manuscript.
+Please follow the instructions in the script to obtain any missing experimental data (or comment out the function calls that require these data).
+After that, execute
 ```text
 python reproduce_paper.py
 ```
