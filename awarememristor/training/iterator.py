@@ -407,7 +407,11 @@ class Iterator:
         self.inference_idx = inference_idx
         inference = self.inferences[self.inference_idx]
         y = np.zeros((self.training.num_repeats, inference.num_repeats))
+
+        initial_training_repeat_idx = self.training.repeat_idx
+        self.training.repeat_idx = 0
         for i in range(self.training.num_repeats):
+            inference.repeat_idx = 0
             for j in range(inference.num_repeats):
                 if metric == "accuracy":
                     filename = self.accuracy_path()
@@ -425,10 +429,9 @@ class Iterator:
 
                 inference.repeat_idx += 1
 
-            inference.repeat_idx = 0
             self.training.repeat_idx += 1
 
-        self.training.repeat_idx = 0
+        self.training.repeat_idx = initial_training_repeat_idx
         self.inference_idx = 0
         return y
 
