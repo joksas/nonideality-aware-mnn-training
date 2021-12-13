@@ -88,6 +88,9 @@ class Stage(Iterable):
         return 2 * devices.SiO_x_V_ref()["V_ref"]
 
     def validate_nonidealities(self) -> None:
+        """Multiple linearity-preserving nonidealities or multiple
+        linearity-nonpreserving nonidealities are not currently supported; this
+        function makes sure that this condition is satisfied."""
         num_linearity_preserving = 0
         num_linearity_nonpreserving = 0
         for nonideality in self.nonidealities:
