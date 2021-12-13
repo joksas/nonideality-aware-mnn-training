@@ -29,3 +29,10 @@ To run unit tests, execute
 ```text
 pytest tests
 ```
+
+## Using this package
+
+**This package should not be used in production.**
+The code is extensible but was written mostly with specific [simulations](/awarememristor/simulations) in mind.
+Any new functionality (such as different nonidealities) should be incorporated carefully.
+For example, to handle combinations of *multiple* linearity-preserving nonidealities (which is not currently supported), it may *not* be sufficient to simply apply them one after another.
