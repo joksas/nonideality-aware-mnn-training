@@ -11,6 +11,8 @@ from awarememristor.training import architecture
 
 
 class Callback(ABC):
+    """Abstract class that requires implementation of callback name."""
+
     @staticmethod
     @abstractmethod
     def name() -> str:
@@ -22,6 +24,9 @@ class Checkpoint:
 
 
 class MemristiveCallback(tf.keras.callbacks.Callback):
+    """Computes a metric multiple times in order to take the stochastic nature
+    of memristive devices into account."""
+
     def __init__(self, iterator, history=None) -> None:
         self.iterator = copy.copy(iterator)
         self.validation_freq = 20
@@ -195,6 +200,8 @@ class MemristiveCheckpoint(MemristiveCallback, Callback, Checkpoint):
 
 
 class StandardCheckpoint(tf.keras.callbacks.ModelCheckpoint, Callback, Checkpoint):
+    """Same as `tf.keras.callbacks.ModelCheckpoint`, but with a `name()`."""
+
     def __init__(self, iterator) -> None:
         tf.keras.callbacks.ModelCheckpoint.__init__(
             self,
@@ -209,6 +216,12 @@ class StandardCheckpoint(tf.keras.callbacks.ModelCheckpoint, Callback, Checkpoin
 
 
 class CombinedCheckpoint(MemristiveCallback, Callback, Checkpoint):
+    """Used to test the effectiveness of memristive validation.
+
+    Two validation techniques (standard and memristive) are applied at the same
+    time during training.
+    """
+
     def __init__(self, iterator) -> None:
         MemristiveCallback.__init__(self, iterator)
         self.iterator.is_training = True
