@@ -1,19 +1,40 @@
-# Adjusting Training to Enable Accurate Low-Power Memristive Neural Networks
+# Nonideality-Aware Training for Accurate and Robust Low-Power Memristive Neural Networks
 
 ## Requirements
 
-TensorFlow 2.0 or higher.
+Python ≥3.9 and the packages listed in [requirements.txt](/requirements.txt).
 
-## Test
+## Repository structure
 
-To train, go to `MNIST`, set `path_to_project` in `MNIST/Train.py` and then run `python Train.py`.
+`awarememristor/crossbar`: memristor nonidealities and mapping onto crossbar arrays.
 
-## Repo organisation
+`awarememristor/training`: network training.
 
-`model_architectures.py`: model topology.
+`awarememristor/simulations`: simulations presented in the manuscript.
 
-`memristor_utils.py`: custom layers including `memristor_dense`.
+`awarememristor/plotting`: figures presented in the manuscript.
 
-`crossbar`: mapping and nonidealities.
+## Reproducing results
 
-`MNIST/Train.py`: training setup.
+Script [reproduce_paper.py](/reproduce_paper.py) can be used to reproduce the simulations and plots presented in the manuscript.
+Please follow the instructions in the script to obtain any missing experimental data (or comment out the function calls that require these data).
+After that, execute
+```text
+python reproduce_paper.py
+```
+
+This might take a long time to finish, so you may want to split this file up in order to, for example, perform the simulations on multiple machines.
+
+## Testing
+
+To run unit tests, execute
+```text
+pytest tests
+```
+
+## Using this package
+
+**This package should not be used in production.**
+The code is extensible but was written mostly with specific [simulations](/awarememristor/simulations) in mind.
+Any new functionality (such as different nonidealities) should be incorporated carefully.
+For example, to handle combinations of *multiple* linearity-preserving nonidealities (which is not currently supported), it may *not* be sufficient to simply apply them one after another.
