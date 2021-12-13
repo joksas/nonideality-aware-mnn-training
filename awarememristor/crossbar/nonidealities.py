@@ -26,7 +26,7 @@ class Nonideality(ABC):
 
 class LinearityPreserving(ABC):
     @abstractmethod
-    def disturb_G(self, G: tf.Tensor, *args, **kwargs) -> tf.Tensor:
+    def disturb_G(self, G: tf.Tensor) -> tf.Tensor:
         """Disturb conductances."""
 
 
