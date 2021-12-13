@@ -136,7 +136,7 @@ def add_text(
     axis,
     text: str,
     normalised_position: tuple[float, float],
-    fontsize: float,
+    fontsize: float = Config.TEXT_LABEL_SIZE,
     fontweight: str = "normal",
     color: str = None,
 ):
