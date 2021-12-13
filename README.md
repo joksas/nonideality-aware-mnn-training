@@ -16,7 +16,7 @@ Python ≥3.9 and the packages listed in [requirements.txt](/requirements.txt).
 
 ## Reproducing results
 
-To reproduce the simulations presented in the manuscript, execute
+To reproduce the simulations and plots presented in the manuscript, execute
 ```text
 python reproduce_paper.py
 ```
