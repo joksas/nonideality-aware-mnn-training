@@ -18,7 +18,7 @@ def SiO_x_nonlinearity_dependence():
         for idx in range(voltages.shape[0]):
             voltage_curve = voltages[idx, :]
             current_curve = currents[idx, :]
-            ref_voltages = voltage_curve[2::2] / 2
+            ref_voltages = voltage_curve[2::2]
             num_points = len(voltage_curve)
             nl_pars = current_curve[2::2] / current_curve[1 : int(num_points / 2) + 1]
             axes.plot(
@@ -28,7 +28,7 @@ def SiO_x_nonlinearity_dependence():
                 color=color,
             )
 
-    axes.set_xlim([min_voltage, max_voltage / 2])
+    axes.set_xlim([min_voltage, max_voltage])
     axes.set_xlabel(utils.axis_label("voltage", prepend="reference"))
     axes.ticklabel_format(axis="y", scilimits=(-1, 1))
     axes.yaxis.get_offset_text().set_fontsize(utils.Config.TICKS_FONT_SIZE)
