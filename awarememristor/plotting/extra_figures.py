@@ -29,7 +29,6 @@ def SiO_x_nonlinearity_dependence():
             )
 
     axes.set_xlim([min_voltage, max_voltage])
-    axes.set_ylim(bottom=0)
     axes.set_xlabel(utils.axis_label("voltage", prepend="reference"))
     axes.ticklabel_format(axis="y", scilimits=(-1, 1))
     axes.yaxis.get_offset_text().set_fontsize(utils.Config.TICKS_FONT_SIZE)
