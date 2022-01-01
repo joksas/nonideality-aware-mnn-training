@@ -2,7 +2,7 @@
 
 ## Requirements
 
-Python ≥3.9 and the packages listed in [requirements.txt](/requirements.txt).
+Python 3.9 and the packages listed in [requirements.txt](/requirements.txt).
 
 ## Repository structure
 
