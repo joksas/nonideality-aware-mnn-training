@@ -9,6 +9,9 @@ from awarememristor.crossbar.nonidealities import StuckDistribution
 from awarememristor.plotting import utils
 from awarememristor.training import architecture
 
+rc("font", **{"family": "serif", "serif": ["Computer Modern"]})
+rc("text", usetex=True)
+
 
 def _SiO_x_panels(fig, axes):
     data = simulations.data.load_SiO_x_multistate()
@@ -223,7 +226,7 @@ def iv_nonlinearity_inference(metric="error"):
         boxplots.append(boxplot)
 
     utils.add_boxplot_legend(
-        axes, boxplots, ["Standard", "Nonideality-aware", "Nonideality-aware (regularized)"]
+        axes, boxplots, ["Standard", "Nonideality-aware", "Nonideality-aware (regularised)"]
     )
 
     plt.xlabel(utils.axis_label("power-consumption"))
@@ -314,9 +317,9 @@ def weight_implementation(metric="error"):
         axis.yaxis.set_ticks(np.arange(1.0, 3.0, 0.5))
 
         if idx > 3:
-            axis.set_xlabel(utils.axis_label("g-plus", unit_prefix="μ"))
+            axis.set_xlabel(utils.axis_label("g-plus", unit_prefix="\\textmu{}"))
         if idx in [0, 4]:
-            axis.set_ylabel(utils.axis_label("g-minus", unit_prefix="μ"))
+            axis.set_ylabel(utils.axis_label("g-minus", unit_prefix="$\\textmu{}$"))
 
     for iterator_idxs, axis in zip([[0, 1, 4, 5], [2, 3, 6, 7]], axes[-2:]):
         for iterator_idx, color in zip(iterator_idxs, colors):

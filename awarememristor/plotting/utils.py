@@ -84,7 +84,7 @@ def fig_init(
     fig_shape: tuple[int, int] = (1, 1),
     sharex=False,
     sharey=False,
-    scaled_position: tuple[float, float] = (-0.06, 1.04),
+    scaled_position: tuple[float, float] = (-0.07, 1.04),
     custom_fig: matplotlib.figure = None,
 ) -> tuple[matplotlib.figure, matplotlib.axes]:
     width = Config.COL_WIDTHS[width_num_cols]
@@ -129,7 +129,13 @@ def add_subfigure_label(
     ascii_idx = 65 + letter_idx
     if is_lowercase:
         ascii_idx += 32
-    add_text(axis, chr(ascii_idx), normalised_position, fontsize=fontsize, fontweight="bold")
+    add_text(
+        axis,
+        r"\textbf{(" + chr(ascii_idx) + ")}",
+        normalised_position,
+        fontsize=fontsize,
+        fontweight="bold",
+    )
 
 
 def add_text(
@@ -353,9 +359,9 @@ def save_fig(fig, name: str, is_supporting: bool = False, metric: str = "error")
 
 def axis_label(var_name: str, prepend: str = None, unit_prefix: str = "") -> str:
     if var_name == "accuracy":
-        label = "accuracy (%)"
+        label = r"accuracy (\%)"
     elif var_name == "error":
-        label = "error (%)"
+        label = r"error (\%)"
     elif var_name == "loss":
         label = "loss"
     elif var_name == "epoch":
@@ -371,11 +377,11 @@ def axis_label(var_name: str, prepend: str = None, unit_prefix: str = "") -> str
     elif var_name == "checkpoint":
         label = "checkpoint"
     elif var_name == "conductance":
-        label = f"conductance ({unit_prefix}S)"
+        label = rf"conductance ({unit_prefix}S)"
     elif var_name == "voltage":
-        label = f"voltage ({unit_prefix}V)"
+        label = rf"voltage ({unit_prefix}V)"
     elif var_name == "current":
-        label = f"current ({unit_prefix}A)"
+        label = rf"current ({unit_prefix}A)"
     elif var_name == "nonlinearity-parameter":
         label = "nonlinearity parameter"
     elif var_name == "pulse-number":
