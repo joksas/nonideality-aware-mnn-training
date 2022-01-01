@@ -42,7 +42,7 @@ def SiO_x_nonlinearity_dependence():
     utils.add_legend(
         fig,
         ncol=2,
-        bbox_to_anchor=(0.5, 1.02),
+        bbox_to_anchor=(0.5, 1.05),
         handles=handles,
     )
 
