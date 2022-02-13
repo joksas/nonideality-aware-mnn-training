@@ -548,3 +548,13 @@ def add_arrow(
         arrowprops=dict(linewidth=linewidth, arrowstyle="->", color=color),
         size=size,
     )
+
+
+def power_notation(x: float, num_decimal_pt: int = 2):
+    """Write a number in scientific notation with a power of 10 in LaTeX.
+
+    For example, 2.546e-3 becomes `2.55 \times 10^{-3}`.
+    """
+    s = f"{x:0.{num_decimal_pt:d}e}"
+    m, e = s.split("e")
+    return f"{m:s} \\times 10^{{{int(e):d}}}"
