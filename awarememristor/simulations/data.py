@@ -3,6 +3,7 @@ from typing import Optional
 
 import h5py
 import numpy as np
+import numpy.typing as npt
 import openpyxl
 import pandas as pd
 import requests
@@ -50,14 +51,33 @@ def load_SiO_x_switching() -> np.ndarray:
     return data
 
 
-def all_SiO_x_curves(data, max_voltage=0.5, voltage_step=0.005):
+def all_SiO_x_curves(data, max_voltage=0.5, voltage_step=0.005, clean_data=True):
     num_points = int(max_voltage / voltage_step) + 1
 
     data = data[:, :, :num_points]
+    if clean_data:
+        data = _clean_iv_data(data)
     voltages = data[1, :, :]
     currents = data[0, :, :]
 
     return voltages, currents
+
+
+def _clean_iv_data(
+    data: npt.NDArray[np.float64], threshold: float = 0.1
+) -> npt.NDArray[np.float64]:
+    """Remove curves where there are unusual spikes in current."""
+    ok_rows = []
+    for idx in range(data.shape[1]):
+        i = data[0, idx, :]
+        # Second derivative; helpful to understand the smoothness of the curve.
+        d2y_dx2 = np.gradient(np.gradient(i))
+        # We care about the relative size of the spikes.
+        ratio = d2y_dx2 / np.mean(i)
+        if ratio.max() < threshold:
+            ok_rows.append(idx)
+
+    return data[:, ok_rows, :]
 
 
 def low_high_n_SiO_x_curves(data):
