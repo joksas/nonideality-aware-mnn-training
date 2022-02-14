@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 
 import numpy as np
+import scipy.constants as const
 import tensorflow as tf
 import tensorflow_probability as tfp
 from KDEpy import bw_selection
@@ -92,7 +93,7 @@ class IVNonlinearity(Nonideality, LinearityNonpreserving):
         ratio = tf.expand_dims(tf.abs(V) / self.V_ref, axis=-1)
         exponent = utils.tf_log2(n)
 
-        I_ind = ohmic_current * ratio ** exponent
+        I_ind = ohmic_current * ratio**exponent
 
         I = utils.add_I_BL(I_ind)
 
@@ -100,6 +101,58 @@ class IVNonlinearity(Nonideality, LinearityNonpreserving):
 
     def k_V(self):
         return 2 * self.V_ref
+
+
+class IVNonlinearityPF(Nonideality, LinearityNonpreserving):
+    """Uses Poole-Frenkel model to compute currents."""
+
+    def __init__(
+        self,
+        ln_c_params: tuple[float, float, float],
+        ln_d_times_perm_params: tuple[float, float, float],
+    ) -> None:
+        self.ln_c_params = ln_c_params
+        self.ln_d_times_perm_params = ln_d_times_perm_params
+
+    @staticmethod
+    def model(V: tf.Tensor, c: tf.Tensor, d_times_perm: tf.Tensor) -> tf.Tensor:
+        """Computes currents.
+
+        Args:
+            V: Voltages.
+            c: Scaling factors associated with each of the conductances.
+            d_times_perm: Products of thickness and permittivity associated
+                with each of the conductances.
+
+        Returns:
+            Currents.
+        """
+        return (
+            c
+            * tf.expand_dims(V, axis=-1)
+            * tf.math.exp(
+                const.elementary_charge
+                * tf.math.sqrt(
+                    const.elementary_charge * tf.expand_dims(V, axis=-1) / (const.pi * d_times_perm)
+                )
+                / (const.Boltzmann * (const.zero_Celsius + 20.0))
+            )
+        )
+
+    def compute_I(self, V, G):
+        R = 1 / G
+
+        ln_c = utils.linear_fit(R, *self.ln_c_params)
+        c = tf.math.exp(ln_c)
+
+        ln_d_times_perm = utils.linear_fit(R, *self.ln_d_times_perm_params)
+        d_time_perm = tf.math.exp(ln_d_times_perm)
+
+        I_ind = self.model(V, c, d_time_perm)
+
+        I = utils.add_I_BL(I_ind)
+
+        return I, I_ind
 
 
 class StuckAt(Nonideality, LinearityPreserving):

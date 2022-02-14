@@ -1,3 +1,4 @@
+import numpy as np
 import pytest
 import tensorflow as tf
 
@@ -301,6 +302,76 @@ def test_iv_nonlinearity_I(args, expected):
     nonideality, G, V = args
     I, I_ind = nonideality.compute_I(V, G)
     utils.assert_tf_approx(I, I_exp)
+    utils.assert_tf_approx(I_ind, I_ind_exp)
+
+
+iv_nonlinearity_pf_I_ind_testdata = [
+    (
+        (
+            tf.constant(
+                [
+                    [1.0, 0.0, -0.5],
+                    [0.0, 0.25, 0.0],
+                ]
+            ),
+            tf.constant(
+                [
+                    [1.0, 2.0, 3.0, 4.0],
+                    [5.0, 6.0, 7.0, 8.0],
+                    [9.0, 10.0, 11.0, 12.0],
+                ]
+            ),
+            tf.constant(
+                [
+                    [np.inf, np.inf, np.inf, np.inf],
+                    [np.inf, np.inf, np.inf, np.inf],
+                    [np.inf, np.inf, np.inf, np.inf],
+                ]
+            ),
+        ),
+        # With `d_times_perm = np.inf`, currents should be produced
+        # according to Ohm's law with `c` acting as conductance.
+        tf.constant(
+            [
+                [
+                    [1.0 * 1.0, 1.0 * 2.0, 1.0 * 3.0, 1.0 * 4.0],
+                    [0.0 * 5.0, 0.0 * 6.0, 0.0 * 7.0, 0.0 * 8.0],
+                    [-0.5 * 9.0, -0.5 * 10.0, -0.5 * 11.0, -0.5 * 12.0],
+                ],
+                [
+                    [0.0 * 1.0, 0.0 * 2.0, 0.0 * 3.0, 0.0 * 4.0],
+                    [0.25 * 5.0, 0.25 * 6.0, 0.25 * 7.0, 0.25 * 8.0],
+                    [0.0 * 9.0, 0.0 * 10.0, 0.0 * 11.0, 0.0 * 12.0],
+                ],
+            ]
+        ),
+    ),
+    (
+        (
+            tf.constant(
+                [1.0, 0.0, -0.5],
+            ),
+            0.5,
+            np.inf,
+        ),
+        # With `d_times_perm = np.inf`, currents should be produced
+        # according to Ohm's law with `c` acting as conductance.
+        tf.constant(
+            [
+                [0.5],
+                [0.0],
+                [-0.25],
+            ]
+        ),
+    ),
+]
+
+
+@pytest.mark.parametrize("args,expected", iv_nonlinearity_pf_I_ind_testdata)
+def test_iv_nonlinearity_pf_I_ind(args, expected):
+    I_ind_exp = expected
+    V, c, d_times_perm = args
+    I_ind = nonidealities.IVNonlinearityPF.model(V, c, d_times_perm)
     utils.assert_tf_approx(I_ind, I_ind_exp)
 
 

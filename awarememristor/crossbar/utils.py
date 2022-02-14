@@ -36,3 +36,17 @@ def random_bool_tensor(shape: list[int], prob_true: float) -> tf.Tensor:
     """
     random_float_tensor = tf.random.uniform(shape, minval=0, maxval=1, dtype=tf.dtypes.float64)
     return random_float_tensor < prob_true
+
+
+def linear_fit(x: tf.Tensor, slope: float, intercept: float, res_std: float):
+    """Return linear fit with random normal deviations.
+
+    Args:
+        x: Input tensor.
+        slope: Slope of the linear fit.
+        intercept: Intercept of the linear fit.
+        res_std: Standard deviation of the random normal deviations.
+    """
+    fit = slope * x + intercept
+    deviations = tf.random.normal(x.shape, mean=0.0, stddev=res_std)
+    return fit + deviations
