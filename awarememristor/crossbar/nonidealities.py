@@ -155,10 +155,10 @@ class IVNonlinearityPF(Nonideality, LinearityNonpreserving):
     def compute_I(self, V, G):
         R = 1 / G
 
-        ln_c = utils.linear_fit(tf.math.log(R), *self.ln_c_params)
+        ln_c = utils.linregress_prediction(tf.math.log(R), *self.ln_c_params)
         c = tf.math.exp(ln_c)
 
-        ln_d_times_perm = utils.linear_fit(tf.math.log(R), *self.ln_d_times_perm_params)
+        ln_d_times_perm = utils.linregress_prediction(tf.math.log(R), *self.ln_d_times_perm_params)
         d_times_perm = tf.math.exp(ln_d_times_perm)
 
         I_ind = self.model(V, c, d_times_perm)

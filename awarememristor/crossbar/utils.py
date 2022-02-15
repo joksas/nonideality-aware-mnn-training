@@ -38,8 +38,8 @@ def random_bool_tensor(shape: list[int], prob_true: float) -> tf.Tensor:
     return random_float_tensor < prob_true
 
 
-def linear_fit(x: tf.Tensor, slope: float, intercept: float, res_std: float):
-    """Return linear fit with random normal deviations.
+def linregress_prediction(x: tf.Tensor, slope: float, intercept: float, res_std: float):
+    """Return prediction using a linear fit with random normal deviations.
 
     Args:
         x: Input tensor.
