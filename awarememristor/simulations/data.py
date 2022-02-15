@@ -158,13 +158,15 @@ def SiO_x_G_on_G_off_ratio() -> float:
     return 5.0
 
 
-def edge_states(sorted_resistances, ratio):
-    low_idx = np.searchsorted(sorted_resistances, sorted_resistances[0] * ratio)
-    low_resistances = sorted_resistances[:low_idx]
-    high_idx = np.searchsorted(sorted_resistances, sorted_resistances[-1] / ratio)
-    high_resistances = sorted_resistances[high_idx + 1 :]
+def edge_state_idxs(
+    sorted_resistances: npt.NDArray[np.float], ratio: float
+) -> tuple[npt.NDArray[np.float], npt.NDArray[np.float]]:
+    low_upper_idx = np.searchsorted(sorted_resistances, sorted_resistances[0] * ratio)
+    low_idxs = np.arange(low_upper_idx)
+    high_lower_idx = np.searchsorted(sorted_resistances, sorted_resistances[-1] / ratio)
+    high_idxs = np.arange(high_lower_idx + 1, len(sorted_resistances))
 
-    return low_resistances, high_resistances
+    return low_idxs, high_idxs
 
 
 def pf_relationship(
@@ -204,12 +206,11 @@ def pf_params(
     V, I = all_SiO_x_curves(data, clean_data=True)
     resistances, c, d_times_perm, _, _ = pf_relationship(V, I)
 
-    low_resistances, high_resistances = edge_states(resistances, ratio)
     if is_high_resistance:
-        G_min = 1 / high_resistances[-1]
+        G_min = 1 / resistances[-1]
         G_max = G_min * ratio
     else:
-        G_max = 1 / low_resistances[0]
+        G_max = 1 / resistances[0]
         G_min = G_max / ratio
 
     ln_resistances = np.log(resistances)
