@@ -14,21 +14,43 @@ def _SiO_x_panels(fig, axes):
     data = simulations.data.load_SiO_x_multistate()
 
     N = 1000
+    v_min = 1.0
+    v_max = 1.5
     palette = plt.cm.inferno(np.linspace(0, 1, N))
     min_voltage, max_voltage = 0.0, 0.5
 
-    curves = simulations.data.low_high_n_SiO_x_curves(data)
-    for axis, (voltages, currents) in zip(axes, curves):
-        for idx in range(voltages.shape[0]):
-            voltage_curve = voltages[idx, :]
-            current_curve = currents[idx, :]
-            n = simulations.data.nonlinearity_parameter(current_curve)
-            palette_idx = int(np.floor(N * (n - 2) / 2))
+    exp_data = simulations.data.load_SiO_x_multistate()
+    V_full, I_full = simulations.data.all_SiO_x_curves(exp_data, clean_data=True)
+    (
+        resistances,
+        _,
+        _,
+        V_full,
+        I_full,
+    ) = simulations.data.pf_relationship(V_full, I_full)
+    low_idxs, high_idxs = simulations.data.edge_state_idxs(
+        resistances, simulations.data.SiO_x_G_on_G_off_ratio()
+    )
+
+    for axis, is_high_resistance in zip(axes, [False, True]):
+        if is_high_resistance:
+            idxs = high_idxs
+        else:
+            idxs = low_idxs
+
+        V = V_full[idxs, :]
+        I = I_full[idxs, :]
+
+        for idx in range(V.shape[0]):
+            voltage_curve = V[idx, :]
+            current_curve = I[idx, :]
+            nonlinearity = simulations.data.average_nonlinearity(voltage_curve, current_curve)
+            palette_idx = int(np.floor(N * (nonlinearity - v_min) / (v_max - v_min)))
             axis.plot(
                 voltage_curve,
                 current_curve,
-                color=palette[palette_idx],
                 linewidth=utils.Config.LINEWIDTH,
+                color=palette[palette_idx],
             )
 
         axis.set_xlim([min_voltage, max_voltage])
@@ -37,10 +59,10 @@ def _SiO_x_panels(fig, axes):
         axis.ticklabel_format(axis="y", scilimits=(-1, 1))
         axis.yaxis.get_offset_text().set_fontsize(utils.Config.TICKS_FONT_SIZE)
 
-    sm = plt.cm.ScalarMappable(cmap="inferno", norm=plt.Normalize(vmin=2, vmax=4))
+    sm = plt.cm.ScalarMappable(cmap="inferno", norm=plt.Normalize(vmin=v_min, vmax=v_max))
     cbar = fig.colorbar(sm, ax=axes)
     cbar.set_label(
-        label=utils.axis_label("nonlinearity-parameter"),
+        label=utils.axis_label("mean-nonlinearity"),
         fontsize=utils.Config.AXIS_LABEL_FONT_SIZE,
         rotation=-90,
         va="bottom",
@@ -146,17 +168,17 @@ def _HfO2_panels(fig, axes):
     utils.add_legend(
         fig,
         ncol=3,
-        bbox_to_anchor=(0.5, 0.515),
+        bbox_to_anchor=(0.5, 0.48),
         handles=handles,
     )
 
 
 def experimental_data():
-    fig = plt.figure(constrained_layout=True)
-    gs = fig.add_gridspec(3, 1, height_ratios=[1.0, 0.08, 1.1])
+    fig = plt.figure(constrained_layout=False)
+    gs = fig.add_gridspec(3, 1, height_ratios=[0.9, 0.2, 1.0])
 
-    gs_top = gs[0].subgridspec(1, 2, wspace=0.03)
-    gs_bottom = gs[2].subgridspec(1, 2, wspace=0.03)
+    gs_top = gs[0].subgridspec(1, 2, wspace=0.2)
+    gs_bottom = gs[2].subgridspec(1, 2, wspace=0.1)
 
     subplots = list(gs_top) + list(gs_bottom)
     for subplot in subplots:

@@ -118,6 +118,14 @@ def low_high_n_SiO_x_curves(data):
     return (low_n_voltages, low_n_currents), (high_n_voltages, high_n_currents)
 
 
+def average_nonlinearity(voltage_curve, current_curve):
+    conductance_curve = current_curve / voltage_curve
+    nonlinearity = (
+        conductance_curve[2::2] / conductance_curve[1 : int(len(conductance_curve) / 2) + 1]
+    )
+    return np.mean(nonlinearity)
+
+
 def nonlinearity_parameter(current_curve):
     num_points = len(current_curve)
     half_voltage_idx = int(num_points / 2)
