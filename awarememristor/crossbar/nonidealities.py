@@ -108,9 +108,11 @@ class IVNonlinearityPF(Nonideality, LinearityNonpreserving):
 
     def __init__(
         self,
+        k_V: float,
         ln_c_params: tuple[float, float, float],
         ln_d_times_perm_params: tuple[float, float, float],
     ) -> None:
+        self.k_V_param = k_V
         self.ln_c_params = ln_c_params
         self.ln_d_times_perm_params = ln_d_times_perm_params
 
@@ -153,6 +155,12 @@ class IVNonlinearityPF(Nonideality, LinearityNonpreserving):
         I = utils.add_I_BL(I_ind)
 
         return I, I_ind
+
+    def k_V(self):
+        return self.k_V_param
+
+    def label(self):
+        return f"IVNL_PF:{self.ln_c_params[0]:.3g}_{self.ln_c_params[1]:.3g}_{self.ln_c_params[2]:.3g}_{self.ln_d_times_perm_params[0]:.3g}_{self.ln_d_times_perm_params[1]:.3g}_{self.ln_d_times_perm_params[2]:.3g}"
 
 
 class StuckAt(Nonideality, LinearityPreserving):
