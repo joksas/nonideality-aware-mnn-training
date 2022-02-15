@@ -168,18 +168,19 @@ def edge_states(sorted_resistances, ratio):
 
 
 def pf_relationship(
-    V, I
+    V, I, voltage_step=0.005, ref_voltage=0.1
 ) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64], npt.NDArray[np.float64]]:
     num_curves = V.shape[0]
     resistances = np.zeros(num_curves)
     c = np.zeros(num_curves)
     d_times_perm = np.zeros(num_curves)
+    ref_idx = int(ref_voltage / voltage_step)
 
     for idx in range(num_curves):
         v = V[idx, :]
         i = I[idx, :]
 
-        r = v[20] / i[20]
+        r = v[ref_idx] / i[ref_idx]
         resistances[idx] = r
 
         popt, _ = curve_fit(nonidealities.IVNonlinearityPF.model_fitting, v, i, p0=[1e-5, 1e-16])
