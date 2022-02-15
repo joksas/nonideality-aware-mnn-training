@@ -159,9 +159,9 @@ class IVNonlinearityPF(Nonideality, LinearityNonpreserving):
         c = tf.math.exp(ln_c)
 
         ln_d_times_perm = utils.linear_fit(tf.math.log(R), *self.ln_d_times_perm_params)
-        d_time_perm = tf.math.exp(ln_d_times_perm)
+        d_times_perm = tf.math.exp(ln_d_times_perm)
 
-        I_ind = self.model(V, c, d_time_perm)
+        I_ind = self.model(V, c, d_times_perm)
 
         I = utils.add_I_BL(I_ind)
 
