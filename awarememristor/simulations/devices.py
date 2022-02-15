@@ -66,6 +66,13 @@ def SiO_x(is_high_nonlinearity: bool) -> dict[str, Any]:
     }
 
 
+def SiO_x_pf(is_high_nonlinearity: bool) -> dict[str, Any]:
+    return {
+        **_SiO_x_G_pf(is_high_nonlinearity),
+        **_SiO_x_nonidealities_pf(is_high_nonlinearity),
+    }
+
+
 def stuck_off() -> dict[str, Any]:
     G = _SiO_x_G(True)
     return {
