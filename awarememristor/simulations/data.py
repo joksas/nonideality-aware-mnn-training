@@ -154,6 +154,19 @@ def linregress_params(x, y):
     return result.slope, result.intercept, std
 
 
+def SiO_x_G_on_G_off_ratio() -> float:
+    return 5.0
+
+
+def edge_states(sorted_resistances, ratio):
+    low_idx = np.searchsorted(sorted_resistances, sorted_resistances[0] * ratio)
+    low_resistances = sorted_resistances[:low_idx]
+    high_idx = np.searchsorted(sorted_resistances, sorted_resistances[-1] / ratio)
+    high_resistances = sorted_resistances[high_idx + 1 :]
+
+    return low_resistances, high_resistances
+
+
 def pf_relationship(
     V, I
 ) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64], npt.NDArray[np.float64]]:
@@ -177,12 +190,19 @@ def pf_relationship(
 
 
 def pf_params(
-    data, is_high_resistance: bool
-) -> tuple[tuple[float, float, float], tuple[float, float, float]]:
+    data, is_high_resistance: bool, ratio: float
+) -> tuple[float, float, tuple[float, float, float], tuple[float, float, float]]:
     V, I = all_SiO_x_curves(data, clean_data=True)
     resistances, c, d_times_perm = pf_relationship(V, I)
-
     resistances, c, d_times_perm = utils.sort_multiple(resistances, c, d_times_perm)
+
+    low_resistances, high_resistances = edge_states(resistances, ratio)
+    if is_high_resistance:
+        G_min = 1 / high_resistances[-1]
+        G_max = G_min * ratio
+    else:
+        G_max = 1 / low_resistances[0]
+        G_min = G_max / ratio
 
     ln_resistances = np.log(resistances)
     ln_d_times_perm = np.log(d_times_perm)
@@ -205,7 +225,7 @@ def pf_params(
     # ln(d) vs ln(resistances)
     ln_d_times_perm_params = linregress_params(x, y)
 
-    return ln_c_params, ln_d_times_perm_params
+    return G_min, G_max, ln_c_params, ln_d_times_perm_params
 
 
 def load_Ta_HfO2():
