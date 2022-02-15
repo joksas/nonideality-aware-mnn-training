@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 
 import numpy as np
+import numpy.typing as npt
 import scipy.constants as const
 import tensorflow as tf
 import tensorflow_probability as tfp
@@ -140,6 +141,16 @@ class IVNonlinearityPF(Nonideality, LinearityNonpreserving):
                 / (const.Boltzmann * (const.zero_Celsius + 20.0))
             )
         )
+
+    @staticmethod
+    def model_fitting(
+        V: npt.NDArray[np.float], c: float, d_times_perm: float
+    ) -> npt.NDArray[np.float]:
+        """A helper function for fitting parameters using SciPy."""
+        V = tf.constant(V)
+        I = IVNonlinearityPF.model(V, c, d_times_perm)
+        I = I.numpy()[:, 0]
+        return I
 
     def compute_I(self, V, G):
         R = 1 / G

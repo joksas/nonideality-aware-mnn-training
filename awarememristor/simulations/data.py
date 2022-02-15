@@ -7,7 +7,13 @@ import numpy.typing as npt
 import openpyxl
 import pandas as pd
 import requests
+import scipy.constants as const
 from scipy.io import loadmat
+from scipy.optimize import curve_fit
+from scipy.stats import levene, linregress, probplot
+
+from awarememristor.crossbar import nonidealities
+from awarememristor.simulations import utils
 
 
 def load_SiO_x_multistate() -> np.ndarray:
@@ -84,7 +90,7 @@ def low_high_n_SiO_x_curves(data):
     # Arbitrary, but 11 results in a similar G_on/G_off ratio.
     NUM_LOW_N_CURVES = 11
 
-    voltages, currents = all_SiO_x_curves(data)
+    voltages, currents = all_SiO_x_curves(data, clean_data=False)
 
     num_points = voltages.shape[1]
     half_voltage_idx = int(num_points / 2)
@@ -138,6 +144,68 @@ def low_high_n_SiO_x_vals(data, is_high_nonlinearity):
     G_on = G_at_half_voltage(voltage_curves[0, :], current_curves[0, :])
     G_off = G_at_half_voltage(voltage_curves[-1, :], current_curves[-1, :])
     return G_off, G_on, n_avg, n_std
+
+
+def linregress_params(x, y):
+    result = linregress(x, y)
+    y_pred = result.slope * x + result.intercept
+    residuals = y - y_pred
+    std = np.std(residuals, ddof=1)
+    return result.slope, result.intercept, std
+
+
+def pf_relationship(
+    V, I
+) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64], npt.NDArray[np.float64]]:
+    num_curves = V.shape[0]
+    resistances = np.zeros(num_curves)
+    c = np.zeros(num_curves)
+    d_times_perm = np.zeros(num_curves)
+
+    for idx in range(num_curves):
+        v = V[idx, :]
+        i = I[idx, :]
+
+        r = v[20] / i[20]
+        resistances[idx] = r
+
+        popt, _ = curve_fit(nonidealities.IVNonlinearityPF.model_fitting, v, i, p0=[1e-5, 1e-16])
+        c[idx] = popt[0]
+        d_times_perm[idx] = popt[1]
+
+    return resistances, c, d_times_perm
+
+
+def pf_params(
+    data, is_high_resistance: bool
+) -> tuple[tuple[float, float, float], tuple[float, float, float]]:
+    V, I = all_SiO_x_curves(data, clean_data=True)
+    resistances, c, d_times_perm = pf_relationship(V, I)
+
+    resistances, c, d_times_perm = utils.sort_multiple(resistances, c, d_times_perm)
+
+    ln_resistances = np.log(resistances)
+    ln_d_times_perm = np.log(d_times_perm)
+    ln_c = np.log(c)
+
+    # ln(c) vs ln(resistances)
+    ln_c_params = linregress_params(ln_resistances, ln_c)
+
+    # Separate data into before and after the conductance quantum.
+    sep_idx = np.searchsorted(
+        resistances, const.physical_constants["inverse of conductance quantum"][0]
+    )
+    if is_high_resistance:
+        x = ln_resistances[sep_idx:]
+        y = ln_d_times_perm[sep_idx:]
+    else:
+        x = ln_resistances[:sep_idx]
+        y = ln_d_times_perm[:sep_idx]
+
+    # ln(d) vs ln(resistances)
+    ln_d_times_perm_params = linregress_params(x, y)
+
+    return ln_c_params, ln_d_times_perm_params
 
 
 def load_Ta_HfO2():

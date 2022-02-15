@@ -1,8 +1,10 @@
 from typing import Any
 
 from awarememristor.crossbar.nonidealities import (D2DLognormal,
-                                                   IVNonlinearity, Nonideality,
-                                                   StuckAtGOff, StuckAtGOn,
+                                                   IVNonlinearity,
+                                                   IVNonlinearityPF,
+                                                   Nonideality, StuckAtGOff,
+                                                   StuckAtGOn,
                                                    StuckDistribution)
 from awarememristor.simulations import data
 
@@ -34,6 +36,15 @@ def _SiO_x_nonidealities(is_high_nonlinearity: bool) -> dict[str, list[Nonideali
     V_ref = SiO_x_V_ref()["V_ref"]
     return {
         "nonidealities": [IVNonlinearity(V_ref, float(n_avg), float(n_std))],
+    }
+
+
+def _SiO_x_nonidealities_pf(is_high_resistance: bool) -> dict[str, list[Nonideality]]:
+    exp_data = data.load_SiO_x_multistate()
+    ln_c_params, ln_d_times_perm_params = data.pf_params(exp_data, is_high_resistance)
+    V_ref = SiO_x_V_ref()["V_ref"]
+    return {
+        "nonidealities": [IVNonlinearityPF(2 * V_ref, ln_c_params, ln_d_times_perm_params)],
     }
 
 
