@@ -169,7 +169,13 @@ def edge_states(sorted_resistances, ratio):
 
 def pf_relationship(
     V, I, voltage_step=0.005, ref_voltage=0.1
-) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64], npt.NDArray[np.float64]]:
+) -> tuple[
+    npt.NDArray[np.float64],
+    npt.NDArray[np.float64],
+    npt.NDArray[np.float64],
+    npt.NDArray[np.float64],
+    npt.NDArray[np.float64],
+]:
     num_curves = V.shape[0]
     resistances = np.zeros(num_curves)
     c = np.zeros(num_curves)
@@ -187,15 +193,16 @@ def pf_relationship(
         c[idx] = popt[0]
         d_times_perm[idx] = popt[1]
 
-    return resistances, c, d_times_perm
+    resistances, c, d_times_perm, V, _ = utils.sort_multiple(resistances, c, d_times_perm, V, I)
+
+    return resistances, c, d_times_perm, V, I
 
 
 def pf_params(
     data, is_high_resistance: bool, ratio: float
 ) -> tuple[float, float, tuple[float, float, float], tuple[float, float, float]]:
     V, I = all_SiO_x_curves(data, clean_data=True)
-    resistances, c, d_times_perm = pf_relationship(V, I)
-    resistances, c, d_times_perm = utils.sort_multiple(resistances, c, d_times_perm)
+    resistances, c, d_times_perm, _, _ = pf_relationship(V, I)
 
     low_resistances, high_resistances = edge_states(resistances, ratio)
     if is_high_resistance:
