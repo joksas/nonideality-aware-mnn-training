@@ -1,6 +1,3 @@
-"""
-Tests of functions of crossbar.nonlinear_IV
-"""
 import pytest
 import tensorflow as tf
 

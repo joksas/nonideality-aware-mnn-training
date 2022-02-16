@@ -14,9 +14,11 @@ nonideality_label_testdata = [
     ),
     (
         iterator.Stage(
-            nonidealities=[nonidealities.IVNonlinearity(0.25, 1.53, 0.625)],
+            nonidealities=[
+                nonidealities.IVNonlinearityPF(0.5, (-1.0, -2.0, 1.5), (-5.0, -10.0, 0.0)),
+            ],
         ),
-        "IVNL:1.53_0.625",
+        "IVNL_PF:-1_-2_1.5_-5_-10_0",
     ),
     (
         iterator.Stage(
@@ -27,11 +29,11 @@ nonideality_label_testdata = [
     (
         iterator.Stage(
             nonidealities=[
-                nonidealities.IVNonlinearity(0.25, 1.530, 0.123),
+                nonidealities.IVNonlinearityPF(0.5, (-1.0, -2.0, 1.5), (-5.0, -10.0, 0.0)),
                 nonidealities.StuckAt(1.2344, 0.06341),
             ]
         ),
-        "IVNL:1.53_0.123+Stuck:1.23_0.0634",
+        "IVNL_PF:-1_-2_1.5_-5_-10_0+Stuck:1.23_0.0634",
     ),
 ]
 
@@ -45,7 +47,7 @@ def test_nonideality_label(nonideal_instance, expected):
 nonidealities_exception_testdata = [
     (
         [
-            nonidealities.IVNonlinearity(0.25, 3.1, 0.1203),
+            nonidealities.IVNonlinearityPF(0.5, (-1.0, -2.0, 1.5), (-5.0, -10.0, 0.0)),
             nonidealities.StuckAt(1.23, 0.0009),
             nonidealities.StuckAt(4.5, 0.1),
         ],
@@ -53,8 +55,8 @@ nonidealities_exception_testdata = [
     ),
     (
         [
-            nonidealities.IVNonlinearity(0.25, 3.1, 0.1203),
-            nonidealities.IVNonlinearity(0.25, 2.1, 0.1),
+            nonidealities.IVNonlinearityPF(0.5, (-1.0, -2.0, 1.5), (-5.0, -10.0, 0.0)),
+            nonidealities.IVNonlinearityPF(0.5, (-4.0, -2.0, 1.5), (-7.0, -10.0, 0.0)),
         ],
         "Current implementation does not support more than one linearity-nonpreserving nonideality.",
     ),
