@@ -168,17 +168,17 @@ def _HfO2_panels(fig, axes):
     utils.add_legend(
         fig,
         ncol=3,
-        bbox_to_anchor=(0.5, 0.48),
+        bbox_to_anchor=(0.5, 0.52),
         handles=handles,
     )
 
 
 def experimental_data():
-    fig = plt.figure(constrained_layout=False)
-    gs = fig.add_gridspec(3, 1, height_ratios=[0.9, 0.2, 1.0])
+    fig = plt.figure(constrained_layout=True)
+    gs = fig.add_gridspec(3, 1, height_ratios=[0.9, 0.1, 1.0])
 
-    gs_top = gs[0].subgridspec(1, 2, wspace=0.2)
-    gs_bottom = gs[2].subgridspec(1, 2, wspace=0.1)
+    gs_top = gs[0].subgridspec(1, 2, wspace=0.03)
+    gs_bottom = gs[2].subgridspec(1, 2, wspace=0.01)
 
     subplots = list(gs_top) + list(gs_bottom)
     for subplot in subplots:
