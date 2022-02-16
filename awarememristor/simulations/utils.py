@@ -1,3 +1,7 @@
+import numpy as np
+import numpy.typing as npt
+
+
 def get_training_params():
     return {
         "num_repeats": 5,
@@ -28,3 +32,11 @@ def get_num_synapses(num_neurons_lst: list[int]):
         num_synapses += (num_neurons + 1) * num_neurons_lst[idx + 1]
 
     return num_synapses
+
+
+def sort_multiple(key_lst: npt.NDArray, *other_lsts: npt.NDArray):
+    """Sorts multiple arrays based on the values of `key_lst`."""
+    sorted_idx = np.argsort(key_lst)
+    sorted_key_lst = key_lst[sorted_idx]
+    sorted_other_lsts = [other_lst[sorted_idx] for other_lst in other_lsts]
+    return sorted_key_lst, *sorted_other_lsts

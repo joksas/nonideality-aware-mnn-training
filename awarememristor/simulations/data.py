@@ -3,10 +3,17 @@ from typing import Optional
 
 import h5py
 import numpy as np
+import numpy.typing as npt
 import openpyxl
 import pandas as pd
 import requests
+import scipy.constants as const
 from scipy.io import loadmat
+from scipy.optimize import curve_fit
+from scipy.stats import levene, linregress, probplot
+
+from awarememristor.crossbar import nonidealities
+from awarememristor.simulations import utils
 
 
 def load_SiO_x_multistate() -> np.ndarray:
@@ -50,74 +57,134 @@ def load_SiO_x_switching() -> np.ndarray:
     return data
 
 
-def all_SiO_x_curves(data, max_voltage=0.5, voltage_step=0.005):
+def all_SiO_x_curves(data, max_voltage=0.5, voltage_step=0.005, clean_data=True):
     num_points = int(max_voltage / voltage_step) + 1
 
     data = data[:, :, :num_points]
+    if clean_data:
+        data = _clean_iv_data(data)
     voltages = data[1, :, :]
     currents = data[0, :, :]
 
     return voltages, currents
 
 
-def low_high_n_SiO_x_curves(data):
-    # Arbitrary, but 11 results in a similar G_on/G_off ratio.
-    NUM_LOW_N_CURVES = 11
+def _clean_iv_data(
+    data: npt.NDArray[np.float64], threshold: float = 0.1
+) -> npt.NDArray[np.float64]:
+    """Remove curves where there are unusual spikes in current."""
+    ok_rows = []
+    for idx in range(data.shape[1]):
+        i = data[0, idx, :]
+        # Second derivative; helpful to understand the smoothness of the curve.
+        d2y_dx2 = np.gradient(np.gradient(i))
+        # We care about the relative size of the spikes.
+        ratio = d2y_dx2 / np.mean(i)
+        if ratio.max() < threshold:
+            ok_rows.append(idx)
 
-    voltages, currents = all_SiO_x_curves(data)
-
-    num_points = voltages.shape[1]
-    half_voltage_idx = int(num_points / 2)
-    resistances = voltages[:, half_voltage_idx] / currents[:, half_voltage_idx]
-    indices = np.argsort(resistances)
-    resistances = resistances[indices]
-    voltages = voltages[indices, :]
-    currents = currents[indices, :]
-
-    low_n_ratio = resistances[NUM_LOW_N_CURVES - 1] / resistances[0]
-
-    high_n_R_off = resistances[-1]
-    idx = len(indices) - 2
-    while True:
-        # Stop whenever we exceed G_on/G_off ratio of low-nonlinearity region.
-        if high_n_R_off / resistances[idx] > low_n_ratio:
-            break
-        idx -= 1
-
-    low_n_voltages = voltages[:NUM_LOW_N_CURVES, :]
-    low_n_currents = currents[:NUM_LOW_N_CURVES, :]
-    high_n_voltages = voltages[idx:, :]
-    high_n_currents = currents[idx:, :]
-
-    return (low_n_voltages, low_n_currents), (high_n_voltages, high_n_currents)
+    return data[:, ok_rows, :]
 
 
-def nonlinearity_parameter(current_curve):
-    num_points = len(current_curve)
-    half_voltage_idx = int(num_points / 2)
-    return current_curve[-1] / current_curve[half_voltage_idx]
+def average_nonlinearity(voltage_curve, current_curve):
+    conductance_curve = current_curve / voltage_curve
+    nonlinearity = (
+        conductance_curve[2::2] / conductance_curve[1 : int(len(conductance_curve) / 2) + 1]
+    )
+    return np.mean(nonlinearity)
 
 
-def G_at_half_voltage(voltage_curve, current_curve):
-    num_points = len(current_curve)
-    half_voltage_idx = int(num_points / 2)
-    return current_curve[half_voltage_idx] / voltage_curve[half_voltage_idx]
+def linregress_params(x, y):
+    result = linregress(x, y)
+    y_pred = result.slope * x + result.intercept
+    residuals = y - y_pred
+    std = np.std(residuals, ddof=1)
+    return result.slope, result.intercept, std
 
 
-def low_high_n_SiO_x_vals(data, is_high_nonlinearity):
-    curves = low_high_n_SiO_x_curves(data)
-    if is_high_nonlinearity:
-        idx = 1
+def SiO_x_G_on_G_off_ratio() -> float:
+    return 5.0
+
+
+def edge_state_idxs(
+    sorted_resistances: npt.NDArray[np.float], ratio: float
+) -> tuple[npt.NDArray[np.float], npt.NDArray[np.float]]:
+    low_upper_idx = np.searchsorted(sorted_resistances, sorted_resistances[0] * ratio)
+    low_idxs = np.arange(low_upper_idx)
+    high_lower_idx = np.searchsorted(sorted_resistances, sorted_resistances[-1] / ratio)
+    high_idxs = np.arange(high_lower_idx + 1, len(sorted_resistances))
+
+    return low_idxs, high_idxs
+
+
+def pf_relationship(
+    V, I, voltage_step=0.005, ref_voltage=0.1
+) -> tuple[
+    npt.NDArray[np.float64],
+    npt.NDArray[np.float64],
+    npt.NDArray[np.float64],
+    npt.NDArray[np.float64],
+    npt.NDArray[np.float64],
+]:
+    num_curves = V.shape[0]
+    resistances = np.zeros(num_curves)
+    c = np.zeros(num_curves)
+    d_times_perm = np.zeros(num_curves)
+    ref_idx = int(ref_voltage / voltage_step)
+
+    for idx in range(num_curves):
+        v = V[idx, :]
+        i = I[idx, :]
+
+        r = v[ref_idx] / i[ref_idx]
+        resistances[idx] = r
+
+        popt, _ = curve_fit(nonidealities.IVNonlinearityPF.model_fitting, v, i, p0=[1e-5, 1e-16])
+        c[idx] = popt[0]
+        d_times_perm[idx] = popt[1]
+
+    resistances, c, d_times_perm, V, _ = utils.sort_multiple(resistances, c, d_times_perm, V, I)
+
+    return resistances, c, d_times_perm, V, I
+
+
+def pf_params(
+    data, is_high_resistance: bool, ratio: float
+) -> tuple[float, float, tuple[float, float, float], tuple[float, float, float]]:
+    V, I = all_SiO_x_curves(data, clean_data=True)
+    resistances, c, d_times_perm, _, _ = pf_relationship(V, I)
+
+    if is_high_resistance:
+        G_min = 1 / resistances[-1]
+        G_max = G_min * ratio
     else:
-        idx = 0
-    voltage_curves, current_curves = curves[idx]
+        G_max = 1 / resistances[0]
+        G_min = G_max / ratio
 
-    n = [nonlinearity_parameter(curve) for curve in current_curves]
-    n_avg, n_std = np.mean(n), np.std(n, ddof=1)
+    ln_resistances = np.log(resistances)
+    ln_d_times_perm = np.log(d_times_perm)
+    ln_c = np.log(c)
 
-    G_on = G_at_half_voltage(voltage_curves[0, :], current_curves[0, :])
-    G_off = G_at_half_voltage(voltage_curves[-1, :], current_curves[-1, :])
-    return G_off, G_on, n_avg, n_std
+    # Separate data into before and after the conductance quantum.
+    sep_idx = np.searchsorted(
+        resistances, const.physical_constants["inverse of conductance quantum"][0]
+    )
+    if is_high_resistance:
+        x = ln_resistances[sep_idx:]
+        y_1 = ln_c[sep_idx:]
+        y_2 = ln_d_times_perm[sep_idx:]
+    else:
+        x = ln_resistances[:sep_idx]
+        y_1 = ln_c[:sep_idx]
+        y_2 = ln_d_times_perm[:sep_idx]
+
+    # ln(c) vs ln(resistances)
+    ln_c_params = linregress_params(x, y_1)
+
+    # ln(d_times_perm) vs ln(resistances)
+    ln_d_times_perm_params = linregress_params(x, y_2)
+
+    return G_min, G_max, ln_c_params, ln_d_times_perm_params
 
 
 def load_Ta_HfO2():

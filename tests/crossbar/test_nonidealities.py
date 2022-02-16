@@ -1,3 +1,4 @@
+import numpy as np
 import pytest
 import tensorflow as tf
 
@@ -57,251 +58,168 @@ def test_d2d_lognormal(args, expected):
     utils.assert_tf_approx(result, expected)
 
 
-# I feel it is appropriate to use multiplication for expected tensors because
-# it is not the underlying operation that we are testing. Writing it out
-# reveals the logic behind the calculations that *should* take place - Dovydas
-iv_nonlinearity_I_ind_testdata = [
+iv_nonlinearity_pf_I_ind_testdata = [
     (
         (
-            nonidealities.IVNonlinearity(1.0, 2.0, 1e-10),
-            tf.constant(
-                [
-                    [1.0, 2.0, 3.0, 4.0],
-                    [5.0, 6.0, 7.0, 8.0],
-                ]
-            ),
-            tf.constant(
-                [
-                    [1.0, 0.0],
-                ]
-            ),
-        ),
-        tf.constant(
-            [
-                [
-                    [1.0 * 1.0, 1.0 * 2.0, 1.0 * 3.0, 1.0 * 4.0],
-                    [0.0 * 5.0, 0.0 * 6.0, 0.0 * 7.0, 0.0 * 8.0],
-                ],
-            ]
-        ),
-    ),
-    (
-        (
-            nonidealities.IVNonlinearity(2.0, 2.0, 1e-10),
-            tf.constant(
-                [
-                    [1.0, 2.0, 3.0, 4.0],
-                    [5.0, 6.0, 7.0, 8.0],
-                ]
-            ),
-            tf.constant(
-                [
-                    [1.0, 0.5],
-                ]
-            ),
-        ),
-        tf.constant(
-            [
-                [
-                    [1.0 * 1.0, 1.0 * 2.0, 1.0 * 3.0, 1.0 * 4.0],
-                    [0.5 * 5.0, 0.5 * 6.0, 0.5 * 7.0, 0.5 * 8.0],
-                ],
-            ]
-        ),
-    ),
-    (
-        (
-            nonidealities.IVNonlinearity(0.5, 4.0, 1e-10),
-            tf.constant(
-                [
-                    [1.0, 2.0, 3.0, 4.0],
-                    [5.0, 6.0, 7.0, 8.0],
-                    [9.0, 10.0, 11.0, 12.0],
-                ]
-            ),
-            tf.constant(
-                [
-                    [0.0, 0.5, 1.0],
-                ]
-            ),
-        ),
-        tf.constant(
-            [
-                [
-                    [0.0 * 1.0, 0.0 * 2.0, 0.0 * 3.0, 0.0 * 4.0],
-                    # Baseline because V_ref = 0.5
-                    [0.5 * 5.0, 0.5 * 6.0, 0.5 * 7.0, 0.5 * 8.0],
-                    # Multiplying by additional factor of 4 because 1/0.5 = 2
-                    # and n_avg = 4
-                    [0.5 * 9.0 * 4, 0.5 * 10.0 * 4, 0.5 * 11.0 * 4, 0.5 * 12.0 * 4],
-                ],
-            ]
-        ),
-    ),
-    (
-        (
-            nonidealities.IVNonlinearity(0.2, 3.0, 1e-10),
-            tf.constant(
-                [
-                    [1.0, 2.0, 3.0, 4.0],
-                    [5.0, 6.0, 7.0, 8.0],
-                ]
-            ),
-            tf.constant(
-                [
-                    [0.0, 0.2],
-                    [0.1, 0.4],
-                ]
-            ),
-        ),
-        tf.constant(
-            [
-                [
-                    [0.0 * 1.0, 0.0 * 2.0, 0.0 * 3.0, 0.0 * 4.0],
-                    # Baseline because V_ref = 0.2
-                    [0.2 * 5.0, 0.2 * 6.0, 0.2 * 7.0, 0.2 * 8.0],
-                ],
-                [
-                    # Dividing by additional factor of 3 because 0.1/0.2 =
-                    # 1/2 and n_avg = 3
-                    [
-                        0.2 * 1.0 / 3.0,
-                        0.2 * 2.0 / 3.0,
-                        0.2 * 3.0 / 3.0,
-                        0.2 * 4.0 / 3.0,
-                    ],
-                    # Multiplying by additional factor of 3 because 0.4/0.2
-                    # = 2 and n_avg = 3
-                    [
-                        0.2 * 5.0 * 3.0,
-                        0.2 * 6.0 * 3.0,
-                        0.2 * 7.0 * 3.0,
-                        0.2 * 8.0 * 3.0,
-                    ],
-                ],
-            ]
-        ),
-    ),
-    (
-        (
-            nonidealities.IVNonlinearity(0.5, 5.0, 1e-10),
-            tf.constant(
-                [
-                    [1.0, 2.0, 3.0, 4.0],
-                    [5.0, 6.0, 7.0, 8.0],
-                    [9.0, 10.0, 11.0, 12.0],
-                    [13.0, 14.0, 15.0, 16.0],
-                ]
-            ),
-            tf.constant(
-                [
-                    [-0.5, -0.25, -1.0, 0.5],
-                ]
-            ),
-        ),
-        tf.constant(
-            [
-                [
-                    # Baseline because V_ref = 0.5
-                    [-0.5 * 1.0, -0.5 * 2.0, -0.5 * 3.0, -0.5 * 4.0],
-                    # Dividing by additional factor of 5 because -0.25/-0.5
-                    # = 1/2 and n_avg = 5
-                    [
-                        -0.5 * 5.0 / 5.0,
-                        -0.5 * 6.0 / 5.0,
-                        -0.5 * 7.0 / 5.0,
-                        -0.5 * 8.0 / 5.0,
-                    ],
-                    # Multiplying by additional factor of 5 because
-                    # -1.0/-0.5 = 1/2 and n_avg = 5
-                    [
-                        -0.5 * 9.0 * 5.0,
-                        -0.5 * 10.0 * 5.0,
-                        -0.5 * 11.0 * 5.0,
-                        -0.5 * 12.0 * 5.0,
-                    ],
-                    # Baseline because V_ref = 0.5
-                    [0.5 * 13.0, 0.5 * 14.0, 0.5 * 15.0, 0.5 * 16.0],
-                ],
-            ]
-        ),
-    ),
-]
-
-
-@pytest.mark.parametrize("args,expected", iv_nonlinearity_I_ind_testdata)
-def test_iv_nonlinearity_I_ind(args, expected):
-    nonideality, G, V = args
-    _, result = nonideality.compute_I(V, G)
-    utils.assert_tf_approx(result, expected)
-
-
-iv_nonlinearity_I_testdata = [
-    (
-        (
-            nonidealities.IVNonlinearity(5.0, 2.0, 1e-10),
-            tf.constant(
-                [
-                    [1.0, 2.0, 3.0, 4.0],
-                    [5.0, 6.0, 7.0, 8.0],
-                    [9.0, 10.0, 11.0, 12.0],
-                ]
-            ),
             tf.constant(
                 [
                     [1.0, 0.0, -0.5],
                     [0.0, 0.25, 0.0],
                 ]
             ),
+            tf.constant(
+                [
+                    [1.0, 2.0, 3.0, 4.0],
+                    [5.0, 6.0, 7.0, 8.0],
+                    [9.0, 10.0, 11.0, 12.0],
+                ]
+            ),
+            tf.constant(
+                [
+                    [np.inf, np.inf, np.inf, np.inf],
+                    [np.inf, np.inf, np.inf, np.inf],
+                    [np.inf, np.inf, np.inf, np.inf],
+                ]
+            ),
         ),
-        [
-            # With {n_avg = 2, n_std = 0} the bit-line outputs should
-            # represent the vector-matrix product of voltages and
-            # conductances.
-            tf.constant(
+        # With `d_times_perm = np.inf`, currents should be produced
+        # according to Ohm's law with `c` acting as conductance.
+        tf.constant(
+            [
                 [
-                    [
-                        1.0 * 1.0 + 0.0 * 5.0 + (-0.5) * 9.0,
-                        1.0 * 2.0 + 0.0 * 6.0 + (-0.5) * 10.0,
-                        1.0 * 3.0 + 0.0 * 7.0 + (-0.5) * 11.0,
-                        1.0 * 4.0 + 0.0 * 8.0 + (-0.5) * 12.0,
-                    ],
-                    [
-                        0.0 * 1.0 + 0.25 * 5.0 + 0.0 * 9.0,
-                        0.0 * 2.0 + 0.25 * 6.0 + 0.0 * 10.0,
-                        0.0 * 3.0 + 0.25 * 7.0 + 0.0 * 11.0,
-                        0.0 * 4.0 + 0.25 * 8.0 + 0.0 * 12.0,
-                    ],
-                ]
-            ),
-            # With {n_avg = 2, n_std = 0} currents should be produced
-            # according to Ohm's law.
-            tf.constant(
+                    [1.0 * 1.0, 1.0 * 2.0, 1.0 * 3.0, 1.0 * 4.0],
+                    [0.0 * 5.0, 0.0 * 6.0, 0.0 * 7.0, 0.0 * 8.0],
+                    [-0.5 * 9.0, -0.5 * 10.0, -0.5 * 11.0, -0.5 * 12.0],
+                ],
                 [
-                    [
-                        [1.0 * 1.0, 1.0 * 2.0, 1.0 * 3.0, 1.0 * 4.0],
-                        [0.0 * 5.0, 0.0 * 6.0, 0.0 * 7.0, 0.0 * 8.0],
-                        [-0.5 * 9.0, -0.5 * 10.0, -0.5 * 11.0, -0.5 * 12.0],
-                    ],
-                    [
-                        [0.0 * 1.0, 0.0 * 2.0, 0.0 * 3.0, 0.0 * 4.0],
-                        [0.25 * 5.0, 0.25 * 6.0, 0.25 * 7.0, 0.25 * 8.0],
-                        [0.0 * 9.0, 0.0 * 10.0, 0.0 * 11.0, 0.0 * 12.0],
-                    ],
-                ]
+                    [0.0 * 1.0, 0.0 * 2.0, 0.0 * 3.0, 0.0 * 4.0],
+                    [0.25 * 5.0, 0.25 * 6.0, 0.25 * 7.0, 0.25 * 8.0],
+                    [0.0 * 9.0, 0.0 * 10.0, 0.0 * 11.0, 0.0 * 12.0],
+                ],
+            ]
+        ),
+    ),
+    (
+        (
+            tf.constant(
+                [1.0, 0.0, -0.5],
             ),
-        ],
+            0.5,
+            np.inf,
+        ),
+        # With `d_times_perm = np.inf`, currents should be produced
+        # according to Ohm's law with `c` acting as conductance.
+        tf.constant(
+            [
+                [0.5],
+                [0.0],
+                [-0.25],
+            ]
+        ),
     ),
 ]
 
 
-@pytest.mark.parametrize("args,expected", iv_nonlinearity_I_testdata)
-def test_iv_nonlinearity_I(args, expected):
-    I_exp, I_ind_exp = expected
-    nonideality, G, V = args
-    I, I_ind = nonideality.compute_I(V, G)
-    utils.assert_tf_approx(I, I_exp)
+@pytest.mark.parametrize("args,expected", iv_nonlinearity_pf_I_ind_testdata)
+def test_iv_nonlinearity_pf_I_ind(args, expected):
+    I_ind_exp = expected
+    V, c, d_times_perm = args
+    I_ind = nonidealities.IVNonlinearityPF.model(V, c, d_times_perm)
     utils.assert_tf_approx(I_ind, I_ind_exp)
+
+
+iv_nonlinearity_pf_I_testdata = [
+    (
+        (
+            nonidealities.IVNonlinearityPF(
+                0.5,
+                (-1, -2, 0),
+                (1, 1, 0),
+            ),
+            tf.constant(
+                [
+                    [1.0, 0.0],
+                    [0.0, -0.25],
+                    [1.0, 0.0],
+                ]
+            ),
+            tf.constant(
+                [
+                    [1.0, 2.0, 3.0, 4.0],
+                    [5.0, 6.0, 7.0, 8.0],
+                ]
+            ),
+        ),
+        # With `d_times_perm = np.inf`, currents should be produced
+        # according to Ohm's law with `c` acting as conductance.
+        (
+            tf.constant(
+                [
+                    [
+                        [
+                            np.exp(-2 - np.log(1 / 1)),
+                            np.exp(-2 - np.log(1 / 2)),
+                            np.exp(-2 - np.log(1 / 3)),
+                            np.exp(-2 - np.log(1 / 4)),
+                        ],
+                        [0.0, 0.0, 0.0, 0.0],
+                    ],
+                    [
+                        [0.0, 0.0, 0.0, 0.0],
+                        [
+                            -0.25 * np.exp(-2 - np.log(1 / 5)),
+                            -0.25 * np.exp(-2 - np.log(1 / 6)),
+                            -0.25 * np.exp(-2 - np.log(1 / 7)),
+                            -0.25 * np.exp(-2 - np.log(1 / 8)),
+                        ],
+                    ],
+                    [
+                        [
+                            np.exp(-2 - np.log(1 / 1)),
+                            np.exp(-2 - np.log(1 / 2)),
+                            np.exp(-2 - np.log(1 / 3)),
+                            np.exp(-2 - np.log(1 / 4)),
+                        ],
+                        [0.0, 0.0, 0.0, 0.0],
+                    ],
+                ],
+                dtype=tf.float32,
+            ),
+            tf.constant(
+                [
+                    [
+                        np.exp(-2 - np.log(1 / 1)),
+                        np.exp(-2 - np.log(1 / 2)),
+                        np.exp(-2 - np.log(1 / 3)),
+                        np.exp(-2 - np.log(1 / 4)),
+                    ],
+                    [
+                        -0.25 * np.exp(-2 - np.log(1 / 5)),
+                        -0.25 * np.exp(-2 - np.log(1 / 6)),
+                        -0.25 * np.exp(-2 - np.log(1 / 7)),
+                        -0.25 * np.exp(-2 - np.log(1 / 8)),
+                    ],
+                    [
+                        np.exp(-2 - np.log(1 / 1)),
+                        np.exp(-2 - np.log(1 / 2)),
+                        np.exp(-2 - np.log(1 / 3)),
+                        np.exp(-2 - np.log(1 / 4)),
+                    ],
+                ],
+                dtype=tf.float32,
+            ),
+        ),
+    ),
+]
+
+
+@pytest.mark.parametrize("args,expected", iv_nonlinearity_pf_I_testdata)
+def test_iv_nonlinearity_pf_I(args, expected):
+    I_ind_exp, I_exp = expected
+    nonideality, V, G = args
+    I, I_ind = nonideality.compute_I(V, G)
+    utils.assert_tf_approx(I_ind, I_ind_exp)
+    utils.assert_tf_approx(I, I_exp)
 
 
 stuck_at_testdata = [

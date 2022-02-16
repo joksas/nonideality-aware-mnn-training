@@ -236,7 +236,7 @@ def _numpify(x):
     return x
 
 
-def plot_scatter(axis, x, y, color, alpha=1.0, random_proportion=None):
+def plot_scatter(axis, x, y, color, alpha=1.0, random_proportion=None, scale=1.0):
     x = _numpify(x)
     y = _numpify(y)
     x = x.flatten()
@@ -253,7 +253,7 @@ def plot_scatter(axis, x, y, color, alpha=1.0, random_proportion=None):
         y,
         color=color,
         marker="x",
-        s=Config.MARKER_SIZE,
+        s=scale * Config.MARKER_SIZE,
         linewidth=Config.MARKER_SIZE,
         alpha=alpha,
     )
@@ -376,14 +376,26 @@ def axis_label(var_name: str, prepend: str = None, unit_prefix: str = "") -> str
         label = f"voltage ({unit_prefix}V)"
     elif var_name == "current":
         label = f"current ({unit_prefix}A)"
-    elif var_name == "nonlinearity-parameter":
-        label = "nonlinearity parameter"
+    elif var_name == "mean-nonlinearity":
+        label = "mean nonlinearity"
     elif var_name == "pulse-number":
         label = "pulse number"
     elif var_name == "g-plus":
         label = rf"$G_{{+}}$ ({unit_prefix}S)"
     elif var_name == "g-minus":
         label = rf"$G_{{-}}$ ({unit_prefix}S)"
+    elif var_name == "ln-R-SI":
+        label = r"$\ln(R_\mathrm{SI})$"
+    elif var_name == "ln-c-SI":
+        label = r"$\ln(C_\mathrm{SI})$"
+    elif var_name == "ln-d-times-perm-SI":
+        label = r"$\ln(d_\mathrm{SI} \epsilon_\mathrm{SI})$"
+    elif var_name == "residuals":
+        label = r"residuals"
+    elif var_name == "ordered-residuals":
+        label = r"ordered residuals"
+    elif var_name == "theoretical-normal-quartiles":
+        label = "theoretical normal quartiles"
     else:
         raise ValueError(f'Unrecognised variable name "{var_name}".')
 
@@ -548,3 +560,13 @@ def add_arrow(
         arrowprops=dict(linewidth=linewidth, arrowstyle="->", color=color),
         size=size,
     )
+
+
+def power_notation(x: float, num_decimal_pt: int = 2):
+    """Write a number in scientific notation with a power of 10 in LaTeX.
+
+    For example, 2.546e-3 becomes `2.55 \times 10^{-3}`.
+    """
+    s = f"{x:0.{num_decimal_pt:d}e}"
+    m, e = s.split("e")
+    return f"{m:s} \\times 10^{{{int(e):d}}}"

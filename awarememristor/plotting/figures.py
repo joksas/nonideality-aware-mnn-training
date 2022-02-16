@@ -1,6 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import scipy.constants as const
+import scipy.stats as stats
 from matplotlib import rc
 from matplotlib.lines import Line2D
 
@@ -14,21 +16,43 @@ def _SiO_x_panels(fig, axes):
     data = simulations.data.load_SiO_x_multistate()
 
     N = 1000
+    v_min = 1.0
+    v_max = 1.5
     palette = plt.cm.inferno(np.linspace(0, 1, N))
     min_voltage, max_voltage = 0.0, 0.5
 
-    curves = simulations.data.low_high_n_SiO_x_curves(data)
-    for axis, (voltages, currents) in zip(axes, curves):
-        for idx in range(voltages.shape[0]):
-            voltage_curve = voltages[idx, :]
-            current_curve = currents[idx, :]
-            n = simulations.data.nonlinearity_parameter(current_curve)
-            palette_idx = int(np.floor(N * (n - 2) / 2))
+    exp_data = simulations.data.load_SiO_x_multistate()
+    V_full, I_full = simulations.data.all_SiO_x_curves(exp_data, clean_data=True)
+    (
+        resistances,
+        _,
+        _,
+        V_full,
+        I_full,
+    ) = simulations.data.pf_relationship(V_full, I_full)
+    low_idxs, high_idxs = simulations.data.edge_state_idxs(
+        resistances, simulations.data.SiO_x_G_on_G_off_ratio()
+    )
+
+    for axis, is_high_resistance in zip(axes, [False, True]):
+        if is_high_resistance:
+            idxs = high_idxs
+        else:
+            idxs = low_idxs
+
+        V = V_full[idxs, :]
+        I = I_full[idxs, :]
+
+        for idx in range(V.shape[0]):
+            voltage_curve = V[idx, :]
+            current_curve = I[idx, :]
+            nonlinearity = simulations.data.average_nonlinearity(voltage_curve, current_curve)
+            palette_idx = int(np.floor(N * (nonlinearity - v_min) / (v_max - v_min)))
             axis.plot(
                 voltage_curve,
                 current_curve,
-                color=palette[palette_idx],
                 linewidth=utils.Config.LINEWIDTH,
+                color=palette[palette_idx],
             )
 
         axis.set_xlim([min_voltage, max_voltage])
@@ -37,10 +61,10 @@ def _SiO_x_panels(fig, axes):
         axis.ticklabel_format(axis="y", scilimits=(-1, 1))
         axis.yaxis.get_offset_text().set_fontsize(utils.Config.TICKS_FONT_SIZE)
 
-    sm = plt.cm.ScalarMappable(cmap="inferno", norm=plt.Normalize(vmin=2, vmax=4))
+    sm = plt.cm.ScalarMappable(cmap="inferno", norm=plt.Normalize(vmin=v_min, vmax=v_max))
     cbar = fig.colorbar(sm, ax=axes)
     cbar.set_label(
-        label=utils.axis_label("nonlinearity-parameter"),
+        label=utils.axis_label("mean-nonlinearity"),
         fontsize=utils.Config.AXIS_LABEL_FONT_SIZE,
         rotation=-90,
         va="bottom",
@@ -146,17 +170,17 @@ def _HfO2_panels(fig, axes):
     utils.add_legend(
         fig,
         ncol=3,
-        bbox_to_anchor=(0.5, 0.515),
+        bbox_to_anchor=(0.5, 0.52),
         handles=handles,
     )
 
 
 def experimental_data():
     fig = plt.figure(constrained_layout=True)
-    gs = fig.add_gridspec(3, 1, height_ratios=[1.0, 0.08, 1.1])
+    gs = fig.add_gridspec(3, 1, height_ratios=[0.9, 0.1, 1.0])
 
     gs_top = gs[0].subgridspec(1, 2, wspace=0.03)
-    gs_bottom = gs[2].subgridspec(1, 2, wspace=0.03)
+    gs_bottom = gs[2].subgridspec(1, 2, wspace=0.01)
 
     subplots = list(gs_top) + list(gs_bottom)
     for subplot in subplots:
@@ -172,6 +196,107 @@ def experimental_data():
     _HfO2_panels(fig, axes[[2, 3]])
 
     utils.save_fig(fig, "experimental-data")
+
+
+def pf_param_fits(is_d_times_perm: bool = False):
+    fig = plt.figure(constrained_layout=True)
+    gs = fig.add_gridspec(3, 1)
+
+    gs_top = gs[0].subgridspec(1, 1)
+    gs_middle = gs[1].subgridspec(1, 2)
+    gs_bottom = gs[2].subgridspec(1, 2)
+
+    subplots = list(gs_top) + list(gs_middle) + list(gs_bottom)
+    for subplot in subplots:
+        fig.add_subplot(subplot)
+
+    fig, axes = utils.fig_init(2, 1.0, custom_fig=fig)
+
+    exp_data = simulations.data.load_SiO_x_multistate()
+    V, I = simulations.data.all_SiO_x_curves(exp_data, clean_data=True)
+    resistances, c, d_times_perm, _, _ = simulations.data.pf_relationship(V, I)
+    # Separate data into before and after the conductance quantum.
+    sep_idx = np.searchsorted(
+        resistances, const.physical_constants["inverse of conductance quantum"][0]
+    )
+
+    colors = utils.color_dict()
+
+    for is_high_resistance in [False, True]:
+        _, _, ln_c_params, ln_d_times_perm_params = simulations.data.pf_params(
+            exp_data, is_high_resistance, simulations.data.SiO_x_G_on_G_off_ratio()
+        )
+
+        if is_high_resistance:
+            idxs = np.arange(sep_idx, len(resistances))
+            color = colors["vermilion"]
+            residual_axis = axes[2]
+            normal_plot_axis = axes[4]
+        else:
+            idxs = np.arange(sep_idx)
+            color = colors["blue"]
+            residual_axis = axes[1]
+            normal_plot_axis = axes[3]
+
+        x = np.log(resistances[idxs])
+
+        if is_d_times_perm:
+            params = ln_d_times_perm_params
+            y = np.log(d_times_perm[idxs])
+        else:
+            params = ln_c_params
+            y = np.log(c[idxs])
+
+        y_fit = params[0] * x + params[1]
+        utils.plot_scatter(axes[0], x, y, color, scale=10)
+        axes[0].plot(
+            x,
+            y_fit,
+            linewidth=utils.Config.LINEWIDTH,
+            color=color,
+        )
+
+        residuals = y - y_fit
+        utils.plot_scatter(residual_axis, x, residuals, color, scale=10)
+        residual_axis.plot(
+            x,
+            np.zeros_like(x),
+            linewidth=utils.Config.LINEWIDTH,
+            color=color,
+        )
+        max_residual = 1.1 * np.max(np.abs(residuals))
+        residual_axis.set_ylim(-max_residual, max_residual)
+        residual_axis.set_xlabel(utils.axis_label("ln-R-SI"))
+
+        (osm, osr), (slope, intercept, _) = stats.probplot(residuals)
+        quantiles = np.linspace(-2.0, 2.0, 200)
+        normal_plot_axis.plot(
+            quantiles,
+            slope * quantiles + intercept,
+            linewidth=utils.Config.LINEWIDTH,
+            color=colors["bluish-green"],
+        )
+        utils.plot_scatter(normal_plot_axis, osm, osr, color, scale=10)
+        normal_plot_axis.set_xlim(-2.0, 2.0)
+        normal_plot_axis.set_ylim(-max_residual, max_residual)
+        normal_plot_axis.set_xlabel(utils.axis_label("theoretical-normal-quartiles"))
+
+    axes[0].set_xlabel(utils.axis_label("ln-R-SI"))
+    if is_d_times_perm:
+        axes[0].set_ylabel(utils.axis_label("ln-d-times-perm-SI"))
+    else:
+        axes[0].set_ylabel(utils.axis_label("ln-c-SI"))
+
+    axes[1].set_ylabel(utils.axis_label("residuals"))
+    axes[3].set_ylabel(utils.axis_label("ordered-residuals"))
+
+    title = "pf-fits"
+    if is_d_times_perm:
+        title += "-d-times-perm"
+    else:
+        title += "-c"
+
+    utils.save_fig(fig, title)
 
 
 def iv_nonlinearity_training(metric="error"):

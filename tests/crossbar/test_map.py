@@ -1,6 +1,3 @@
-"""
-Tests of functions of crossbar.nonlinear_IV
-"""
 import pytest
 import tensorflow as tf
 
@@ -173,15 +170,8 @@ ideal_dpe_testdata = [
         tf.constant(1.0),
     ],
 )
-@pytest.mark.parametrize(
-    "is_ideal",
-    [
-        True,
-        False,
-    ],
-)
 @pytest.mark.parametrize("args,expected", ideal_dpe_testdata)
-def test_ideal_dpe(args, expected, G_off, G_on, V_ref, is_ideal):
+def test_ideal_dpe(args, expected, G_off, G_on, V_ref):
     x = args["x"]
     w = args["w"]
 
@@ -190,11 +180,7 @@ def test_ideal_dpe(args, expected, G_off, G_on, V_ref, is_ideal):
 
     G, max_weight = crossbar.map.w_to_G(w, G_off, G_on)
 
-    if is_ideal:
-        I = crossbar.ideal.compute_I(V, G)
-    else:
-        nonideality = crossbar.nonidealities.IVNonlinearity(V_ref, 2.0, 1e-10)
-        I, _ = nonideality.compute_I(V, G)
+    I = crossbar.ideal.compute_I(V, G)
 
     y = crossbar.map.I_to_y(I, k_V, max_weight, G_on, G_off)
 
