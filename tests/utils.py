@@ -2,8 +2,8 @@ import numpy as np
 import tensorflow as tf
 
 
-def assert_tf_approx(a, b):
-    tf.debugging.assert_near(a, b, rtol=1.0e-6, atol=1.0e-6)
+def assert_tf_approx(a, b, tol=1.0e-6):
+    tf.debugging.assert_near(a, b, rtol=tol, atol=tol)
     assert a.shape == b.shape
 
 
