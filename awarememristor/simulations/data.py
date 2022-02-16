@@ -225,22 +225,24 @@ def pf_params(
     ln_d_times_perm = np.log(d_times_perm)
     ln_c = np.log(c)
 
-    # ln(c) vs ln(resistances)
-    ln_c_params = linregress_params(ln_resistances, ln_c)
-
     # Separate data into before and after the conductance quantum.
     sep_idx = np.searchsorted(
         resistances, const.physical_constants["inverse of conductance quantum"][0]
     )
     if is_high_resistance:
         x = ln_resistances[sep_idx:]
-        y = ln_d_times_perm[sep_idx:]
+        y_1 = ln_c[sep_idx:]
+        y_2 = ln_d_times_perm[sep_idx:]
     else:
         x = ln_resistances[:sep_idx]
-        y = ln_d_times_perm[:sep_idx]
+        y_1 = ln_c[:sep_idx]
+        y_2 = ln_d_times_perm[:sep_idx]
 
-    # ln(d) vs ln(resistances)
-    ln_d_times_perm_params = linregress_params(x, y)
+    # ln(c) vs ln(resistances)
+    ln_c_params = linregress_params(x, y_1)
+
+    # ln(d_times_perm) vs ln(resistances)
+    ln_d_times_perm_params = linregress_params(x, y_2)
 
     return G_min, G_max, ln_c_params, ln_d_times_perm_params
 
