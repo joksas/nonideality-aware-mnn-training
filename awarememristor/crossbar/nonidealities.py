@@ -137,9 +137,7 @@ class IVNonlinearityPF(Nonideality, LinearityNonpreserving):
             * tf.math.exp(
                 const.elementary_charge
                 * tf.math.sqrt(
-                    tf.math.maximum(
-                        const.elementary_charge * V_expanded / (const.pi * d_times_perm), 1e-18
-                    )
+                    const.elementary_charge * V_expanded / (const.pi * d_times_perm) + 1e-18
                 )
                 / (const.Boltzmann * (const.zero_Celsius + 20.0))
             )
