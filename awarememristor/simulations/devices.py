@@ -12,12 +12,12 @@ def ideal() -> dict[str, Any]:
     return {"G_off": None, "G_on": None, "nonidealities": []}
 
 
-def SiO_x_V_ref() -> dict[str, float]:
+def SiO_x_k_V() -> dict[str, float]:
     exp_data = data.load_SiO_x_multistate()
-    (voltages, _), (_, _) = data.low_high_n_SiO_x_curves(exp_data)
-    V_ref = voltages[0][-1] / 2
+    voltages, _ = data.all_SiO_x_curves(exp_data)
+    k_V = voltages[0][-1]
 
-    return {"V_ref": float(V_ref)}
+    return {"k_V": float(k_V)}
 
 
 def _SiO_x_G(is_high_resistance: bool) -> dict[str, float]:
@@ -34,9 +34,9 @@ def _SiO_x_nonidealities(is_high_resistance: bool) -> dict[str, list[Nonideality
     _, _, ln_c_params, ln_d_times_perm_params = data.pf_params(
         exp_data, is_high_resistance, data.SiO_x_G_on_G_off_ratio()
     )
-    V_ref = SiO_x_V_ref()["V_ref"]
+    k_V = SiO_x_k_V()["k_V"]
     return {
-        "nonidealities": [IVNonlinearityPF(2 * V_ref, ln_c_params, ln_d_times_perm_params)],
+        "nonidealities": [IVNonlinearityPF(k_V, ln_c_params, ln_d_times_perm_params)],
     }
 
 

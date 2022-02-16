@@ -164,18 +164,17 @@ ideal_dpe_testdata = [
     ],
 )
 @pytest.mark.parametrize(
-    "V_ref",
+    "k_V",
     [
-        tf.constant(0.2),
-        tf.constant(1.0),
+        tf.constant(0.4),
+        tf.constant(2.0),
     ],
 )
 @pytest.mark.parametrize("args,expected", ideal_dpe_testdata)
-def test_ideal_dpe(args, expected, G_off, G_on, V_ref):
+def test_ideal_dpe(args, expected, G_off, G_on, k_V):
     x = args["x"]
     w = args["w"]
 
-    k_V = 2 * V_ref
     V = crossbar.map.x_to_V(x, k_V)
 
     G, max_weight = crossbar.map.w_to_G(w, G_off, G_on)

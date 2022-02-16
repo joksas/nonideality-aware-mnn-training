@@ -85,7 +85,7 @@ class Stage(Iterable):
         # Except for power consumption, `k_V` makes no difference for
         # linearity-preserving nonidealities, thus using the same value as for
         # SiO_x devices.
-        return 2 * devices.SiO_x_V_ref()["V_ref"]
+        return devices.SiO_x_k_V()["k_V"]
 
     def validate_nonidealities(self) -> None:
         """Multiple linearity-preserving nonidealities or multiple
