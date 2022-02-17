@@ -299,6 +299,54 @@ def pf_param_fits(is_d_times_perm: bool = False):
     utils.save_fig(fig, title)
 
 
+def pf_param_correlation():
+    fig, axes = utils.fig_init(2, 0.45, fig_shape=(1, 2))
+
+    exp_data = simulations.data.load_SiO_x_multistate()
+    V, I = simulations.data.all_SiO_x_curves(exp_data, clean_data=True)
+    resistances, c, d_times_perm, _, _ = simulations.data.pf_relationship(V, I)
+    # Separate data into before and after the conductance quantum.
+    sep_idx = np.searchsorted(
+        resistances, const.physical_constants["inverse of conductance quantum"][0]
+    )
+
+    colors = utils.color_dict()
+
+    for is_high_resistance in [False, True]:
+        _, _, ln_c_params, ln_d_times_perm_params = simulations.data.pf_params(
+            exp_data, is_high_resistance, simulations.data.SiO_x_G_on_G_off_ratio()
+        )
+
+        if is_high_resistance:
+            axis = axes[1]
+            idxs = np.arange(sep_idx, len(resistances))
+            color = utils.color_dict()["vermilion"]
+        else:
+            axis = axes[0]
+            idxs = np.arange(sep_idx)
+            color = utils.color_dict()["blue"]
+
+        x = np.log(resistances[idxs])
+
+        params_1 = ln_c_params
+        y_1 = np.log(c[idxs])
+        params_2 = ln_d_times_perm_params
+        y_2 = np.log(d_times_perm[idxs])
+
+        y_fit_1 = params_1[0] * x + params_1[1]
+        residuals_1 = y_1 - y_fit_1
+
+        y_fit_2 = params_2[0] * x + params_2[1]
+        residuals_2 = y_2 - y_fit_2
+
+        utils.plot_scatter(axis, residuals_1, residuals_2, color, scale=10)
+        axis.set_xlabel(utils.axis_label("ln-c-SI-residuals"))
+
+    axes[0].set_ylabel(utils.axis_label("ln-d-times-perm-SI-residuals"))
+
+    utils.save_fig(fig, "pf-param-correlation")
+
+
 def iv_nonlinearity_training(metric="error"):
     fig, axes = utils.fig_init(2, 0.55, fig_shape=(2, 3), sharex=True, sharey=True)
 

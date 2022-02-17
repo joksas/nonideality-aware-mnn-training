@@ -390,6 +390,10 @@ def axis_label(var_name: str, prepend: str = None, unit_prefix: str = "") -> str
         label = r"$\ln(C_\mathrm{SI})$"
     elif var_name == "ln-d-times-perm-SI":
         label = r"$\ln(d_\mathrm{SI} \epsilon_\mathrm{SI})$"
+    elif var_name == "ln-d-times-perm-SI-residuals":
+        label = r"$\ln(d_\mathrm{SI} \epsilon_\mathrm{SI})$ residuals"
+    elif var_name == "ln-c-SI-residuals":
+        label = r"$\ln(d_\mathrm{SI} \epsilon_\mathrm{SI})$ residuals"
     elif var_name == "residuals":
         label = r"residuals"
     elif var_name == "ordered-residuals":
