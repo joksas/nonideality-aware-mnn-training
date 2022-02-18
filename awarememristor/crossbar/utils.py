@@ -1,4 +1,5 @@
 import tensorflow as tf
+import tensorflow_probability as tfp
 
 
 def tf_log2(x: tf.Tensor) -> tf.Tensor:
@@ -50,3 +51,20 @@ def linregress_prediction(x: tf.Tensor, slope: float, intercept: float, res_std:
     fit = slope * x + intercept
     deviations = tf.random.normal(x.shape, mean=0.0, stddev=res_std)
     return fit + deviations
+
+
+def multivariate_correlated_regression(
+    x: tf.Tensor, slopes: list[float], intercepts: list[float], cov_matrix: tf.Tensor
+) -> tf.Tensor:
+    """Return prediction using a linear fit with random normal deviations that
+    may be correlated."""
+    fit = tf.einsum("i...,j->i...j", x, tf.constant(slopes)) + tf.einsum(
+        "i...,j->i...j", tf.ones(x.shape), tf.constant(intercepts)
+    )
+    deviations = tfp.distributions.MultivariateNormalTriL(
+        loc=0.0,
+        scale_tril=tf.linalg.cholesky(cov_matrix),
+    ).sample(sample_shape=x.shape)
+    deviated_fit = fit + deviations
+    deviated_fit = tf.einsum("...i->i...", deviated_fit)
+    return deviated_fit
