@@ -8,6 +8,8 @@ import openpyxl
 import pandas as pd
 import requests
 import scipy.constants as const
+import tensorflow as tf
+import tensorflow_probability as tfp
 from scipy.io import loadmat
 from scipy.optimize import curve_fit
 from scipy.stats import levene, linregress, probplot
@@ -94,12 +96,28 @@ def average_nonlinearity(voltage_curve, current_curve):
     return np.mean(nonlinearity)
 
 
-def linregress_params(x, y):
-    result = linregress(x, y)
-    y_pred = result.slope * x + result.intercept
-    residuals = y - y_pred
-    std = np.std(residuals, ddof=1)
-    return result.slope, result.intercept, std
+def multivariate_linregress_params(
+    x: tf.Tensor, *y: tf.Tensor
+) -> tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
+    slopes: list[float] = []
+    intercepts: list[float] = []
+    residuals_lst: list[float] = []
+
+    for y_i in y:
+        result = linregress(x, y_i)
+        slopes.append(result.slope)
+        intercepts.append(result.intercept)
+
+        y_pred = result.slope * x + result.intercept
+        residuals = y_i - y_pred
+        residuals_lst.append(residuals)
+
+    slopes = tf.constant(slopes, dtype=tf.float32)
+    intercepts = tf.constant(intercepts, dtype=tf.float32)
+    residuals_lst = tf.constant(residuals_lst, dtype=tf.float32)
+    res_cov_matrix = tfp.stats.covariance(residuals_lst, event_axis=0, sample_axis=1)
+
+    return slopes, intercepts, res_cov_matrix
 
 
 def SiO_x_G_on_G_off_ratio() -> float:
@@ -150,7 +168,7 @@ def pf_relationship(
 
 def pf_params(
     data, is_high_resistance: bool, ratio: float
-) -> tuple[float, float, tuple[float, float, float], tuple[float, float, float]]:
+) -> tuple[float, float, list[float], list[float], tf.Tensor]:
     V, I = all_SiO_x_curves(data, clean_data=True)
     resistances, c, d_times_perm, _, _ = pf_relationship(V, I)
 
@@ -178,13 +196,9 @@ def pf_params(
         y_1 = ln_c[:sep_idx]
         y_2 = ln_d_times_perm[:sep_idx]
 
-    # ln(c) vs ln(resistances)
-    ln_c_params = linregress_params(x, y_1)
+    slopes, intercepts, res_cov_marix = multivariate_linregress_params(x, y_1, y_2)
 
-    # ln(d_times_perm) vs ln(resistances)
-    ln_d_times_perm_params = linregress_params(x, y_2)
-
-    return G_min, G_max, ln_c_params, ln_d_times_perm_params
+    return G_min, G_max, slopes, intercepts, res_cov_marix
 
 
 def load_Ta_HfO2():
