@@ -4,7 +4,6 @@ from typing import Union
 
 import matplotlib
 import matplotlib.pyplot as plt
-import matplotlib.transforms as mtransforms
 import numpy as np
 from numpy import ma
 

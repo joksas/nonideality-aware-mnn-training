@@ -12,7 +12,7 @@ import tensorflow as tf
 import tensorflow_probability as tfp
 from scipy.io import loadmat
 from scipy.optimize import curve_fit
-from scipy.stats import levene, linregress, probplot
+from scipy.stats import linregress
 
 from awarememristor.crossbar import nonidealities
 from awarememristor.simulations import utils

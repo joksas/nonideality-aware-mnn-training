@@ -2,7 +2,6 @@ import pytest
 import tensorflow as tf
 
 from awarememristor.training import utils
-from tests import utils as test_utils
 
 compute_avg_crossbar_power_testdata = [
     (

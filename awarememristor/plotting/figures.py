@@ -3,7 +3,6 @@ import numpy as np
 import pandas as pd
 import scipy.constants as const
 import scipy.stats as stats
-from matplotlib import rc
 from matplotlib.lines import Line2D
 
 from awarememristor import crossbar, simulations
