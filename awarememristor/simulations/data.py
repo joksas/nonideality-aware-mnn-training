@@ -179,12 +179,12 @@ def pf_params(
         G_max = 1 / resistances[0]
         G_min = G_max / ratio
 
-    ln_resistances = np.log(resistances)
-    ln_d_times_perm = np.log(d_times_perm)
-    ln_c = np.log(c)
+    ln_resistances = tf.math.log(resistances)
+    ln_d_times_perm = tf.math.log(d_times_perm)
+    ln_c = tf.math.log(c)
 
     # Separate data into before and after the conductance quantum.
-    sep_idx = np.searchsorted(
+    sep_idx = tf.searchsorted(
         resistances, const.physical_constants["inverse of conductance quantum"][0]
     )
     if is_high_resistance:
