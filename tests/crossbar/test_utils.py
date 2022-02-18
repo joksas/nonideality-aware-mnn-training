@@ -35,7 +35,7 @@ def test_random_bool_tensor(args, expected):
     utils.assert_tf_bool_equal(result, expected)
 
 
-multivariate_correlated_regression_testdata = [
+multivariate_linregress_prediction_testdata = [
     (
         (
             tf.constant(
@@ -93,8 +93,8 @@ multivariate_correlated_regression_testdata = [
 ]
 
 
-@pytest.mark.parametrize("args,expected", multivariate_correlated_regression_testdata)
-def test_multivariate_correlated_regression(args, expected):
+@pytest.mark.parametrize("args,expected", multivariate_linregress_prediction_testdata)
+def test_multivariate_linregress_prediction(args, expected):
     x, slopes, intercepts, cov_matrix = args
-    result = crossbar_utils.multivariate_correlated_regression(x, slopes, intercepts, cov_matrix)
+    result = crossbar_utils.multivariate_linregress_prediction(x, slopes, intercepts, cov_matrix)
     utils.assert_tf_approx(result, expected)

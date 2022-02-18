@@ -53,18 +53,30 @@ def linregress_prediction(x: tf.Tensor, slope: float, intercept: float, res_std:
     return fit + deviations
 
 
-def multivariate_correlated_regression(
-    x: tf.Tensor, slopes: list[float], intercepts: list[float], cov_matrix: tf.Tensor
+def multivariate_linregress_prediction(
+    x: tf.Tensor, slopes: list[float], intercepts: list[float], res_cov_matrix: tf.Tensor
 ) -> tf.Tensor:
-    """Return prediction using a linear fit with random normal deviations that
-    may be correlated."""
+    """Predict dependent variables using a multivariate linear fit by
+    considering that the residuals of the fits may be correlated.
+
+    Args:
+        x: Independent variable.
+        slopes: Slopes of linear fits of `n` dependent variables.
+        intercepts: Intercepts of linear fits of `n` dependent variables.
+        res_cov_matrix: `n x n` covariance matrix of the residuals of the
+            linear fits.
+
+    Returns:
+        Predicted dependent variables. Dimension `0` encodes `n` different
+        variables.
+    """
     # Linear fit.
     fit = tf.einsum("i...,j->i...j", x, tf.constant(slopes)) + tf.einsum(
         "i...,j->i...j", tf.ones(x.shape), tf.constant(intercepts)
     )
     deviations = tfp.distributions.MultivariateNormalTriL(
         loc=0.0,
-        scale_tril=tf.linalg.cholesky(cov_matrix),
+        scale_tril=tf.linalg.cholesky(res_cov_matrix),
     ).sample(sample_shape=x.shape)
     deviated_fit = fit + deviations
     # Transpose so that the last dimension becomes the first.

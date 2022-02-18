@@ -115,7 +115,7 @@ class IVNonlinearityPF(Nonideality, LinearityNonpreserving):
 
         ln_R = tf.math.log(R)
 
-        fit_data = utils.multivariate_correlated_regression(
+        fit_data = utils.multivariate_linregress_prediction(
             ln_R, self.slopes, self.intercepts, self.res_cov_matrix
         )
         ln_c = fit_data[0]
