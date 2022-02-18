@@ -12,8 +12,6 @@ from awarememristor.training import architecture
 
 
 def _SiO_x_panels(fig, axes):
-    data = simulations.data.load_SiO_x_multistate()
-
     N = 1000
     v_min = 1.0
     v_max = 1.5
@@ -319,11 +317,11 @@ def pf_param_correlation():
         if is_high_resistance:
             axis = axes[1]
             idxs = np.arange(sep_idx, len(resistances))
-            color = utils.color_dict()["vermilion"]
+            color = colors["vermilion"]
         else:
             axis = axes[0]
             idxs = np.arange(sep_idx)
-            color = utils.color_dict()["blue"]
+            color = colors["blue"]
 
         x = np.log(resistances[idxs])
 
