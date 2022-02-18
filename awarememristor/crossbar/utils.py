@@ -58,6 +58,7 @@ def multivariate_correlated_regression(
 ) -> tf.Tensor:
     """Return prediction using a linear fit with random normal deviations that
     may be correlated."""
+    # Linear fit.
     fit = tf.einsum("i...,j->i...j", x, tf.constant(slopes)) + tf.einsum(
         "i...,j->i...j", tf.ones(x.shape), tf.constant(intercepts)
     )
@@ -66,5 +67,6 @@ def multivariate_correlated_regression(
         scale_tril=tf.linalg.cholesky(cov_matrix),
     ).sample(sample_shape=x.shape)
     deviated_fit = fit + deviations
+    # Transpose so that the last dimension becomes the first.
     deviated_fit = tf.einsum("...i->i...", deviated_fit)
     return deviated_fit
