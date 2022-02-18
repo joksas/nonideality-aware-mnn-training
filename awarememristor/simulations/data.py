@@ -114,7 +114,7 @@ def multivariate_linregress_params(
 
     slopes = tf.constant(slopes, dtype=tf.float32)
     intercepts = tf.constant(intercepts, dtype=tf.float32)
-    residuals_lst = tf.constant(residuals_lst, dtype=tf.float32)
+    residuals_lst = tf.convert_to_tensor(residuals_lst, dtype=tf.float32)
     res_cov_matrix = tfp.stats.covariance(residuals_lst, event_axis=0, sample_axis=1)
 
     return slopes, intercepts, res_cov_matrix
@@ -171,6 +171,9 @@ def pf_params(
 ) -> tuple[float, float, list[float], list[float], tf.Tensor]:
     V, I = all_SiO_x_curves(data, clean_data=True)
     resistances, c, d_times_perm, _, _ = pf_relationship(V, I)
+    resistances = tf.convert_to_tensor(resistances, dtype=tf.float32)
+    c = tf.convert_to_tensor(c, dtype=tf.float32)
+    d_times_perm = tf.convert_to_tensor(d_times_perm, dtype=tf.float32)
 
     if is_high_resistance:
         G_min = 1 / resistances[-1]

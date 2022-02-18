@@ -15,10 +15,12 @@ nonideality_label_testdata = [
     (
         iterator.Stage(
             nonidealities=[
-                nonidealities.IVNonlinearityPF(0.5, (-1.0, -2.0, 1.5), (-5.0, -10.0, 0.0)),
+                nonidealities.IVNonlinearityPF(
+                    0.5, [-1.0, -5.0], [-2.0, -10.0], [[1.0, 0.0], [0.0, 1.0]]
+                ),
             ],
         ),
-        "IVNL_PF:-1_-2_1.5_-5_-10_0",
+        "IVNL_PF:-1_-2__-5_-10",
     ),
     (
         iterator.Stage(
@@ -29,11 +31,13 @@ nonideality_label_testdata = [
     (
         iterator.Stage(
             nonidealities=[
-                nonidealities.IVNonlinearityPF(0.5, (-1.0, -2.0, 1.5), (-5.0, -10.0, 0.0)),
+                nonidealities.IVNonlinearityPF(
+                    0.5, [-1.0, -5.0], [-2.0, -10.0], [[1.0, 0.0], [0.0, 1.0]]
+                ),
                 nonidealities.StuckAt(1.2344, 0.06341),
             ]
         ),
-        "IVNL_PF:-1_-2_1.5_-5_-10_0+Stuck:1.23_0.0634",
+        "IVNL_PF:-1_-2__-5_-10+Stuck:1.23_0.0634",
     ),
 ]
 
@@ -47,7 +51,9 @@ def test_nonideality_label(nonideal_instance, expected):
 nonidealities_exception_testdata = [
     (
         [
-            nonidealities.IVNonlinearityPF(0.5, (-1.0, -2.0, 1.5), (-5.0, -10.0, 0.0)),
+            nonidealities.IVNonlinearityPF(
+                0.5, [-1.0, -5.0], [-2.0, -10.0], [[1.0, 0.0], [0.0, 1.0]]
+            ),
             nonidealities.StuckAt(1.23, 0.0009),
             nonidealities.StuckAt(4.5, 0.1),
         ],
@@ -55,8 +61,12 @@ nonidealities_exception_testdata = [
     ),
     (
         [
-            nonidealities.IVNonlinearityPF(0.5, (-1.0, -2.0, 1.5), (-5.0, -10.0, 0.0)),
-            nonidealities.IVNonlinearityPF(0.5, (-4.0, -2.0, 1.5), (-7.0, -10.0, 0.0)),
+            nonidealities.IVNonlinearityPF(
+                0.5, [-1.0, -5.0], [-2.0, -10.0], [[1.0, 0.0], [0.0, 1.0]]
+            ),
+            nonidealities.IVNonlinearityPF(
+                0.5, [-1.0, -5.0], [-2.0, -10.0], [[1.0, 0.0], [0.0, 1.0]]
+            ),
         ],
         "Current implementation does not support more than one linearity-nonpreserving nonideality.",
     ),

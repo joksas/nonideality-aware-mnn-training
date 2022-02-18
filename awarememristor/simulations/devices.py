@@ -22,7 +22,9 @@ def SiO_x_k_V() -> dict[str, float]:
 
 def _SiO_x_G(is_high_resistance: bool) -> dict[str, float]:
     exp_data = data.load_SiO_x_multistate()
-    G_on, G_off, _, _ = data.pf_params(exp_data, is_high_resistance, data.SiO_x_G_on_G_off_ratio())
+    G_on, G_off, _, _, _ = data.pf_params(
+        exp_data, is_high_resistance, data.SiO_x_G_on_G_off_ratio()
+    )
     return {
         "G_off": float(G_off),
         "G_on": float(G_on),
@@ -31,13 +33,11 @@ def _SiO_x_G(is_high_resistance: bool) -> dict[str, float]:
 
 def _SiO_x_nonidealities(is_high_resistance: bool) -> dict[str, list[Nonideality]]:
     exp_data = data.load_SiO_x_multistate()
-    _, _, ln_c_params, ln_d_times_perm_params = data.pf_params(
+    _, _, slopes, intercepts, res_cov_matrix = data.pf_params(
         exp_data, is_high_resistance, data.SiO_x_G_on_G_off_ratio()
     )
     k_V = SiO_x_k_V()["k_V"]
-    return {
-        "nonidealities": [IVNonlinearityPF(k_V, ln_c_params, ln_d_times_perm_params)],
-    }
+    return {"nonidealities": [IVNonlinearityPF(k_V, slopes, intercepts, res_cov_matrix)]}
 
 
 def SiO_x(is_high_nonlinearity: bool) -> dict[str, Any]:

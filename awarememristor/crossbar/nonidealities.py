@@ -65,12 +65,14 @@ class IVNonlinearityPF(Nonideality, LinearityNonpreserving):
     def __init__(
         self,
         k_V: float,
-        ln_c_params: tuple[float, float, float],
-        ln_d_times_perm_params: tuple[float, float, float],
+        slopes: list[float],
+        intercepts: list[float],
+        res_cov_matrix: tf.Tensor,
     ) -> None:
         self.k_V_param = k_V
-        self.ln_c_params = ln_c_params
-        self.ln_d_times_perm_params = ln_d_times_perm_params
+        self.slopes = slopes
+        self.intercepts = intercepts
+        self.res_cov_matrix = res_cov_matrix
 
     @staticmethod
     def model(V: tf.Tensor, c: tf.Tensor, d_times_perm: tf.Tensor) -> tf.Tensor:
@@ -113,10 +115,12 @@ class IVNonlinearityPF(Nonideality, LinearityNonpreserving):
 
         ln_R = tf.math.log(R)
 
-        ln_c = utils.linregress_prediction(ln_R, *self.ln_c_params)
+        fit_data = utils.multivariate_correlated_regression(
+            ln_R, self.slopes, self.intercepts, self.res_cov_matrix
+        )
+        ln_c = fit_data[0]
         c = tf.math.exp(ln_c)
-
-        ln_d_times_perm = utils.linregress_prediction(ln_R, *self.ln_d_times_perm_params)
+        ln_d_times_perm = fit_data[1]
         d_times_perm = tf.math.exp(ln_d_times_perm)
 
         I_ind = self.model(V, c, d_times_perm)
@@ -129,7 +133,7 @@ class IVNonlinearityPF(Nonideality, LinearityNonpreserving):
         return self.k_V_param
 
     def label(self):
-        return f"IVNL_PF:{self.ln_c_params[0]:.3g}_{self.ln_c_params[1]:.3g}_{self.ln_c_params[2]:.3g}_{self.ln_d_times_perm_params[0]:.3g}_{self.ln_d_times_perm_params[1]:.3g}_{self.ln_d_times_perm_params[2]:.3g}"
+        return f"IVNL_PF:{self.slopes[0]:.3g}_{self.intercepts[0]:.3g}__{self.slopes[1]:.3g}_{self.intercepts[1]:.3g}"
 
 
 class StuckAt(Nonideality, LinearityPreserving):

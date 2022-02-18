@@ -19,10 +19,10 @@ def get_ideal_iterator():
 
 def get_nonideal_iterators():
     return [
-        custom_iterator(devices.SiO_x(False), [devices.SiO_x(False)], False),
-        custom_iterator(devices.SiO_x(False), [devices.SiO_x(False)], True),
         custom_iterator(devices.SiO_x(True), [devices.SiO_x(True)], False),
         custom_iterator(devices.SiO_x(True), [devices.SiO_x(True)], True),
+        custom_iterator(devices.SiO_x(False), [devices.SiO_x(False)], False),
+        custom_iterator(devices.SiO_x(False), [devices.SiO_x(False)], True),
     ]
 
 

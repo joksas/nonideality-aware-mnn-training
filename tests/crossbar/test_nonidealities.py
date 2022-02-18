@@ -132,9 +132,7 @@ iv_nonlinearity_pf_I_testdata = [
     (
         (
             nonidealities.IVNonlinearityPF(
-                0.5,
-                (-1, -2, 0),
-                (1, 1, 0),
+                0.5, [-1.0, -5.0], [-2.0, -10.0], [[1e-15, 0.0], [1e-15, 1.0]]
             ),
             tf.constant(
                 [
