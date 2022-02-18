@@ -125,8 +125,8 @@ def SiO_x_G_on_G_off_ratio() -> float:
 
 
 def edge_state_idxs(
-    sorted_resistances: npt.NDArray[np.float], ratio: float
-) -> tuple[npt.NDArray[np.float], npt.NDArray[np.float]]:
+    sorted_resistances: npt.NDArray[np.float64], ratio: float
+) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
     low_upper_idx = np.searchsorted(sorted_resistances, sorted_resistances[0] * ratio)
     low_idxs = np.arange(low_upper_idx)
     high_lower_idx = np.searchsorted(sorted_resistances, sorted_resistances[-1] / ratio)
