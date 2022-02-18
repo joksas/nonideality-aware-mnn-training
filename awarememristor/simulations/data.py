@@ -184,7 +184,7 @@ def pf_params(
     ln_c = tf.math.log(c)
 
     # Separate data into before and after the conductance quantum.
-    sep_idx = tf.searchsorted(
+    sep_idx = np.searchsorted(
         resistances, const.physical_constants["inverse of conductance quantum"][0]
     )
     if is_high_resistance:
