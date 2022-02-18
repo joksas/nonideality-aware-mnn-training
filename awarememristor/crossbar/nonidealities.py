@@ -102,8 +102,8 @@ class IVNonlinearityPF(Nonideality, LinearityNonpreserving):
 
     @staticmethod
     def model_fitting(
-        V: npt.NDArray[np.float], c: float, d_times_perm: float
-    ) -> npt.NDArray[np.float]:
+        V: npt.NDArray[np.float64], c: float, d_times_perm: float
+    ) -> npt.NDArray[np.float64]:
         """A helper function for fitting parameters using SciPy."""
         V = tf.constant(V)
         I = IVNonlinearityPF.model(V, c, d_times_perm)
