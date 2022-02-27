@@ -133,7 +133,9 @@ class IVNonlinearityPF(Nonideality, LinearityNonpreserving):
         return self.k_V_param
 
     def label(self):
-        return f"IVNL_PF:{self.slopes.numpy()[0]:.3g}_{self.intercepts.numpy()[0]:.3g}__{self.slopes.numpy()[1]:.3g}_{self.intercepts.numpy()[1]:.3g}"
+        slopes = self.slopes.numpy()
+        intercepts = self.intercepts.numpy()
+        return f"IVNL_PF:{slopes[0]:.3g}_{intercepts[0]:.3g}__{slopes[1]:.3g}_{intercepts[1]:.3g}"
 
 
 class StuckAt(Nonideality, LinearityPreserving):
