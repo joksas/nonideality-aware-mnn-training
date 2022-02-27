@@ -70,8 +70,8 @@ class IVNonlinearityPF(Nonideality, LinearityNonpreserving):
         res_cov_matrix: tf.Tensor,
     ) -> None:
         self.k_V_param = k_V
-        self.slopes = slopes
-        self.intercepts = intercepts
+        self.slopes = tf.constant(slopes)
+        self.intercepts = tf.constant(intercepts)
         self.res_cov_matrix = res_cov_matrix
 
     @staticmethod
@@ -133,7 +133,7 @@ class IVNonlinearityPF(Nonideality, LinearityNonpreserving):
         return self.k_V_param
 
     def label(self):
-        return f"IVNL_PF:{self.slopes[0]:.3g}_{self.intercepts[0]:.3g}__{self.slopes[1]:.3g}_{self.intercepts[1]:.3g}"
+        return f"IVNL_PF:{self.slopes.numpy()[0]:.3g}_{self.intercepts.numpy()[0]:.3g}__{self.slopes.numpy()[1]:.3g}_{self.intercepts.numpy()[1]:.3g}"
 
 
 class StuckAt(Nonideality, LinearityPreserving):
