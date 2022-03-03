@@ -60,6 +60,7 @@ class Stage(Iterable):
         if self.G_off is None and self.G_on is None:
             return "none_none"
 
+        tf.debugging.assert_greater(self.G_on, self.G_off)
         return f"{self.G_off:.3g}_{self.G_on:.3g}"
 
     def nonideality_label(self) -> str:
