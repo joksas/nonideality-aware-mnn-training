@@ -88,14 +88,15 @@ class IVNonlinearityPF(Nonideality, LinearityNonpreserving):
             Currents.
         """
         V_expanded = tf.expand_dims(V, axis=-1)
+        abs_V = tf.abs(V_expanded)
+        sign_V = tf.sign(V_expanded)
         return (
-            c
-            * V_expanded
+            sign_V
+            * c
+            * abs_V
             * tf.math.exp(
                 const.elementary_charge
-                * tf.math.sqrt(
-                    const.elementary_charge * V_expanded / (const.pi * d_times_perm) + 1e-18
-                )
+                * tf.math.sqrt(const.elementary_charge * abs_V / (const.pi * d_times_perm) + 1e-18)
                 / (const.Boltzmann * (const.zero_Celsius + 20.0))
             )
         )
