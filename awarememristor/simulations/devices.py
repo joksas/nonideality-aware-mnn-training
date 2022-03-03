@@ -22,7 +22,7 @@ def SiO_x_k_V() -> dict[str, float]:
 
 def _SiO_x_G(is_high_resistance: bool) -> dict[str, float]:
     exp_data = data.load_SiO_x_multistate()
-    G_on, G_off, _, _, _ = data.pf_params(
+    G_off, G_on, _, _, _ = data.pf_params(
         exp_data, is_high_resistance, data.SiO_x_G_on_G_off_ratio()
     )
     return {

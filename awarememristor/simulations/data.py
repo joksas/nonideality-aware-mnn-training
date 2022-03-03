@@ -176,11 +176,11 @@ def pf_params(
     d_times_perm = tf.convert_to_tensor(d_times_perm, dtype=tf.float32)
 
     if is_high_resistance:
-        G_min = 1 / resistances[-1]
-        G_max = G_min * ratio
+        G_off = 1 / resistances[-1]
+        G_on = G_off * ratio
     else:
-        G_max = 1 / resistances[0]
-        G_min = G_max / ratio
+        G_on = 1 / resistances[0]
+        G_off = G_on / ratio
 
     ln_resistances = tf.math.log(resistances)
     ln_d_times_perm = tf.math.log(d_times_perm)
@@ -201,7 +201,7 @@ def pf_params(
 
     slopes, intercepts, res_cov_marix = multivariate_linregress_params(x, y_1, y_2)
 
-    return G_min, G_max, slopes, intercepts, res_cov_marix
+    return G_off, G_on, slopes, intercepts, res_cov_marix
 
 
 def load_Ta_HfO2():
