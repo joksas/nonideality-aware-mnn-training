@@ -125,6 +125,7 @@ class Training(Stage, Iterable):
         nonidealities: list[Nonideality] = None,
         use_combined_validation: bool = False,
         memristive_validation_freq: int = None,
+        memristive_validation_num_repeats: int = None,
         mapping_rule: str = "default",
         force_standard_w: bool = False,
     ) -> None:
@@ -135,6 +136,7 @@ class Training(Stage, Iterable):
         self.use_combined_validation = use_combined_validation
         self.is_standard_validation_mode = False
         self.memristive_validation_freq = memristive_validation_freq
+        self.memristive_validation_num_repeats = memristive_validation_num_repeats
         self.force_standard_w = force_standard_w
         Stage.__init__(
             self,

@@ -167,7 +167,11 @@ class MemristiveCheckpoint(MemristiveCallback, Callback, Checkpoint):
             return
 
         data = self.iterator.data("validation")
-        loss, accuracy, duration, num_total_batches = self.evaluate(self.model, data)
+        loss, accuracy, duration, num_total_batches = self.evaluate(
+            self.model,
+            data,
+            num_repeats=self.iterator.training.memristive_validation_num_repeats,
+        )
 
         self.history["loss"].append(loss)
         self.history["accuracy"].append(accuracy)
@@ -254,7 +258,11 @@ class CombinedCheckpoint(MemristiveCallback, Callback, Checkpoint):
                 )
             )
         else:
-            loss, accuracy, duration, num_total_batches = self.evaluate(self.model, data)
+            loss, accuracy, duration, num_total_batches = self.evaluate(
+                self.model,
+                data,
+                num_repeats=self.iterator.training.memristive_validation_num_repeats,
+            )
 
             self.history["loss"].append(loss)
             self.history["accuracy"].append(accuracy)
