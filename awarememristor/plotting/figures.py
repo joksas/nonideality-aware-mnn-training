@@ -480,8 +480,8 @@ def weight_implementation(metric="error"):
         G = 1e6 * G
         utils.plot_scatter(axis, G[:, ::2], G[:, 1::2], color, random_proportion=0.1)
 
-        axis.xaxis.set_ticks(np.arange(1.0, 3.0, 0.5))
-        axis.yaxis.set_ticks(np.arange(1.0, 3.0, 0.5))
+        axis.xaxis.set_ticks(np.arange(0.5, 3.0, 0.5))
+        axis.yaxis.set_ticks(np.arange(0.5, 3.0, 0.5))
 
         if idx > 3:
             axis.set_xlabel(utils.axis_label("g-plus", unit_prefix="μ"))
