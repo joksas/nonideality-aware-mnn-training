@@ -89,7 +89,8 @@ def _clean_iv_data(
 
 
 def average_nonlinearity(voltage_curve, current_curve):
-    conductance_curve = current_curve / voltage_curve
+    # Avoid division by zero.
+    conductance_curve = current_curve[2:] / voltage_curve[2:]
     nonlinearity = (
         conductance_curve[2::2] / conductance_curve[1 : int(len(conductance_curve) / 2) + 1]
     )
