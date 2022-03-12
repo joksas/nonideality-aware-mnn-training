@@ -63,8 +63,6 @@ def _SiO_x_panels(fig, axes):
     cbar.set_label(
         label=utils.axis_label("mean-nonlinearity"),
         fontsize=utils.Config.AXIS_LABEL_FONT_SIZE,
-        rotation=-90,
-        va="bottom",
     )
     cbar.ax.tick_params(axis="both", which="both", labelsize=utils.Config.TICKS_FONT_SIZE)
 
