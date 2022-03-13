@@ -1,3 +1,5 @@
+import logging
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -9,6 +11,8 @@ from awarememristor import crossbar, simulations
 from awarememristor.crossbar.nonidealities import StuckDistribution
 from awarememristor.plotting import utils
 from awarememristor.training import architecture
+
+logging.getLogger().setLevel(logging.INFO)
 
 
 def _SiO_x_panels(fig, axes):
@@ -31,6 +35,16 @@ def _SiO_x_panels(fig, axes):
         resistances, simulations.data.SiO_x_G_on_G_off_ratio()
     )
 
+    logging.info(
+        "Range of low-resistance states: %.4g-%.4g ohms",
+        resistances[low_idxs[0]],
+        resistances[low_idxs[-1]],
+    )
+    logging.info(
+        "Range of high-resistance states: %.4g-%.4g ohms",
+        resistances[high_idxs[0]],
+        resistances[high_idxs[-1]],
+    )
     for axis, is_high_resistance in zip(axes, [False, True]):
         if is_high_resistance:
             idxs = high_idxs
@@ -73,6 +87,7 @@ def _HfO2_panels(fig, axes):
     data = simulations.data.load_Ta_HfO2()
     G_min, G_max = simulations.data.extract_G_off_and_G_on(data)
     vals, p = simulations.data.extract_stuck(data, G_min, G_max)
+    logging.info("Stuck probability: %.3g%%", 100 * p)
     median_range = G_max - G_min
     colors = utils.color_dict()
 
@@ -381,14 +396,41 @@ def iv_nonlinearity_inference(metric="error"):
 
     boxplots = []
 
+    median_vals = []
+    avg_powers = []
     for idx, (iterator, inference_idx) in enumerate(zip(iterators, inference_idxs)):
-        avg_power = iterator.test_metric("avg_power", inference_idx=inference_idx)
+        avg_power_lst = iterator.test_metric("avg_power", inference_idx=inference_idx)
         y = iterator.test_metric(metric, inference_idx=inference_idx)
+        median_vals.append(100 * np.median(y))
+        avg_powers.append(np.mean(avg_power_lst))
         color = colors[idx % 3]
         boxplot = utils.plot_boxplot(
-            axes, y, color, metric=metric, x=avg_power, is_x_log=True, linear_width=0.2
+            axes, y, color, metric=metric, x=avg_power_lst, is_x_log=True, linear_width=0.2
         )
         boxplots.append(boxplot)
+
+    efficiency = [simulations.utils.get_energy_efficiency(avg_power) for avg_power in avg_powers]
+    logging.info("Median %s (%%):", metric)
+    logging.info(
+        "Low nonlinearity: %.1f (standard), %.1f (aware), %.1f (aware + reg.)", *median_vals[:3]
+    )
+    logging.info(
+        "Low nonlinearity: %.1f (standard), %.1f (aware), %.1f (aware + reg.)", *median_vals[3:]
+    )
+    logging.info("Mean power (W):")
+    logging.info(
+        "Low nonlinearity: %.3g (standard), %.3g (aware), %.3g (aware + reg.)", *avg_powers[:3]
+    )
+    logging.info(
+        "Low nonlinearity: %.3g (standard), %.3g (aware), %.3g (aware + reg.)", *avg_powers[3:]
+    )
+    logging.info("Efficiency (TOP/(sW)):")
+    logging.info(
+        "Low nonlinearity: %.3g (standard), %.3g (aware), %.3g (aware + reg.)", *efficiency[:3]
+    )
+    logging.info(
+        "Low nonlinearity: %.3g (standard), %.3g (aware), %.3g (aware + reg.)", *efficiency[3:]
+    )
 
     utils.add_boxplot_legend(
         axes, boxplots, ["Standard", "Nonideality-aware", "Nonideality-aware (regularized)"]
@@ -416,9 +458,15 @@ def iv_nonlinearity_cnn(metric="error"):
 
     # Box plots.
     axis = axes[2]
+    median_vals = []
     for idx, (iterator, color) in enumerate(zip(iterators, [colors["vermilion"], colors["blue"]])):
         y = iterator.test_metric(metric)
+        median_vals.append(100 * np.median(y))
         _ = utils.plot_boxplot(axis, y, color, x=idx, metric=metric, linewidth_scaling=2 / 3)
+    logging.info("Median %s (%%):", metric)
+    logging.info("Standard: %.1f", median_vals[0])
+    logging.info("Aware: %.1f", median_vals[1])
+
     axis.set_xticks([0, 1])
     axis.set_xticklabels(["Standard", "Nonideality-aware"])
 
@@ -486,11 +534,17 @@ def weight_implementation(metric="error"):
         if idx in [0, 4]:
             axis.set_ylabel(utils.axis_label("g-minus", unit_prefix="μ"))
 
-    for iterator_idxs, axis in zip([[0, 1, 4, 5], [2, 3, 6, 7]], axes[-2:]):
-        for iterator_idx, color in zip(iterator_idxs, colors):
+    mappings = ["standard (avg.)", "standard (min. G)", "double w", "double w (reg.)"]
+    variabilities = ["more uniform", "less uniform"]
+    for iterator_idxs, axis, variability in zip(
+        [[0, 1, 4, 5], [2, 3, 6, 7]], axes[-2:], variabilities
+    ):
+        logging.info("%s variability:", variability)
+        for iterator_idx, color, mapping in zip(iterator_idxs, colors, mappings):
             iterator = iterators[iterator_idx]
             avg_power = iterator.test_metric("avg_power")
             y = iterator.test_metric(metric)
+            logging.info("%s mapping: %.1f%% median %s", mapping, 100 * np.median(y), metric)
             utils.plot_boxplot(axis, y, color, x=1000 * avg_power, metric=metric, linear_width=0.2)
             axis.set_xlabel(utils.axis_label("power-consumption", unit_prefix="m"))
 
