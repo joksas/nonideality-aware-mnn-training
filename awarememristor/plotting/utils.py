@@ -16,6 +16,7 @@ class Config:
     AXIS_LABEL_FONT_SIZE: float = 12
     LEGEND_FONT_SIZE: float = 8
     TICKS_FONT_SIZE: float = 8
+    ANNOTATION_FONT_SIZE: float = 8
     SUBPLOT_LABEL_SIZE: float = 12
     TEXT_LABEL_SIZE: float = 10
     LINEWIDTH: float = 0.75
@@ -386,13 +387,13 @@ def axis_label(var_name: str, prepend: str = None, unit_prefix: str = "") -> str
     elif var_name == "ln-R-SI":
         label = r"$\ln(R_\mathrm{SI})$"
     elif var_name == "ln-c-SI":
-        label = r"$\ln(C_\mathrm{SI})$"
+        label = r"$\ln(c_\mathrm{SI})$"
     elif var_name == "ln-d-times-perm-SI":
         label = r"$\ln(d_\mathrm{SI} \epsilon_\mathrm{SI})$"
     elif var_name == "ln-d-times-perm-SI-residuals":
         label = r"$\ln(d_\mathrm{SI} \epsilon_\mathrm{SI})$ residuals"
     elif var_name == "ln-c-SI-residuals":
-        label = r"$\ln(d_\mathrm{SI} \epsilon_\mathrm{SI})$ residuals"
+        label = r"$\ln(c_\mathrm{SI})$ residuals"
     elif var_name == "residuals":
         label = r"residuals"
     elif var_name == "ordered-residuals":

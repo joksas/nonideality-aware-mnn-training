@@ -15,7 +15,7 @@ from awarememristor.training import architecture
 logging.getLogger().setLevel(logging.INFO)
 
 
-def _SiO_x_panels(fig, axes):
+def _SiO_x_exp_data(fig, axes):
     N = 1000
     v_min = 1.0
     v_max = 1.5
@@ -83,7 +83,101 @@ def _SiO_x_panels(fig, axes):
     axes[0].set_ylabel(utils.axis_label("current"))
 
 
-def _HfO2_panels(fig, axes):
+def _pf_param_fits(axes):
+    exp_data = simulations.data.load_SiO_x_multistate()
+    V, I = simulations.data.all_SiO_x_curves(exp_data, clean_data=True)
+    resistances, c, d_times_perm, _, _ = simulations.data.pf_relationship(V, I)
+    R_0 = const.physical_constants["inverse of conductance quantum"][0]
+    # Separate data into before and after the conductance quantum.
+    sep_idx = np.searchsorted(resistances, R_0)
+
+    colors = utils.color_dict()
+    for axis in axes:
+        axis.axvline(
+            x=np.log(R_0),
+            linestyle="dotted",
+            color=colors["black"],
+            linewidth=1.25 * utils.Config.LINEWIDTH,
+        )
+    axes[1].annotate(
+        r"$\ln((1/G_0)_\mathrm{SI})$",
+        xy=(np.log(R_0), -36),
+        xytext=(np.log(R_0) + 0.5, -34),
+        fontsize=utils.Config.ANNOTATION_FONT_SIZE,
+        arrowprops=dict(
+            facecolor=colors["black"],
+            arrowstyle="->",
+            connectionstyle="arc3",
+            linewidth=0.5 * utils.Config.LINEWIDTH,
+        ),
+    )
+
+    for is_high_resistance in [False, True]:
+        _, _, slopes, intercepts, _ = simulations.data.pf_params(
+            exp_data, is_high_resistance, simulations.data.SiO_x_G_on_G_off_ratio()
+        )
+
+        if is_high_resistance:
+            idxs = np.arange(sep_idx, len(resistances))
+            color = colors["vermilion"]
+        else:
+            idxs = np.arange(sep_idx)
+            color = colors["blue"]
+
+        x = np.log(resistances[idxs])
+
+        c_fit = slopes[0] * x + intercepts[0]
+        c_points = np.log(c[idxs])
+        utils.plot_scatter(axes[0], x, c_points, color, scale=10)
+        axes[0].plot(
+            x,
+            c_fit,
+            linewidth=utils.Config.LINEWIDTH,
+            color=color,
+            linestyle="dashed",
+        )
+        axes[0].set_ylabel(utils.axis_label("ln-c-SI"))
+
+        d_times_perm_fit = slopes[1] * x + intercepts[1]
+        d_times_perm_points = np.log(d_times_perm[idxs])
+        utils.plot_scatter(axes[1], x, d_times_perm_points, color, scale=10)
+        axes[1].plot(
+            x,
+            d_times_perm_fit,
+            linewidth=utils.Config.LINEWIDTH,
+            color=color,
+            linestyle="dashed",
+        )
+        axes[1].set_ylabel(utils.axis_label("ln-d-times-perm-SI"))
+
+    axes[1].set_xlabel(utils.axis_label("ln-R-SI"))
+
+
+def SiO_x():
+    fig = plt.figure(constrained_layout=True)
+    gs = fig.add_gridspec(3, 1, height_ratios=[1.0, 0.6, 0.6])
+
+    gs_top = gs[0].subgridspec(1, 2, wspace=0.03)
+
+    subplots = list(gs_top) + [gs[1]] + [gs[2]]
+    for subplot in subplots:
+        fig.add_subplot(subplot)
+
+    fig, axes = utils.fig_init(2, 1.0, custom_fig=fig)
+
+    axes[1].sharex(axes[0])
+    axes[3].sharex(axes[2])
+    plt.setp(axes[2].get_xticklabels(), visible=False)
+
+    _SiO_x_exp_data(fig, axes[[0, 1]])
+    _pf_param_fits(axes[[2, 3]])
+
+    utils.save_fig(fig, "SiO_x")
+
+
+def HfO2():
+    fig, axes = utils.fig_init(2, 0.45, fig_shape=(1, 2), sharey=True)
+
     data = simulations.data.load_Ta_HfO2()
     G_min, G_max = simulations.data.extract_G_off_and_G_on(data)
     vals, p = simulations.data.extract_stuck(data, G_min, G_max)
@@ -180,35 +274,14 @@ def _HfO2_panels(fig, axes):
     utils.add_legend(
         fig,
         ncol=3,
-        bbox_to_anchor=(0.5, 0.52),
+        bbox_to_anchor=(0.5, 1.05),
         handles=handles,
     )
 
-
-def experimental_data():
-    fig = plt.figure(constrained_layout=True)
-    gs = fig.add_gridspec(3, 1, height_ratios=[0.9, 0.1, 1.0])
-
-    gs_top = gs[0].subgridspec(1, 2, wspace=0.03)
-    gs_bottom = gs[2].subgridspec(1, 2, wspace=0.01)
-
-    subplots = list(gs_top) + list(gs_bottom)
-    for subplot in subplots:
-        fig.add_subplot(subplot)
-
-    fig, axes = utils.fig_init(2, 0.9, custom_fig=fig)
-
-    axes[1].sharex(axes[0])
-    axes[3].sharey(axes[2])
-    axes[3].label_outer()
-
-    _SiO_x_panels(fig, axes[[0, 1]])
-    _HfO2_panels(fig, axes[[2, 3]])
-
-    utils.save_fig(fig, "experimental-data")
+    utils.save_fig(fig, "HfO2")
 
 
-def pf_param_fits(is_d_times_perm: bool = False):
+def goodness_of_pf_param_fits(is_d_times_perm: bool = False):
     fig = plt.figure(constrained_layout=True)
     gs = fig.add_gridspec(3, 1)
 
