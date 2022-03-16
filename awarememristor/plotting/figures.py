@@ -668,44 +668,44 @@ def memristive_validation(metric="error"):
 def nonideality_agnosticism(metric: str = "error", norm_rows=True, include_val_label=False):
     training_labels = {
         "nonreg__64__none_none__ideal": "Ideal",
-        "nonreg__64__0.000997_0.00351__IVNL:2.13_0.0953": r"Low $I$-$V$ nonlin. [$\mathrm{SiO}_x$]",
-        "reg__64__0.000997_0.00351__IVNL:2.13_0.0953": r"Low $I$-$V$ nonlin. [$\mathrm{SiO}_x$] (reg.)",
-        "nonreg__64__7.72e-07_2.73e-06__IVNL:2.99_0.369": r"High $I$-$V$ nonlin. [$\mathrm{SiO}_x$]",
-        "reg__64__7.72e-07_2.73e-06__IVNL:2.99_0.369": r"High $I$-$V$ nonlin. [$\mathrm{SiO}_x$] (reg.)",
-        "nonreg__64__7.72e-07_2.73e-06__StuckOff:0.05": r"Stuck at $G_\mathrm{off}$",
+        "nonreg__64__0.00069_0.00345__IVNL_PF:-1.12_0.628__-1.34_-25.9": r"Low $I$-$V$ nonlin. [$\mathrm{SiO}_x$]",
+        "reg__64__0.00069_0.00345__IVNL_PF:-1.12_0.628__-1.34_-25.9": r"Low $I$-$V$ nonlin. [$\mathrm{SiO}_x$] (reg.)",
+        "nonreg__64__5.25e-07_2.62e-06__IVNL_PF:-1.03_-0.251__-0.0901_-37.1": r"High $I$-$V$ nonlin. [$\mathrm{SiO}_x$]",
+        "reg__64__5.25e-07_2.62e-06__IVNL_PF:-1.03_-0.251__-0.0901_-37.1": r"High $I$-$V$ nonlin. [$\mathrm{SiO}_x$] (reg.)",
+        "nonreg__64__5.25e-07_2.62e-06__StuckOff:0.05": r"Stuck at $G_\mathrm{off}$",
         "nonreg__64__4.36e-05_0.000978__StuckDistr:0.101_1.77e-05": r"Stuck [$\mathrm{Ta/HfO}_2$]",
-        "nonreg__64__7.72e-07_2.73e-06__D2DLN:0.25_0.25": "More uniform D2D var.",
-        "reg__64__7.72e-07_2.73e-06__D2DLN:0.25_0.25": "More uniform D2D var. (reg.)",
-        "nonreg__64__7.72e-07_2.73e-06__D2DLN:0.05_0.5": "Less uniform D2D var.",
-        "reg__64__7.72e-07_2.73e-06__D2DLN:0.05_0.5": "Less uniform D2D var. (reg.)",
-        "nonreg__64__7.72e-07_2.73e-06__IVNL:2.99_0.369+StuckOn:0.05": r"High $I$-$V$ nonlin. [$\mathrm{SiO}_x$] + stuck at $G_\mathrm{on}$",
-        "nonreg__64__7.72e-07_2.73e-06__D2DLN:0.5_0.5": "High D2D var.",
+        "nonreg__64__5.25e-07_2.62e-06__D2DLN:0.25_0.25": "More uniform D2D var.",
+        "reg__64__5.25e-07_2.62e-06__D2DLN:0.25_0.25": "More uniform D2D var. (reg.)",
+        "nonreg__64__5.25e-07_2.62e-06__D2DLN:0.05_0.5": "Less uniform D2D var.",
+        "reg__64__5.25e-07_2.62e-06__D2DLN:0.05_0.5": "Less uniform D2D var. (reg.)",
+        "nonreg__64__5.25e-07_2.62e-06__IVNL_PF:-1.03_-0.251__-0.0901_-37.1+StuckOn:0.05": r"High $I$-$V$ nonlin. [$\mathrm{SiO}_x$] + stuck at $G_\mathrm{on}$",
+        "nonreg__64__5.25e-07_2.62e-06__D2DLN:0.5_0.5__val_freq_1": "High D2D var.",
     }
     inference_labels = {
         "none_none__ideal": training_labels["nonreg__64__none_none__ideal"],
-        "0.000997_0.00351__IVNL:2.13_0.0953": training_labels[
-            "nonreg__64__0.000997_0.00351__IVNL:2.13_0.0953"
+        "0.00069_0.00345__IVNL_PF:-1.12_0.628__-1.34_-25.9": training_labels[
+            "nonreg__64__0.00069_0.00345__IVNL_PF:-1.12_0.628__-1.34_-25.9"
         ],
-        "7.72e-07_2.73e-06__IVNL:2.99_0.369": training_labels[
-            "nonreg__64__7.72e-07_2.73e-06__IVNL:2.99_0.369"
+        "5.25e-07_2.62e-06__IVNL_PF:-1.03_-0.251__-0.0901_-37.1": training_labels[
+            "nonreg__64__5.25e-07_2.62e-06__IVNL_PF:-1.03_-0.251__-0.0901_-37.1"
         ],
-        "7.72e-07_2.73e-06__StuckOff:0.05": training_labels[
-            "nonreg__64__7.72e-07_2.73e-06__StuckOff:0.05"
+        "5.25e-07_2.62e-06__StuckOff:0.05": training_labels[
+            "nonreg__64__5.25e-07_2.62e-06__StuckOff:0.05"
         ],
         "4.36e-05_0.000978__StuckDistr:0.101_1.77e-05": training_labels[
             "nonreg__64__4.36e-05_0.000978__StuckDistr:0.101_1.77e-05"
         ],
-        "7.72e-07_2.73e-06__D2DLN:0.25_0.25": training_labels[
-            "nonreg__64__7.72e-07_2.73e-06__D2DLN:0.25_0.25"
+        "5.25e-07_2.62e-06__D2DLN:0.25_0.25": training_labels[
+            "nonreg__64__5.25e-07_2.62e-06__D2DLN:0.25_0.25"
         ],
-        "7.72e-07_2.73e-06__D2DLN:0.05_0.5": training_labels[
-            "nonreg__64__7.72e-07_2.73e-06__D2DLN:0.05_0.5"
+        "5.25e-07_2.62e-06__D2DLN:0.05_0.5": training_labels[
+            "nonreg__64__5.25e-07_2.62e-06__D2DLN:0.05_0.5"
         ],
-        "7.72e-07_2.73e-06__IVNL:2.99_0.369+StuckOn:0.05": training_labels[
-            "nonreg__64__7.72e-07_2.73e-06__IVNL:2.99_0.369+StuckOn:0.05"
+        "5.25e-07_2.62e-06__IVNL_PF:-1.03_-0.251__-0.0901_-37.1+StuckOn:0.05": training_labels[
+            "nonreg__64__5.25e-07_2.62e-06__IVNL_PF:-1.03_-0.251__-0.0901_-37.1+StuckOn:0.05"
         ],
-        "7.72e-07_2.73e-06__D2DLN:0.5_0.5": training_labels[
-            "nonreg__64__7.72e-07_2.73e-06__D2DLN:0.5_0.5"
+        "5.25e-07_2.62e-06__D2DLN:0.5_0.5": training_labels[
+            "nonreg__64__5.25e-07_2.62e-06__D2DLN:0.5_0.5__val_freq_1"
         ],
     }
     df = pd.DataFrame(
