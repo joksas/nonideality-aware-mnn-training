@@ -15,7 +15,22 @@ from awarememristor.training import architecture
 logging.getLogger().setLevel(logging.INFO)
 
 
-def _SiO_x_exp_data(fig, axes):
+def SiO_x():
+    fig = plt.figure(constrained_layout=True)
+    gs = fig.add_gridspec(3, 1, height_ratios=[1.0, 0.6, 0.6])
+
+    gs_top = gs[0].subgridspec(1, 2, wspace=0.03)
+
+    subplots = list(gs_top) + [gs[1]] + [gs[2]]
+    for subplot in subplots:
+        fig.add_subplot(subplot)
+
+    fig, axes = utils.fig_init(2, 1.0, custom_fig=fig)
+
+    axes[1].sharex(axes[0])
+    axes[3].sharex(axes[2])
+    plt.setp(axes[2].get_xticklabels(), visible=False)
+
     N = 1000
     v_min = 1.0
     v_max = 1.5
@@ -45,7 +60,15 @@ def _SiO_x_exp_data(fig, axes):
         resistances[high_idxs[0]],
         resistances[high_idxs[-1]],
     )
-    for axis, is_high_resistance in zip(axes, [False, True]):
+    nonlinearities = []
+    for i in range(V_full.shape[0]):
+        voltage_curve = V_full[i, :]
+        current_curve = I_full[i, :]
+        nonlinearity = simulations.data.average_nonlinearity(voltage_curve, current_curve)
+        nonlinearities.append(nonlinearity)
+    nonlinearities = np.array(nonlinearities)
+
+    for axis, is_high_resistance in zip(axes[:2], [False, True]):
         if is_high_resistance:
             idxs = high_idxs
         else:
@@ -53,11 +76,12 @@ def _SiO_x_exp_data(fig, axes):
 
         V = V_full[idxs, :]
         I = I_full[idxs, :]
+        temp_nonlinearities = nonlinearities[idxs]
 
         for idx in range(V.shape[0]):
             voltage_curve = V[idx, :]
             current_curve = I[idx, :]
-            nonlinearity = simulations.data.average_nonlinearity(voltage_curve, current_curve)
+            nonlinearity = temp_nonlinearities[idx]
             palette_idx = int(np.floor(N * (nonlinearity - v_min) / (v_max - v_min)))
             axis.plot(
                 voltage_curve,
@@ -73,7 +97,7 @@ def _SiO_x_exp_data(fig, axes):
         axis.yaxis.get_offset_text().set_fontsize(utils.Config.TICKS_FONT_SIZE)
 
     sm = plt.cm.ScalarMappable(cmap="inferno", norm=plt.Normalize(vmin=v_min, vmax=v_max))
-    cbar = fig.colorbar(sm, ax=axes)
+    cbar = fig.colorbar(sm, ax=axes[:2])
     cbar.set_label(
         label=utils.axis_label("mean-nonlinearity"),
         fontsize=utils.Config.AXIS_LABEL_FONT_SIZE,
@@ -82,9 +106,6 @@ def _SiO_x_exp_data(fig, axes):
 
     axes[0].set_ylabel(utils.axis_label("current"))
 
-
-def _pf_param_fits(axes):
-    exp_data = simulations.data.load_SiO_x_multistate()
     V, I = simulations.data.all_SiO_x_curves(exp_data, clean_data=True)
     resistances, c, d_times_perm, _, _ = simulations.data.pf_relationship(V, I)
     R_0 = const.physical_constants["inverse of conductance quantum"][0]
@@ -92,18 +113,19 @@ def _pf_param_fits(axes):
     sep_idx = np.searchsorted(resistances, R_0)
 
     colors = utils.color_dict()
-    for axis in axes:
+    for axis in axes[2:]:
         axis.axvline(
             x=np.log(R_0),
             linestyle="dotted",
             color=colors["black"],
             linewidth=1.25 * utils.Config.LINEWIDTH,
         )
-    axes[1].annotate(
-        r"$\ln((1/G_0)_\mathrm{SI})$",
+    axes[3].annotate(
+        "conductance\nquantum",
         xy=(np.log(R_0), -36),
-        xytext=(np.log(R_0) + 0.5, -34),
+        xytext=(np.log(R_0) + 0.75, -34),
         fontsize=utils.Config.ANNOTATION_FONT_SIZE,
+        ha="center",
         arrowprops=dict(
             facecolor=colors["black"],
             arrowstyle="->",
@@ -117,60 +139,50 @@ def _pf_param_fits(axes):
             exp_data, is_high_resistance, simulations.data.SiO_x_G_on_G_off_ratio()
         )
 
+        color = colors["blue"]
         if is_high_resistance:
             idxs = np.arange(sep_idx, len(resistances))
-            color = colors["vermilion"]
         else:
             idxs = np.arange(sep_idx)
-            color = colors["blue"]
 
         x = np.log(resistances[idxs])
+        c_points = np.log(c[idxs])
+        d_times_perm_points = np.log(d_times_perm[idxs])
+        V = np.arange(0.0, 0.51, 0.01)
+        I_from_fits = crossbar.nonidealities.IVNonlinearityPF.model(V, c[idxs], d_times_perm[idxs])
+        nonlinearities = [
+            simulations.data.average_nonlinearity(V, I_from_fits[:, i]) for i in range(len(idxs))
+        ]
+
+        palette_idxs = [
+            int(np.floor(N * (nonlinearity - v_min) / (v_max - v_min)))
+            for nonlinearity in nonlinearities
+        ]
+        marker_colors = [palette[palette_idx] for palette_idx in palette_idxs]
+        utils.plot_scatter(axes[2], x, c_points, marker_colors, scale=20)
 
         c_fit = slopes[0] * x + intercepts[0]
-        c_points = np.log(c[idxs])
-        utils.plot_scatter(axes[0], x, c_points, color, scale=10)
-        axes[0].plot(
+        axes[2].plot(
             x,
             c_fit,
             linewidth=utils.Config.LINEWIDTH,
             color=color,
             linestyle="dashed",
         )
-        axes[0].set_ylabel(utils.axis_label("ln-c-SI"))
+        axes[2].set_ylabel(utils.axis_label("ln-c-SI"))
 
         d_times_perm_fit = slopes[1] * x + intercepts[1]
-        d_times_perm_points = np.log(d_times_perm[idxs])
-        utils.plot_scatter(axes[1], x, d_times_perm_points, color, scale=10)
-        axes[1].plot(
+        utils.plot_scatter(axes[3], x, d_times_perm_points, marker_colors, scale=20)
+        axes[3].plot(
             x,
             d_times_perm_fit,
             linewidth=utils.Config.LINEWIDTH,
             color=color,
             linestyle="dashed",
         )
-        axes[1].set_ylabel(utils.axis_label("ln-d-times-perm-SI"))
+        axes[3].set_ylabel(utils.axis_label("ln-d-times-perm-SI"))
 
-    axes[1].set_xlabel(utils.axis_label("ln-R-SI"))
-
-
-def SiO_x():
-    fig = plt.figure(constrained_layout=True)
-    gs = fig.add_gridspec(3, 1, height_ratios=[1.0, 0.6, 0.6])
-
-    gs_top = gs[0].subgridspec(1, 2, wspace=0.03)
-
-    subplots = list(gs_top) + [gs[1]] + [gs[2]]
-    for subplot in subplots:
-        fig.add_subplot(subplot)
-
-    fig, axes = utils.fig_init(2, 1.0, custom_fig=fig)
-
-    axes[1].sharex(axes[0])
-    axes[3].sharex(axes[2])
-    plt.setp(axes[2].get_xticklabels(), visible=False)
-
-    _SiO_x_exp_data(fig, axes[[0, 1]])
-    _pf_param_fits(axes[[2, 3]])
+    axes[3].set_xlabel(utils.axis_label("ln-R-SI"))
 
     utils.save_fig(fig, "SiO_x")
 
