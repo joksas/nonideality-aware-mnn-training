@@ -8,7 +8,7 @@ def all_iv_curves_full_range():
     fig, axes = utils.fig_init(2, 0.6, fig_shape=(1, 1))
 
     data = simulations.data.load_SiO_x_multistate()
-    voltages, currents = simulations.data.all_SiO_x_curves(data, max_voltage=5.0)
+    voltages, currents = simulations.data.all_SiO_x_curves(data, max_voltage=5.0, clean_data=False)
 
     colors = utils.color_list()[:-1]
     num_colors = len(colors)
