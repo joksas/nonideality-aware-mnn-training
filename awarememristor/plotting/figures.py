@@ -396,7 +396,7 @@ def pf_residuals(is_d_times_perm: bool = False):
         bound = max(abs(low), abs(high))
         ax.set_ylim(-bound, bound)
 
-    utils.save_fig(fig, "pf_residuals")
+    utils.save_fig(fig, "pf-residuals")
 
 
 def iv_nonlinearity_training(metric="error"):
