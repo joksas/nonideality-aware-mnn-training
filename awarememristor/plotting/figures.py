@@ -117,7 +117,7 @@ def SiO_x():
         axis.axvline(
             x=np.log(R_0),
             linestyle="dotted",
-            color=colors["black"],
+            color=colors["bluish-green"],
             linewidth=1.25 * utils.Config.LINEWIDTH,
         )
     axes[3].annotate(
@@ -126,8 +126,9 @@ def SiO_x():
         xytext=(np.log(R_0) + 0.75, -34),
         fontsize=utils.Config.ANNOTATION_FONT_SIZE,
         ha="center",
+        color=colors["bluish-green"],
         arrowprops=dict(
-            facecolor=colors["black"],
+            color=colors["bluish-green"],
             arrowstyle="->",
             connectionstyle="arc3",
             linewidth=0.5 * utils.Config.LINEWIDTH,
@@ -169,7 +170,7 @@ def SiO_x():
             color=color,
             linestyle="dashed",
         )
-        axes[2].set_ylabel(utils.axis_label("ln-c-SI"))
+        axes[2].set_ylabel(utils.axis_label("ln-c"))
 
         d_times_perm_fit = slopes[1] * x + intercepts[1]
         utils.plot_scatter(axes[3], x, d_times_perm_points, marker_colors, scale=20)
@@ -180,9 +181,9 @@ def SiO_x():
             color=color,
             linestyle="dashed",
         )
-        axes[3].set_ylabel(utils.axis_label("ln-d-times-perm-SI"))
+        axes[3].set_ylabel(utils.axis_label("ln-d-times-perm"))
 
-    axes[3].set_xlabel(utils.axis_label("ln-R-SI"))
+    axes[3].set_xlabel(utils.axis_label("ln-R"))
 
     utils.save_fig(fig, "SiO_x")
 
@@ -361,7 +362,7 @@ def goodness_of_pf_param_fits(is_d_times_perm: bool = False):
         )
         max_residual = 1.1 * np.max(np.abs(residuals))
         residual_axis.set_ylim(-max_residual, max_residual)
-        residual_axis.set_xlabel(utils.axis_label("ln-R-SI"))
+        residual_axis.set_xlabel(utils.axis_label("ln-R"))
 
         (osm, osr), (slope, intercept, _) = stats.probplot(residuals)
         quantiles = np.linspace(-2.0, 2.0, 200)
@@ -376,11 +377,11 @@ def goodness_of_pf_param_fits(is_d_times_perm: bool = False):
         normal_plot_axis.set_ylim(-max_residual, max_residual)
         normal_plot_axis.set_xlabel(utils.axis_label("theoretical-normal-quartiles"))
 
-    axes[0].set_xlabel(utils.axis_label("ln-R-SI"))
+    axes[0].set_xlabel(utils.axis_label("ln-R"))
     if is_d_times_perm:
-        axes[0].set_ylabel(utils.axis_label("ln-d-times-perm-SI"))
+        axes[0].set_ylabel(utils.axis_label("ln-d-times-perm"))
     else:
-        axes[0].set_ylabel(utils.axis_label("ln-c-SI"))
+        axes[0].set_ylabel(utils.axis_label("ln-c"))
 
     axes[1].set_ylabel(utils.axis_label("residuals"))
     axes[3].set_ylabel(utils.axis_label("ordered-residuals"))
@@ -435,9 +436,9 @@ def pf_param_correlation():
         residuals_2 = y_2 - y_fit_2
 
         utils.plot_scatter(axis, residuals_1, residuals_2, color, scale=10)
-        axis.set_xlabel(utils.axis_label("ln-c-SI-residuals"))
+        axis.set_xlabel(utils.axis_label("ln-c-residuals"))
 
-    axes[0].set_ylabel(utils.axis_label("ln-d-times-perm-SI-residuals"))
+    axes[0].set_ylabel(utils.axis_label("ln-d-times-perm-residuals"))
 
     utils.save_fig(fig, "pf-param-correlation")
 

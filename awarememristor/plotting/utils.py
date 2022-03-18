@@ -384,16 +384,16 @@ def axis_label(var_name: str, prepend: str = None, unit_prefix: str = "") -> str
         label = rf"$G_{{+}}$ ({unit_prefix}S)"
     elif var_name == "g-minus":
         label = rf"$G_{{-}}$ ({unit_prefix}S)"
-    elif var_name == "ln-R-SI":
-        label = r"$\ln(R_\mathrm{SI})$"
-    elif var_name == "ln-c-SI":
-        label = r"$\ln(c_\mathrm{SI})$"
-    elif var_name == "ln-d-times-perm-SI":
-        label = r"$\ln(d_\mathrm{SI} \epsilon_\mathrm{SI})$"
-    elif var_name == "ln-d-times-perm-SI-residuals":
-        label = r"$\ln(d_\mathrm{SI} \epsilon_\mathrm{SI})$ residuals"
-    elif var_name == "ln-c-SI-residuals":
-        label = r"$\ln(c_\mathrm{SI})$ residuals"
+    elif var_name == "ln-R":
+        label = r"$\ln(R)$"
+    elif var_name == "ln-c":
+        label = r"$\ln(c)$"
+    elif var_name == "ln-d-times-perm":
+        label = r"$\ln(d \epsilon)$"
+    elif var_name == "ln-d-times-perm-residuals":
+        label = r"$\ln(d \epsilon)$ residuals"
+    elif var_name == "ln-c-residuals":
+        label = r"$\ln(c)$ residuals"
     elif var_name == "residuals":
         label = r"residuals"
     elif var_name == "ordered-residuals":

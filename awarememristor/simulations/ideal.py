@@ -1,7 +1,6 @@
 from awarememristor.simulations import (iv_nonlinearity,
                                         iv_nonlinearity_and_stuck_on,
                                         iv_nonlinearity_cnn,
-                                        memristive_validation,
                                         stuck_distribution, stuck_off,
                                         weight_implementation)
 from awarememristor.training.iterator import Iterator
