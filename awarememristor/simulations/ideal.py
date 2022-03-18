@@ -1,4 +1,4 @@
-from awarememristor.simulations import (iv_nonlinearity,
+from awarememristor.simulations import (high_d2d, iv_nonlinearity,
                                         iv_nonlinearity_and_stuck_on,
                                         iv_nonlinearity_cnn,
                                         stuck_distribution, stuck_off,
@@ -13,7 +13,7 @@ def get_mnist_iterator():
         iv_nonlinearity_and_stuck_on.get_ideal_iterator(),
         stuck_distribution.get_ideal_iterator(),
         weight_implementation.get_ideal_iterator(),
-        memristive_validation.get_ideal_iterator(),
+        high_d2d.get_ideal_iterator(),
     ]
 
     return Iterator(
