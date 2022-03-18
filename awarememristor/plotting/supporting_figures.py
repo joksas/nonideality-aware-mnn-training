@@ -176,22 +176,16 @@ def weight_implementation_double_weights_training(metric="error"):
     )
 
 
-def memristive_validation_training(metric="error"):
-    iterators = [
-        *simulations.memristive_validation.get_iterators(),
-        simulations.memristive_validation.get_iterators()[1],
-    ]
-    iterators[1].training.is_standard_validation_mode = True
+def high_d2d_training(metric="error"):
+    iterators = simulations.high_d2d.get_iterators()
 
-    # Only first five will be plotted.
     _training_curves_multiple_panels(
-        2,
-        0.32,
-        (1, 3),
+        (2, 3),
+        0.45,
+        (1, 2),
         iterators,
         metric,
-        "memristive-validation",
-        y_lim=95,
+        "high-d2d",
     )
 
 

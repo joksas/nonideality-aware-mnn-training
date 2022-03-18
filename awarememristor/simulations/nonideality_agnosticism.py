@@ -1,6 +1,6 @@
-from awarememristor.simulations import (devices, ideal, iv_nonlinearity,
+from awarememristor.simulations import (devices, high_d2d, ideal,
+                                        iv_nonlinearity,
                                         iv_nonlinearity_and_stuck_on,
-                                        memristive_validation,
                                         stuck_distribution, stuck_off, utils,
                                         weight_implementation)
 from awarememristor.training.iterator import Inference, Iterator, Training
@@ -37,7 +37,7 @@ def get_iterators():
         *stuck_off.get_nonideal_iterators(),
         *weight_implementation.get_nonideal_iterators()[-4:],
         *stuck_distribution.get_nonideal_iterators(),
-        memristive_validation.get_nonideal_iterators()[0],
+        *high_d2d.get_nonideal_iterators(),
     ]
     inferences = [
         Inference(**utils.get_inference_params(), **inference_setup)

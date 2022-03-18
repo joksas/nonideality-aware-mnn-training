@@ -641,42 +641,6 @@ def weight_implementation(metric="error"):
     utils.save_fig(fig, "weight-implementation", metric=metric)
 
 
-def memristive_validation(metric="error"):
-    fig, axes = utils.fig_init(2, 1 / 3, fig_shape=(1, 3), sharey=True)
-
-    iterator = simulations.memristive_validation.get_nonideal_iterators()[0]
-
-    axes[0].set_ylabel(utils.axis_label(metric))
-
-    # Curves
-    for idx, (standard_mode, axis) in enumerate(zip([True, False], axes)):
-        iterator.training.is_standard_validation_mode = standard_mode
-        utils.plot_training_curves(axis, iterator, metric=metric)
-        axis.set_xlabel(utils.axis_label("epoch"))
-
-    # Box plots
-    axis = axes[-1]
-    colors = [utils.color_dict()[key] for key in ["vermilion", "blue"]]
-
-    for idx, (standard_mode, color) in enumerate(zip([True, False], colors)):
-        iterator.training.is_standard_validation_mode = standard_mode
-        y = iterator.test_metric(metric)
-        _ = utils.plot_boxplot(axis, y, color, x=idx, metric=metric, linewidth_scaling=2 / 3)
-
-    axis.set_xticks([0, 1])
-    axis.set_xticklabels(["Standard", "Memristive"])
-    axis.set_xlabel(utils.axis_label("checkpoint"))
-
-    utils.add_legend(
-        fig,
-        labels=["Training", "Validation", "Test (nonideal)"],
-        ncol=len(axes),
-        bbox_to_anchor=(0.35, 1.05),
-    )
-
-    utils.save_fig(fig, "memristive-validation", metric=metric)
-
-
 def nonideality_agnosticism(metric: str = "error", norm_rows=True, include_val_label=False):
     training_labels = {
         "nonreg__64__none_none__ideal": "Ideal",
@@ -691,7 +655,7 @@ def nonideality_agnosticism(metric: str = "error", norm_rows=True, include_val_l
         "nonreg__64__5.25e-07_2.62e-06__D2DLN:0.05_0.5": "Less uniform D2D var.",
         "reg__64__5.25e-07_2.62e-06__D2DLN:0.05_0.5": "Less uniform D2D var. (reg.)",
         "nonreg__64__5.25e-07_2.62e-06__IVNL_PF:-1.03_-0.251__-0.0901_-37.1+StuckOn:0.05": r"High $I$-$V$ nonlin. [$\mathrm{SiO}_x$] + stuck at $G_\mathrm{on}$",
-        "nonreg__64__5.25e-07_2.62e-06__D2DLN:0.5_0.5__val_freq_1": "High D2D var.",
+        "nonreg__64__5.25e-07_2.62e-06__D2DLN:0.5_0.5": "High D2D var.",
     }
     inference_labels = {
         "none_none__ideal": training_labels["nonreg__64__none_none__ideal"],
@@ -717,7 +681,7 @@ def nonideality_agnosticism(metric: str = "error", norm_rows=True, include_val_l
             "nonreg__64__5.25e-07_2.62e-06__IVNL_PF:-1.03_-0.251__-0.0901_-37.1+StuckOn:0.05"
         ],
         "5.25e-07_2.62e-06__D2DLN:0.5_0.5": training_labels[
-            "nonreg__64__5.25e-07_2.62e-06__D2DLN:0.5_0.5__val_freq_1"
+            "nonreg__64__5.25e-07_2.62e-06__D2DLN:0.5_0.5"
         ],
     }
     df = pd.DataFrame(
