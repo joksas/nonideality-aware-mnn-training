@@ -140,11 +140,12 @@ def SiO_x():
             exp_data, is_high_resistance, simulations.data.SiO_x_G_on_G_off_ratio()
         )
 
-        color = colors["blue"]
         if is_high_resistance:
             idxs = np.arange(sep_idx, len(resistances))
+            color = colors["reddish-purple"]
         else:
             idxs = np.arange(sep_idx)
+            color = colors["blue"]
 
         x = np.log(resistances[idxs])
         c_points = np.log(c[idxs])
@@ -294,105 +295,108 @@ def HfO2():
     utils.save_fig(fig, "HfO2")
 
 
-def goodness_of_pf_param_fits(is_d_times_perm: bool = False):
-    fig = plt.figure(constrained_layout=True)
-    gs = fig.add_gridspec(3, 1)
+def pf_residuals(is_d_times_perm: bool = False):
+    fig, axes = utils.fig_init(2, 1.0, fig_shape=(4, 2))
 
-    gs_top = gs[0].subgridspec(1, 1)
-    gs_middle = gs[1].subgridspec(1, 2)
-    gs_bottom = gs[2].subgridspec(1, 2)
+    axes[0, 1].sharey(axes[0, 0])
+    plt.setp(axes[0, 1].get_yticklabels(), visible=False)
+    axes[1, 1].sharey(axes[1, 0])
+    plt.setp(axes[1, 1].get_yticklabels(), visible=False)
 
-    subplots = list(gs_top) + list(gs_middle) + list(gs_bottom)
-    for subplot in subplots:
-        fig.add_subplot(subplot)
+    axes[1, 0].sharex(axes[0, 0])
+    plt.setp(axes[0, 0].get_xticklabels(), visible=False)
+    axes[1, 1].sharex(axes[0, 1])
+    plt.setp(axes[0, 1].get_xticklabels(), visible=False)
 
-    fig, axes = utils.fig_init(2, 1.0, custom_fig=fig)
+    axes[3, 0].sharex(axes[2, 0])
+    plt.setp(axes[2, 0].get_xticklabels(), visible=False)
+    axes[3, 0].set_xlim([-2, 2])
+    axes[3, 1].sharex(axes[2, 1])
+    plt.setp(axes[2, 1].get_xticklabels(), visible=False)
+    axes[3, 1].set_xlim([-2, 2])
 
     exp_data = simulations.data.load_SiO_x_multistate()
     V, I = simulations.data.all_SiO_x_curves(exp_data, clean_data=True)
     resistances, c, d_times_perm, _, _ = simulations.data.pf_relationship(V, I)
+    R_0 = const.physical_constants["inverse of conductance quantum"][0]
     # Separate data into before and after the conductance quantum.
-    sep_idx = np.searchsorted(
-        resistances, const.physical_constants["inverse of conductance quantum"][0]
-    )
+    sep_idx = np.searchsorted(resistances, R_0)
 
     colors = utils.color_dict()
 
-    for is_high_resistance in [False, True]:
-        _, _, ln_c_params, ln_d_times_perm_params = simulations.data.pf_params(
+    axes[0, 0].set_ylabel(utils.axis_label("ln-c-residuals"))
+    axes[1, 0].set_ylabel(utils.axis_label("ln-d-times-perm-residuals"))
+    axes[1, 0].set_xlabel(utils.axis_label("ln-R"))
+    axes[1, 1].set_xlabel(utils.axis_label("ln-R"))
+    axes[3, 0].set_xlabel(utils.axis_label("theoretical-normal-quartiles"))
+    axes[2, 0].set_ylabel(utils.axis_label("ordered-ln-c-residuals"))
+    axes[3, 1].set_xlabel(utils.axis_label("theoretical-normal-quartiles"))
+    axes[3, 0].set_ylabel(utils.axis_label("ordered-ln-d-times-perm-residuals"))
+
+    for is_high_resistance, ax_idx in zip([False, True], [0, 1]):
+        _, _, slopes, intercepts, _ = simulations.data.pf_params(
             exp_data, is_high_resistance, simulations.data.SiO_x_G_on_G_off_ratio()
         )
 
         if is_high_resistance:
             idxs = np.arange(sep_idx, len(resistances))
-            color = colors["vermilion"]
-            residual_axis = axes[2]
-            normal_plot_axis = axes[4]
+            color = colors["reddish-purple"]
         else:
             idxs = np.arange(sep_idx)
             color = colors["blue"]
-            residual_axis = axes[1]
-            normal_plot_axis = axes[3]
 
         x = np.log(resistances[idxs])
+        c_points = np.log(c[idxs])
+        c_residuals = c_points - slopes[0] * x - intercepts[0]
 
-        if is_d_times_perm:
-            params = ln_d_times_perm_params
-            y = np.log(d_times_perm[idxs])
-        else:
-            params = ln_c_params
-            y = np.log(c[idxs])
+        d_times_perm_points = np.log(d_times_perm[idxs])
+        d_times_perm_residuals = d_times_perm_points - slopes[1] * x - intercepts[1]
 
-        y_fit = params[0] * x + params[1]
-        utils.plot_scatter(axes[0], x, y, color, scale=10)
-        axes[0].plot(
+        utils.plot_scatter(axes[0, ax_idx], x, c_residuals, color, scale=10)
+        zero_line = [0] * len(x)
+        axes[0, ax_idx].plot(
             x,
-            y_fit,
+            zero_line,
             linewidth=utils.Config.LINEWIDTH,
             color=color,
+            linestyle="dashed",
         )
 
-        residuals = y - y_fit
-        utils.plot_scatter(residual_axis, x, residuals, color, scale=10)
-        residual_axis.plot(
+        utils.plot_scatter(axes[1, ax_idx], x, d_times_perm_residuals, color, scale=10)
+        axes[1, ax_idx].plot(
             x,
-            np.zeros_like(x),
+            zero_line,
             linewidth=utils.Config.LINEWIDTH,
             color=color,
+            linestyle="dashed",
         )
-        max_residual = 1.1 * np.max(np.abs(residuals))
-        residual_axis.set_ylim(-max_residual, max_residual)
-        residual_axis.set_xlabel(utils.axis_label("ln-R"))
 
-        (osm, osr), (slope, intercept, _) = stats.probplot(residuals)
-        quantiles = np.linspace(-2.0, 2.0, 200)
-        normal_plot_axis.plot(
-            quantiles,
-            slope * quantiles + intercept,
+        (osm, osr), (m, b, _) = stats.probplot(c_residuals, dist="norm", plot=None)
+        utils.plot_scatter(axes[2, ax_idx], osm, osr, color, scale=10)
+        axes[2, ax_idx].plot(
+            osm,
+            m * osm + b,
             linewidth=utils.Config.LINEWIDTH,
-            color=colors["bluish-green"],
+            color=color,
+            linestyle="dashed",
         )
-        utils.plot_scatter(normal_plot_axis, osm, osr, color, scale=10)
-        normal_plot_axis.set_xlim(-2.0, 2.0)
-        normal_plot_axis.set_ylim(-max_residual, max_residual)
-        normal_plot_axis.set_xlabel(utils.axis_label("theoretical-normal-quartiles"))
 
-    axes[0].set_xlabel(utils.axis_label("ln-R"))
-    if is_d_times_perm:
-        axes[0].set_ylabel(utils.axis_label("ln-d-times-perm"))
-    else:
-        axes[0].set_ylabel(utils.axis_label("ln-c"))
+        (osm, osr), (m, b, _) = stats.probplot(d_times_perm_residuals, dist="norm", plot=None)
+        utils.plot_scatter(axes[3, ax_idx], osm, osr, color, scale=10)
+        axes[3, ax_idx].plot(
+            osm,
+            m * osm + b,
+            linewidth=utils.Config.LINEWIDTH,
+            color=color,
+            linestyle="dashed",
+        )
 
-    axes[1].set_ylabel(utils.axis_label("residuals"))
-    axes[3].set_ylabel(utils.axis_label("ordered-residuals"))
+    for ax in [axes[0, 0], axes[1, 0]]:
+        low, high = ax.get_ylim()
+        bound = max(abs(low), abs(high))
+        ax.set_ylim(-bound, bound)
 
-    title = "pf-fits"
-    if is_d_times_perm:
-        title += "-d-times-perm"
-    else:
-        title += "-c"
-
-    utils.save_fig(fig, title)
+    utils.save_fig(fig, "pf_residuals")
 
 
 def pf_param_correlation():

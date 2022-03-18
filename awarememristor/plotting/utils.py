@@ -396,8 +396,10 @@ def axis_label(var_name: str, prepend: str = None, unit_prefix: str = "") -> str
         label = r"$\ln(c)$ residuals"
     elif var_name == "residuals":
         label = r"residuals"
-    elif var_name == "ordered-residuals":
-        label = r"ordered residuals"
+    elif var_name == "ordered-ln-c-residuals":
+        label = r"ordered $\ln(c)$" + "\nresiduals"
+    elif var_name == "ordered-ln-d-times-perm-residuals":
+        label = r"ordered $\ln(d \epsilon)$" + "\nresiduals"
     elif var_name == "theoretical-normal-quartiles":
         label = "theoretical normal quartiles"
     else:
