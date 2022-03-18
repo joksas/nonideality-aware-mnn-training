@@ -86,6 +86,7 @@ def fig_init(
     sharey=False,
     scaled_position: tuple[float, float] = (-0.06, 1.04),
     custom_fig: matplotlib.figure = None,
+    no_panels: bool = False,
 ) -> tuple[matplotlib.figure, matplotlib.axes]:
     width = Config.COL_WIDTHS[width_num_cols]
     height = height_frac * width
@@ -113,7 +114,7 @@ def fig_init(
         axis.xaxis.label.set_size(Config.AXIS_LABEL_FONT_SIZE)
         axis.yaxis.label.set_size(Config.AXIS_LABEL_FONT_SIZE)
         axis.tick_params(axis="both", which="both", labelsize=Config.TICKS_FONT_SIZE)
-        if fig_shape != (1, 1):
+        if fig_shape != (1, 1) and not no_panels:
             add_subfigure_label(axis, idx, scaled_position, Config.SUBPLOT_LABEL_SIZE)
 
     return fig, axes
@@ -402,6 +403,10 @@ def axis_label(var_name: str, prepend: str = None, unit_prefix: str = "") -> str
         label = r"ordered $\ln(d \epsilon)$" + "\nresiduals"
     elif var_name == "theoretical-normal-quartiles":
         label = "theoretical normal quartiles"
+    elif var_name == "sqrt(V)":
+        label = r"$\sqrt{V}$"
+    elif var_name == "ln(I/V)":
+        label = r"$\ln(I/V)$"
     else:
         raise ValueError(f'Unrecognised variable name "{var_name}".')
 

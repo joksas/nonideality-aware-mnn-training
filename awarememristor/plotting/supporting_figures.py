@@ -1,6 +1,8 @@
 import numpy as np
+import scipy.constants as const
 
 from awarememristor import simulations
+from awarememristor.crossbar import nonidealities
 from awarememristor.plotting import utils
 
 
@@ -227,3 +229,54 @@ def stuck_distribution_training(metric="error"):
         "stuck-distribution",
         y_lim=95,
     )
+
+
+def pf_plots():
+    fig, axes = utils.fig_init(2, 1.0, fig_shape=(7, 7), sharex=True, no_panels=True)
+
+    exp_data = simulations.data.load_SiO_x_multistate()
+    V_full, I_full = simulations.data.all_SiO_x_curves(exp_data, clean_data=True)
+    (
+        resistances,
+        _,
+        _,
+        V_full,
+        I_full,
+    ) = simulations.data.pf_relationship(V_full, I_full)
+    R_0 = const.physical_constants["inverse of conductance quantum"][0]
+    # Separate data into before and after the conductance quantum.
+    sep_idx = np.searchsorted(resistances, R_0)
+    colors = utils.color_dict()
+
+    axis_idx = 0
+    for is_high_resistance in [False, True]:
+        if is_high_resistance:
+            idxs = np.arange(sep_idx, len(resistances))
+            color = colors["reddish-purple"]
+        else:
+            idxs = np.arange(sep_idx)
+            color = colors["blue"]
+
+        V = V_full[idxs]
+        I = I_full[idxs]
+
+        for idx in range(V.shape[0]):
+            axis = axes[np.unravel_index(axis_idx, axes.shape)]
+            voltage_curve = V[idx, 21:]
+            current_curve = I[idx, 21:]
+            axis.plot(
+                np.sqrt(voltage_curve),
+                np.log(current_curve / voltage_curve),
+                linewidth=utils.Config.LINEWIDTH,
+                color=color,
+            )
+            axis_idx += 1
+
+    for axis_idx in range(axes.shape[1]):
+        axis = axes[-1, axis_idx]
+        axis.set_xlabel(utils.axis_label("sqrt(V)"))
+    for axis_idx in range(axes.shape[0]):
+        axis = axes[axis_idx, 0]
+        axis.set_ylabel(utils.axis_label("ln(I/V)"))
+
+    utils.save_fig(fig, "pf-plots", is_supporting=True)
