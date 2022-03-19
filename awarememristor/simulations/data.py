@@ -162,7 +162,7 @@ def pf_relationship(
         c[idx] = popt[0]
         d_times_perm[idx] = popt[1]
 
-    resistances, c, d_times_perm, V, _ = utils.sort_multiple(resistances, c, d_times_perm, V, I)
+    resistances, c, d_times_perm, V, I = utils.sort_multiple(resistances, c, d_times_perm, V, I)
 
     return resistances, c, d_times_perm, V, I
 
