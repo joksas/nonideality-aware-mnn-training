@@ -323,12 +323,14 @@ def pf_fits():
             axis.plot(
                 voltage_curve,
                 fit,
-                linewidth=utils.Config.LINEWIDTH,
+                linewidth=1.5 * utils.Config.LINEWIDTH,
                 color=colors["black"],
                 linestyle="dotted",
             )
             axis.ticklabel_format(style="sci", axis="y", scilimits=(-1, 1))
             axis.yaxis.get_offset_text().set_fontsize(utils.Config.TICKS_FONT_SIZE)
+            axis.set_xlim(0, 0.5)
+            axis.set_ylim(bottom=0)
             axis_idx += 1
 
     axes[-1, 3].set_xlabel(utils.axis_label("voltage"))
