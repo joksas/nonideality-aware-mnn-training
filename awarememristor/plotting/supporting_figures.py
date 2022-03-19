@@ -272,12 +272,8 @@ def pf_plots():
             )
             axis_idx += 1
 
-    for axis_idx in range(axes.shape[1]):
-        axis = axes[-1, axis_idx]
-        axis.set_xlabel(utils.axis_label("sqrt(V)"))
-    for axis_idx in range(axes.shape[0]):
-        axis = axes[axis_idx, 0]
-        axis.set_ylabel(utils.axis_label("ln(I/V)"))
+    axes[-1, 3].set_xlabel(utils.axis_label("sqrt(V)"))
+    axes[3, 0].set_ylabel(utils.axis_label("ln(I/V)"))
 
     utils.save_fig(fig, "pf-plots", is_supporting=True)
 
