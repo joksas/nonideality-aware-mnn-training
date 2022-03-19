@@ -280,3 +280,62 @@ def pf_plots():
         axis.set_ylabel(utils.axis_label("ln(I/V)"))
 
     utils.save_fig(fig, "pf-plots", is_supporting=True)
+
+
+def pf_fits():
+    fig, axes = utils.fig_init(2, 1.0, fig_shape=(7, 7), sharex=True, no_panels=True)
+
+    exp_data = simulations.data.load_SiO_x_multistate()
+    V_full, I_full = simulations.data.all_SiO_x_curves(exp_data, clean_data=True)
+    (
+        resistances,
+        c_full,
+        d_times_perm_full,
+        V_full,
+        I_full,
+    ) = simulations.data.pf_relationship(V_full, I_full)
+    R_0 = const.physical_constants["inverse of conductance quantum"][0]
+    # Separate data into before and after the conductance quantum.
+    sep_idx = np.searchsorted(resistances, R_0)
+    colors = utils.color_dict()
+
+    axis_idx = 0
+    for is_high_resistance in [False, True]:
+        if is_high_resistance:
+            idxs = np.arange(sep_idx, len(resistances))
+            color = colors["reddish-purple"]
+        else:
+            idxs = np.arange(sep_idx)
+            color = colors["blue"]
+
+        V = V_full[idxs]
+        I = I_full[idxs]
+        c = c_full[idxs]
+        d_times_perm = d_times_perm_full[idxs]
+
+        for idx in range(V.shape[0]):
+            axis = axes[np.unravel_index(axis_idx, axes.shape)]
+            voltage_curve = V[idx, :]
+            current_curve = I[idx, :]
+            axis.plot(
+                voltage_curve,
+                current_curve,
+                linewidth=utils.Config.LINEWIDTH,
+                color=color,
+            )
+            fit = nonidealities.IVNonlinearityPF.model(voltage_curve, c[idx], d_times_perm[idx])
+            axis.plot(
+                voltage_curve,
+                fit,
+                linewidth=utils.Config.LINEWIDTH,
+                color=colors["black"],
+                linestyle="dotted",
+            )
+            axis.ticklabel_format(style="sci", axis="y", scilimits=(-1, 1))
+            axis.yaxis.get_offset_text().set_fontsize(utils.Config.TICKS_FONT_SIZE)
+            axis_idx += 1
+
+    axes[-1, 3].set_xlabel(utils.axis_label("voltage"))
+    axes[3, 0].set_ylabel(utils.axis_label("current"))
+
+    utils.save_fig(fig, "pf-fits", is_supporting=True)
