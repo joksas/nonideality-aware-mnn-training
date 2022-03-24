@@ -353,21 +353,21 @@ def iv_nonlinearity_inference(metric="error"):
         "Low nonlinearity: %.1f (standard), %.1f (aware), %.1f (aware + reg.)", *median_vals[:3]
     )
     logging.info(
-        "Low nonlinearity: %.1f (standard), %.1f (aware), %.1f (aware + reg.)", *median_vals[3:]
+        "High nonlinearity: %.1f (standard), %.1f (aware), %.1f (aware + reg.)", *median_vals[3:]
     )
     logging.info("Mean power (W):")
     logging.info(
         "Low nonlinearity: %.3g (standard), %.3g (aware), %.3g (aware + reg.)", *avg_powers[:3]
     )
     logging.info(
-        "Low nonlinearity: %.3g (standard), %.3g (aware), %.3g (aware + reg.)", *avg_powers[3:]
+        "High nonlinearity: %.3g (standard), %.3g (aware), %.3g (aware + reg.)", *avg_powers[3:]
     )
     logging.info("Efficiency (TOP/(sW)):")
     logging.info(
         "Low nonlinearity: %.3g (standard), %.3g (aware), %.3g (aware + reg.)", *efficiency[:3]
     )
     logging.info(
-        "Low nonlinearity: %.3g (standard), %.3g (aware), %.3g (aware + reg.)", *efficiency[3:]
+        "High nonlinearity: %.3g (standard), %.3g (aware), %.3g (aware + reg.)", *efficiency[3:]
     )
 
     utils.add_boxplot_legend(
