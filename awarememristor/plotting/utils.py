@@ -357,9 +357,9 @@ def save_fig(fig, name: str, is_supporting: bool = False, metric: str = "error")
 
 def axis_label(var_name: str, prepend: str = None, unit_prefix: str = "") -> str:
     if var_name == "accuracy":
-        label = "accuracy (%)"
+        label = r"accuracy (\%)"
     elif var_name == "error":
-        label = "error (%)"
+        label = r"error (\%)"
     elif var_name == "loss":
         label = "loss"
     elif var_name == "epoch":
