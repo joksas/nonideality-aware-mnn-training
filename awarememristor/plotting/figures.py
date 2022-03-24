@@ -409,7 +409,6 @@ def iv_nonlinearity_cnn(metric="error"):
     axis.set_xticklabels(["Standard", "Nonideality-aware"])
 
     axis.set_xlabel("Training")
-    axis.set_ylim(top=95.0)
 
     utils.add_legend(
         fig,
@@ -679,9 +678,9 @@ def pf_residuals(is_d_times_perm: bool = False):
             linestyle="dashed",
         )
 
-    for ax in [axes[0, 0], axes[1, 0]]:
+    for ax in [axes[0, 0], axes[1, 0], axes[2, 0], axes[2, 1], axes[3, 0], axes[3, 1]]:
         low, high = ax.get_ylim()
-        bound = max(abs(low), abs(high))
+        bound = 1.15 * max(abs(low), abs(high))
         ax.set_ylim(-bound, bound)
 
     utils.save_fig(fig, "pf-residuals")
