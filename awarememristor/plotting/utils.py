@@ -84,7 +84,7 @@ def fig_init(
     fig_shape: tuple[int, int] = (1, 1),
     sharex=False,
     sharey=False,
-    scaled_position: tuple[float, float] = (-0.06, 1.04),
+    scaled_position: tuple[float, float] = (-0.08, 1.04),
     custom_fig: matplotlib.figure = None,
     no_panels: bool = False,
 ) -> tuple[matplotlib.figure, matplotlib.axes]:
@@ -130,7 +130,13 @@ def add_subfigure_label(
     ascii_idx = 65 + letter_idx
     if is_lowercase:
         ascii_idx += 32
-    add_text(axis, chr(ascii_idx), normalised_position, fontsize=fontsize, fontweight="bold")
+    add_text(
+        axis,
+        f"\\textbf{{({chr(ascii_idx)})}}",
+        normalised_position,
+        fontsize=fontsize,
+        fontweight="bold",
+    )
 
 
 def add_text(
