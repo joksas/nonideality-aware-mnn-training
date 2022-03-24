@@ -201,8 +201,11 @@ def plot_training_curves(
         is_many=is_many,
     )
 
-    axis.set_yscale("log")
     axis.set_xlim([0, len(x_training)])
+
+    axis.set_yscale("log")
+    if metric == "error":
+        axis.set_ylim(top=85)
 
 
 def plot_curve(axis, x, y, color, metric="error", linestyle="solid", is_many=False):
