@@ -356,6 +356,11 @@ def save_fig(fig, name: str, is_supporting: bool = False, metric: str = "error")
 
 
 def axis_label(var_name: str, prepend: str = None, unit_prefix: str = "") -> str:
+    unit_prefixes = {
+        "mu": "μ",
+    }
+    unit_prefix = unit_prefixes.get(unit_prefix, unit_prefix)
+
     if var_name == "accuracy":
         label = r"accuracy (\%)"
     elif var_name == "error":
