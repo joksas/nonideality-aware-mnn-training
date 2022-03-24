@@ -467,9 +467,9 @@ def weight_implementation(metric="error"):
         axis.yaxis.set_ticks(np.arange(0.5, 3.0, 0.5))
 
         if idx > 3:
-            axis.set_xlabel(utils.axis_label("g-plus", unit_prefix="μ"))
+            axis.set_xlabel(utils.axis_label("g-plus", unit_prefix="mu"))
         if idx in [0, 4]:
-            axis.set_ylabel(utils.axis_label("g-minus", unit_prefix="μ"))
+            axis.set_ylabel(utils.axis_label("g-minus", unit_prefix="mu"))
 
     mappings = ["standard (avg.)", "standard (min. G)", "double w", "double w (reg.)"]
     variabilities = ["more uniform", "less uniform"]
