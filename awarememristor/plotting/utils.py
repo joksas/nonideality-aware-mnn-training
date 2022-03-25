@@ -404,9 +404,9 @@ def axis_label(var_name: str, prepend: str = None, unit_prefix: str = "") -> str
     elif var_name == "ln-c":
         label = r"$\ln(c)$"
     elif var_name == "ln-d-times-perm":
-        label = r"$\ln(d \epsilon)$"
+        label = r"$\ln(d \varepsilon)$"
     elif var_name == "ln-d-times-perm-residuals":
-        label = r"$\ln(d \epsilon)$ residuals"
+        label = r"$\ln(d \varepsilon)$ residuals"
     elif var_name == "ln-c-residuals":
         label = r"$\ln(c)$ residuals"
     elif var_name == "residuals":
@@ -414,7 +414,7 @@ def axis_label(var_name: str, prepend: str = None, unit_prefix: str = "") -> str
     elif var_name == "ordered-ln-c-residuals":
         label = r"ordered $\ln(c)$" + "\nresiduals"
     elif var_name == "ordered-ln-d-times-perm-residuals":
-        label = r"ordered $\ln(d \epsilon)$" + "\nresiduals"
+        label = r"ordered $\ln(d \varepsilon)$" + "\nresiduals"
     elif var_name == "theoretical-normal-quartiles":
         label = "theoretical normal quartiles"
     elif var_name == "sqrt(V)":
