@@ -262,6 +262,7 @@ def pf_plots():
 
         for idx in range(V.shape[0]):
             axis = axes[np.unravel_index(axis_idx, axes.shape)]
+            # Use range from 0.1 V.
             voltage_curve = V[idx, 21:]
             current_curve = I[idx, 21:]
             axis.plot(
