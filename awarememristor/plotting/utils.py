@@ -412,7 +412,7 @@ def axis_label(var_name: str, prepend: str = None, unit_prefix: str = "") -> str
     elif var_name == "theoretical-normal-quartiles":
         label = "theoretical normal quartiles"
     elif var_name == "sqrt(V)":
-        label = r"$\sqrt{V}$"
+        label = f"$\\sqrt{{V}}$ ({unit_prefix}$\\mathrm{{V}}^{{0.5}}$)"
     elif var_name == "ln(I/V)":
         label = r"$\ln(I/V)$"
     else:
