@@ -205,7 +205,7 @@ def plot_training_curves(
 
     axis.set_yscale("log")
     if metric == "error":
-        axis.set_ylim(top=85)
+        axis.set_ylim(top=85, auto=True)
 
 
 def plot_curve(axis, x, y, color, metric="error", linestyle="solid", is_many=False):
