@@ -80,7 +80,6 @@ def _training_curves_multiple_panels(
     metric,
     figure_name,
     inference_idxs=None,
-    y_lim=None,
 ):
     fig, axes = utils.fig_init(
         width_num_cols, height_frac, fig_shape=fig_shape, sharex=True, sharey=True
@@ -115,8 +114,6 @@ def _training_curves_multiple_panels(
                     axis.set_xlabel(utils.axis_label("epoch"))
                 if j == 0:
                     axis.set_ylabel(utils.axis_label(metric))
-            if y_lim is not None:
-                axis.set_ylim(top=y_lim)
 
     utils.add_legend(
         fig,
@@ -174,7 +171,6 @@ def weight_implementation_double_weights_training(metric="error"):
         metric,
         "weight-implementation-double-weights",
         inference_idxs=inference_idxs,
-        y_lim=95,
     )
 
 
@@ -227,7 +223,6 @@ def stuck_distribution_training(metric="error"):
         iterators,
         metric,
         "stuck-distribution",
-        y_lim=95,
     )
 
 
