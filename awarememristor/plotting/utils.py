@@ -211,7 +211,7 @@ def plot_training_curves(
 
     axis.set_yscale("log")
     if metric == "error":
-        axis.set_ylim(top=85)
+        axis.set_ylim(top=85, auto=True)
 
 
 def plot_curve(axis, x, y, color, metric="error", linestyle="solid", is_many=False):
@@ -418,7 +418,7 @@ def axis_label(var_name: str, prepend: str = None, unit_prefix: str = "") -> str
     elif var_name == "theoretical-normal-quartiles":
         label = "theoretical normal quartiles"
     elif var_name == "sqrt(V)":
-        label = r"$\sqrt{V}$"
+        label = f"$\\sqrt{{V}}$ ({unit_prefix}$\\mathrm{{V}}^{{0.5}}$)"
     elif var_name == "ln(I/V)":
         label = r"$\ln(I/V)$"
     else:
