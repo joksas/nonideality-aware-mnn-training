@@ -392,7 +392,7 @@ def axis_label(var_name: str, prepend: str = None, unit_prefix: str = "") -> str
     elif var_name == "current":
         label = f"current ({unit_prefix}A)"
     elif var_name == "mean-nonlinearity":
-        label = "mean nonlinearity"
+        label = "mean conductance linearity"
     elif var_name == "pulse-number":
         label = "pulse number"
     elif var_name == "g-plus":
