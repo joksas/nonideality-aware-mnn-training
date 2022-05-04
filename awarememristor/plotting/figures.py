@@ -14,6 +14,13 @@ from awarememristor.training import architecture
 
 logging.getLogger().setLevel(logging.INFO)
 
+plt.rcParams.update(
+    {
+        "font.sans-serif": "Fira Sans",
+        "font.weight": "light",
+    }
+)
+
 
 def SiO_x():
     fig = plt.figure(constrained_layout=True)
