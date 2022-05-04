@@ -24,19 +24,17 @@ plt.rcParams.update(
 
 def SiO_x():
     fig = plt.figure(constrained_layout=True)
-    gs = fig.add_gridspec(3, 1, height_ratios=[1.0, 0.6, 0.6])
+    gs = fig.add_gridspec(1, 1)
 
     gs_top = gs[0].subgridspec(1, 2, wspace=0.03)
 
-    subplots = list(gs_top) + [gs[1]] + [gs[2]]
+    subplots = list(gs_top)
     for subplot in subplots:
         fig.add_subplot(subplot)
 
-    fig, axes = utils.fig_init(2, 1.0, custom_fig=fig)
+    fig, axes = utils.fig_init(2, 0.4, custom_fig=fig)
 
     axes[1].sharex(axes[0])
-    axes[3].sharex(axes[2])
-    plt.setp(axes[2].get_xticklabels(), visible=False)
 
     N = 1000
     v_min = 1.0
@@ -112,86 +110,6 @@ def SiO_x():
     cbar.ax.tick_params(axis="both", which="both", labelsize=utils.Config.TICKS_FONT_SIZE)
 
     axes[0].set_ylabel(utils.axis_label("current"))
-
-    V, I = simulations.data.all_SiO_x_curves(exp_data, clean_data=True)
-    resistances, c, d_times_perm, _, _ = simulations.data.pf_relationship(V, I)
-    R_0 = const.physical_constants["inverse of conductance quantum"][0]
-    # Separate data into before and after the conductance quantum.
-    sep_idx = np.searchsorted(resistances, R_0)
-
-    colors = utils.color_dict()
-    for axis in axes[2:]:
-        axis.axvline(
-            x=np.log(R_0),
-            linestyle="dotted",
-            color=colors["bluish-green"],
-            linewidth=1.25 * utils.Config.LINEWIDTH,
-        )
-    axes[3].annotate(
-        "conductance\nquantum",
-        xy=(np.log(R_0), -36),
-        xytext=(np.log(R_0) + 0.75, -34),
-        fontsize=utils.Config.ANNOTATION_FONT_SIZE,
-        ha="center",
-        color=colors["bluish-green"],
-        arrowprops=dict(
-            color=colors["bluish-green"],
-            arrowstyle="->",
-            connectionstyle="arc3",
-            linewidth=0.5 * utils.Config.LINEWIDTH,
-        ),
-    )
-
-    for is_high_resistance in [False, True]:
-        _, _, slopes, intercepts, _ = simulations.data.pf_params(
-            exp_data, is_high_resistance, simulations.data.SiO_x_G_on_G_off_ratio()
-        )
-
-        if is_high_resistance:
-            idxs = np.arange(sep_idx, len(resistances))
-            color = colors["reddish-purple"]
-        else:
-            idxs = np.arange(sep_idx)
-            color = colors["blue"]
-
-        x = np.log(resistances[idxs])
-        c_points = np.log(c[idxs])
-        d_times_perm_points = np.log(d_times_perm[idxs])
-        V = np.arange(0.0, 0.51, 0.01)
-        I_from_fits = crossbar.nonidealities.IVNonlinearityPF.model(V, c[idxs], d_times_perm[idxs])
-        nonlinearities = [
-            simulations.data.average_nonlinearity(V, I_from_fits[:, i]) for i in range(len(idxs))
-        ]
-
-        palette_idxs = [
-            int(np.floor(N * (nonlinearity - v_min) / (v_max - v_min)))
-            for nonlinearity in nonlinearities
-        ]
-        marker_colors = [palette[palette_idx] for palette_idx in palette_idxs]
-        utils.plot_scatter(axes[2], x, c_points, marker_colors, scale=20)
-
-        c_fit = slopes[0] * x + intercepts[0]
-        axes[2].plot(
-            x,
-            c_fit,
-            linewidth=utils.Config.LINEWIDTH,
-            color=color,
-            linestyle="dashed",
-        )
-        axes[2].set_ylabel(utils.axis_label("ln-c"))
-
-        d_times_perm_fit = slopes[1] * x + intercepts[1]
-        utils.plot_scatter(axes[3], x, d_times_perm_points, marker_colors, scale=20)
-        axes[3].plot(
-            x,
-            d_times_perm_fit,
-            linewidth=utils.Config.LINEWIDTH,
-            color=color,
-            linestyle="dashed",
-        )
-        axes[3].set_ylabel(utils.axis_label("ln-d-times-perm"))
-
-    axes[3].set_xlabel(utils.axis_label("ln-R"))
 
     utils.save_fig(fig, "SiO_x")
 
