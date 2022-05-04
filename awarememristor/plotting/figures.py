@@ -110,6 +110,8 @@ def SiO_x():
     cbar.ax.tick_params(axis="both", which="both", labelsize=utils.Config.TICKS_FONT_SIZE)
 
     axes[0].set_ylabel(utils.axis_label("current"))
+    axes[0].set_title("Low resistance")
+    axes[1].set_title("High resistance")
 
     utils.save_fig(fig, "SiO_x")
 
