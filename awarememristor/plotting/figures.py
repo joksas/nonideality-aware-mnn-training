@@ -223,27 +223,25 @@ def Ta_HfO2():
 
 
 def iv_nonlinearity_training(metric="error"):
-    fig, axes = utils.fig_init(2, 0.55, fig_shape=(2, 3), sharex=True, sharey=True)
+    fig, axes = utils.fig_init(2, 0.4, fig_shape=(1, 2), sharex=True, sharey=True)
 
     iterators = simulations.iv_nonlinearity.get_iterators()
-    # Same training, different inference.
-    iterators.insert(3, iterators[0])
-    inference_idxs = [0, 0, 0, 1, 0, 0]
+    iterators = [iterators[0], iterators[3]]
+    inference_idxs = [1, 0]
+    titles = ["Standard", "Nonideality-aware"]
 
-    for idx, (iterator, inference_idx) in enumerate(zip(iterators, inference_idxs)):
-        i, j = np.unravel_index(idx, axes.shape)
-        axis = axes[i, j]
+    for idx, (iterator, inference_idx, title) in enumerate(zip(iterators, inference_idxs, titles)):
+        axis = axes[idx]
         utils.plot_training_curves(axis, iterator, metric=metric, inference_idx=inference_idx)
-        if i + 1 == axes.shape[0]:
-            axis.set_xlabel(utils.axis_label("epoch"))
-        if j == 0:
-            axis.set_ylabel(utils.axis_label(metric))
+        axis.set_xlabel(utils.axis_label("epoch"))
+        axis.set_title(title)
+
+    axes[0].set_ylabel(utils.axis_label(metric))
 
     utils.add_legend(
         fig,
         labels=["Training", "Validation", "Test (nonideal)"],
-        ncol=axes.shape[1],
-        bbox_to_anchor=(0.5, 1.03),
+        bbox_to_anchor=(1.1, 0.5),
     )
 
     utils.save_fig(fig, "iv-nonlinearity-training", metric=metric)
