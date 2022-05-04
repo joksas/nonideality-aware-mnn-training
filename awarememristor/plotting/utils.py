@@ -114,8 +114,6 @@ def fig_init(
         axis.xaxis.label.set_size(Config.AXIS_LABEL_FONT_SIZE)
         axis.yaxis.label.set_size(Config.AXIS_LABEL_FONT_SIZE)
         axis.tick_params(axis="both", which="both", labelsize=Config.TICKS_FONT_SIZE)
-        if fig_shape != (1, 1) and not no_panels:
-            add_subfigure_label(axis, idx, scaled_position, Config.SUBPLOT_LABEL_SIZE)
 
     return fig, axes
 
