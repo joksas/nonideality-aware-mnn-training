@@ -363,6 +363,8 @@ def axis_label(var_name: str, prepend: str = None, unit_prefix: str = "") -> str
         label = "accuracy (%)"
     elif var_name == "error":
         label = "error (%)"
+    elif var_name == "inference-error":
+        label = "inference error (%)"
     elif var_name == "loss":
         label = "loss"
     elif var_name == "epoch":

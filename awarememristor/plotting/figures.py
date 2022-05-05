@@ -491,6 +491,7 @@ def nonideality_agnosticism(metric: str = "error", norm_rows=True, include_val_l
 
     axes.set_ylabel(utils.axis_label("inference"))
     axes.set_xlabel(utils.axis_label("training"))
+    axes.set_title(utils.axis_label("inference-error"), y=-0.11)
 
     if include_val_label:
         axes.text(
