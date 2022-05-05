@@ -38,3 +38,18 @@ pytest tests
 The code is extensible but was written mostly with specific [simulations](/awarememristor/simulations) in mind.
 Any new functionality (such as different nonidealities) should be incorporated carefully.
 For example, to handle combinations of *multiple* linearity-preserving nonidealities (which is not currently supported), it may *not* be sufficient to simply apply them one after another.
+
+## Citation
+
+A paper utilizing this package was published in [Advanced Science](https://onlinelibrary.wiley.com/journal/21983844) under the title ["Nonideality-Aware Training for Accurate and Robust Low-Power Memristive Neural Networks"](https://doi.org/10.1002/advs.202105784). To cite it, use the following BibTeX entry:
+
+```bibtex
+@article{JoksasWang2022,
+  author       = {Joksas, Dovydas and Wang, Erwei and Barmpatsalos, Nikolaos and Ng, Wing H. and Kenyon, Anthony J. and Constantinides, George A. and Mehonic, Adnan},
+  date         = {2022},
+  doi          = {10.1002/advs.202105784},
+  journaltitle = {Advanced Science},
+  pages        = {2105784},
+  title        = {Nonideality-Aware Training for Accurate and Robust Low-Power Memristive Neural Networks},
+}
+```
