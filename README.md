@@ -49,7 +49,9 @@ A paper utilizing this package was published in [Advanced Science](https://onlin
   date         = {2022},
   doi          = {10.1002/advs.202105784},
   journaltitle = {Advanced Science},
+  number       = {17},
   pages        = {2105784},
   title        = {Nonideality-Aware Training for Accurate and Robust Low-Power Memristive Neural Networks},
+  volume       = {9},
 }
 ```
