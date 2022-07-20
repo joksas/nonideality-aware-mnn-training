@@ -1,1 +1,1 @@
-from awarememristor.plotting import figures, supporting_figures
+from awarememristor.plotting import extra_figures, figures, supporting_figures
