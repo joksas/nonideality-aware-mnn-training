@@ -20,9 +20,7 @@ def custom_iterator(training_setup, inference_setups, is_regularized):
 def get_iterators():
     inference_setups = [
         devices.ideal(),
-        devices.SiO_x(False),
         devices.SiO_x(True),
-        devices.stuck_off(),
         devices.SiO_x_high_nonlinearity_and_stuck_on(),
         devices.more_uniform_d2d(),
         devices.less_uniform_d2d(),

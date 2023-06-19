@@ -421,38 +421,18 @@ def weight_implementation(metric="error"):
 def nonideality_agnosticism(metric: str = "error", norm_rows=True, include_val_label=False):
     training_labels = {
         "nonreg__64__none_none__ideal": "Ideal",
-        "nonreg__64__0.00069_0.00345__IVNL_PF:-1.12_0.628__-1.34_-25.9": r"Low nonlin.",
-        "reg__64__0.00069_0.00345__IVNL_PF:-1.12_0.628__-1.34_-25.9": r"Low nonlin. (reg.)",
-        "nonreg__64__5.25e-07_2.62e-06__IVNL_PF:-1.03_-0.251__-0.0901_-37.1": r"High nonlin.",
-        "reg__64__5.25e-07_2.62e-06__IVNL_PF:-1.03_-0.251__-0.0901_-37.1": r"High nonlin. (reg.)",
-        "nonreg__64__5.25e-07_2.62e-06__StuckOff:0.05": r"Stuck OFF",
-        "nonreg__64__4.36e-05_0.000978__StuckDistr:0.101_1.77e-05": r"Stuck [experimental]",
-        "nonreg__64__5.25e-07_2.62e-06__D2DLN:0.25_0.25": "More uniform D2D var.",
-        "reg__64__5.25e-07_2.62e-06__D2DLN:0.25_0.25": "More uniform D2D var. (reg.)",
-        "nonreg__64__5.25e-07_2.62e-06__D2DLN:0.05_0.5": "Less uniform D2D var.",
-        "reg__64__5.25e-07_2.62e-06__D2DLN:0.05_0.5": "Less uniform D2D var. (reg.)",
-        "nonreg__64__5.25e-07_2.62e-06__IVNL_PF:-1.03_-0.251__-0.0901_-37.1+StuckOn:0.05": r"High nonlin. + stuck ON",
-        "nonreg__64__5.25e-07_2.62e-06__D2DLN:0.5_0.5": "High D2D var.",
+        "nonreg__64__4.36e-05_0.000978__StuckDistr:0.101_1.77e-05": r"Stuck (experimental)",
+        "nonreg__64__5.25e-07_2.62e-06__IVNL_PF:-1.03_-0.251__-0.0901_-37.1": r"Nonlinearity",
+        "nonreg__64__5.25e-07_2.62e-06__IVNL_PF:-1.03_-0.251__-0.0901_-37.1+StuckOn:0.05": r"Stuck + nonlinearity",
+        "nonreg__64__5.25e-07_2.62e-06__D2DLN:0.5_0.5": "D2D variability",
     }
     inference_labels = {
         "none_none__ideal": training_labels["nonreg__64__none_none__ideal"],
-        "0.00069_0.00345__IVNL_PF:-1.12_0.628__-1.34_-25.9": training_labels[
-            "nonreg__64__0.00069_0.00345__IVNL_PF:-1.12_0.628__-1.34_-25.9"
-        ],
-        "5.25e-07_2.62e-06__IVNL_PF:-1.03_-0.251__-0.0901_-37.1": training_labels[
-            "nonreg__64__5.25e-07_2.62e-06__IVNL_PF:-1.03_-0.251__-0.0901_-37.1"
-        ],
-        "5.25e-07_2.62e-06__StuckOff:0.05": training_labels[
-            "nonreg__64__5.25e-07_2.62e-06__StuckOff:0.05"
-        ],
         "4.36e-05_0.000978__StuckDistr:0.101_1.77e-05": training_labels[
             "nonreg__64__4.36e-05_0.000978__StuckDistr:0.101_1.77e-05"
         ],
-        "5.25e-07_2.62e-06__D2DLN:0.25_0.25": training_labels[
-            "nonreg__64__5.25e-07_2.62e-06__D2DLN:0.25_0.25"
-        ],
-        "5.25e-07_2.62e-06__D2DLN:0.05_0.5": training_labels[
-            "nonreg__64__5.25e-07_2.62e-06__D2DLN:0.05_0.5"
+        "5.25e-07_2.62e-06__IVNL_PF:-1.03_-0.251__-0.0901_-37.1": training_labels[
+            "nonreg__64__5.25e-07_2.62e-06__IVNL_PF:-1.03_-0.251__-0.0901_-37.1"
         ],
         "5.25e-07_2.62e-06__IVNL_PF:-1.03_-0.251__-0.0901_-37.1+StuckOn:0.05": training_labels[
             "nonreg__64__5.25e-07_2.62e-06__IVNL_PF:-1.03_-0.251__-0.0901_-37.1+StuckOn:0.05"
@@ -468,12 +448,17 @@ def nonideality_agnosticism(metric: str = "error", norm_rows=True, include_val_l
     df = df.astype(float)
     iterators = simulations.nonideality_agnosticism.get_iterators()
     for iterator in iterators:
+        if iterator.training.label() not in training_labels:
+            continue
+
         training_label = training_labels[iterator.training.label()]
         ys = [
             iterator.test_metric(metric, inference_idx=idx)
             for idx in range(len(iterator.inferences))
         ]
         for inference, y in zip(iterator.inferences, ys):
+            if inference.label() not in inference_labels:
+                continue
             inference_label = inference_labels[inference.label()]
             df.at[inference_label, training_label] = np.median(y)
 
@@ -491,7 +476,7 @@ def nonideality_agnosticism(metric: str = "error", norm_rows=True, include_val_l
 
     axes.set_ylabel(utils.axis_label("inference"))
     axes.set_xlabel(utils.axis_label("training"))
-    axes.set_title(utils.axis_label("inference-error"), y=-0.11)
+    axes.set_title(utils.axis_label("inference-error"), y=-0.11, fontsize=utils.Config.AXIS_LABEL_FONT_SIZE+3)
 
     if include_val_label:
         axes.text(

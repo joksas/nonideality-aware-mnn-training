@@ -111,8 +111,8 @@ def fig_init(
         temp_axes = axes
 
     for idx, axis in enumerate(temp_axes.flatten()):
-        axis.xaxis.label.set_size(Config.AXIS_LABEL_FONT_SIZE)
-        axis.yaxis.label.set_size(Config.AXIS_LABEL_FONT_SIZE)
+        axis.xaxis.label.set_size(Config.AXIS_LABEL_FONT_SIZE + 3)
+        axis.yaxis.label.set_size(Config.AXIS_LABEL_FONT_SIZE + 3)
         axis.tick_params(axis="both", which="both", labelsize=Config.TICKS_FONT_SIZE)
 
     return fig, axes
@@ -511,7 +511,7 @@ def add_heatmap(fig, axis, data, x_ticks=None, y_ticks=None, metric="error", nor
     if x_ticks is not None:
         axis.set_xticks(np.arange(len(x_ticks)))
         axis.set_xticklabels(x_ticks)
-        axis.tick_params(top=True, bottom=False, labeltop=True, labelbottom=False)
+        axis.tick_params(top=True, bottom=False, labeltop=True, labelbottom=False, labelsize=Config.TICKS_FONT_SIZE+3)
         plt.setp(axis.get_xticklabels(), rotation=-45, ha="right", rotation_mode="anchor")
         axis.xaxis.set_label_position("top")
     if y_ticks is not None:
@@ -523,7 +523,7 @@ def add_heatmap(fig, axis, data, x_ticks=None, y_ticks=None, metric="error", nor
         cbar.ax.set_ylabel(
             axis_label(metric, prepend="median"),
             rotation=-90,
-            fontsize=Config.AXIS_LABEL_FONT_SIZE,
+            fontsize=Config.AXIS_LABEL_FONT_SIZE + 3,
             va="bottom",
         )
         cbar.ax.tick_params(axis="both", which="both", labelsize=Config.TICKS_FONT_SIZE)
@@ -533,7 +533,7 @@ def add_heatmap(fig, axis, data, x_ticks=None, y_ticks=None, metric="error", nor
         data=data,
         valfmt="{x:.1f}",
         textcolors=("white", "black"),
-        size=Config.TICKS_FONT_SIZE,
+        size=Config.TICKS_FONT_SIZE + 5,
         norm_rows=norm_rows,
     )
 
